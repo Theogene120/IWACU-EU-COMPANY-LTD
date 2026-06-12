@@ -1,0 +1,3282 @@
+{
+  "products": [
+    {
+      "id": "f1",
+      "title": "Floral Summer Midi Dress",
+      "description": "Elegant floral print midi dress crafted from breathable linen blend. Features a flattering V-neckline and adjustable waist tie. Perfect for garden parties and brunch.",
+      "price": 32000,
+      "oldPrice": 45000,
+      "category": "Fashion",
+      "images": [
+        "https://plus.unsplash.com/premium_photo-1673481601147-ee95199d3896?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3VtbWVyJTIwZHJlc3N8ZW58MHx8MHx8fDA%3D",
+        "https://images.unsplash.com/photo-1604506272685-a999a4d122e7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHN1bW1lciUyMGRyZXNzfGVufDB8fDB8fHww",
+        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 45,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "Linen Blend",
+        "Midi Length",
+        "Hand Wash Recommended"
+      ],
+      "variations": [
+        {
+          "id": "f1-s",
+          "name": "Size",
+          "value": "S",
+          "stock": 15
+        },
+        {
+          "id": "f1-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 19
+        },
+        {
+          "id": "f1-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 10
+        },
+        {
+          "id": "f1-blue",
+          "name": "Color",
+          "value": "Sky Blue",
+          "stock": 25
+        },
+        {
+          "id": "f1-pink",
+          "name": "Color",
+          "value": "Petal Pink",
+          "stock": 19
+        }
+      ]
+    },
+    {
+      "id": "f2",
+      "title": "Men's Slim-Fit Tuxedo Suit",
+      "description": "Premium wool-blend navy tuxedo suit. Includes a single-button jacket with satin lapels and matching tailored trousers. Ideal for weddings and formal events.",
+      "price": 185000,
+      "oldPrice": 210000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1592878897400-43fb1f1cc324?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1622497170185-5d668f816a56?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVuJTIwc3VpdHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1623880840102-7df0a9f3545b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fG1lbiUyMHN1aXR8ZW58MHx8MHx8fDA%3D"
+      ],
+      "stock": 11,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "80% Wool, 20% Polyester",
+        "Slim Fit",
+        "Dry Clean Only"
+      ],
+      "variations": [
+        {
+          "id": "f2-48",
+          "name": "Size",
+          "value": "48",
+          "stock": 3
+        },
+        {
+          "id": "f2-50",
+          "name": "Size",
+          "value": "50",
+          "stock": 4
+        },
+        {
+          "id": "f2-52",
+          "name": "Size",
+          "value": "52",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "id": "f3",
+      "title": "Oversized Streetwear Hoodie",
+      "description": "Heavyweight 400GSM cotton fleece hoodie with a relaxed aesthetic. Features dropped shoulders, a spacious kangaroo pocket, and ribbed cuffs. Minimalist streetwear essential.",
+      "price": 28000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=800",
+        "https://plus.unsplash.com/premium_photo-1673827311290-d435f481152e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8T3ZlcnNpemVkJTIwU3RyZWV0d2VhciUyMEhvb2RpZXxlbnwwfHwwfHx8MA%3D%3D",
+        "https://media.istockphoto.com/id/2149765119/photo/realistic-hoodie-front-and-back-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=GkR0z-k_hMh84xJUpaYL5c-iuRkwUo4ggrA6SE0h98M=",
+        "https://images.unsplash.com/photo-1721111260570-456f3306f8d4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8T3ZlcnNpemVkJTIwU3RyZWV0d2VhciUyMEhvb2RpZXxlbnwwfHwwfHx8MA%3D%3D"
+      ],
+      "stock": 50,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "100% Organic Cotton",
+        "Oversized Fit",
+        "Machine Wash Cold"
+      ],
+      "variations": [
+        {
+          "id": "f3-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 20
+        },
+        {
+          "id": "f3-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 20
+        },
+        {
+          "id": "f3-xl",
+          "name": "Size",
+          "value": "XL",
+          "stock": 20
+        },
+        {
+          "id": "f3-black",
+          "name": "Color",
+          "value": "Onyx Black",
+          "stock": 30
+        },
+        {
+          "id": "f3-grey",
+          "name": "Color",
+          "value": "Heather Grey",
+          "stock": 30
+        }
+      ]
+    },
+    {
+      "id": "f4",
+      "title": "Vintage Denim Trucker Jacket",
+      "description": "Classic 90s inspired denim jacket with a rugged, lived-in feel. Durable brass buttons and reinforced stitching. A timeless layer for any season.",
+      "price": 45000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1584844308532-b318efe24f74?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8VmludGFnZSUyMERlbmltJTIwVHJ1Y2tlciUyMEphY2tldHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://media.istockphoto.com/id/2267865558/photo/collar-detail-of-a-blue-denim-jacket-from-90s-trucker-jacket-front-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=U-dVGQ-FJgw6UHcLhdnXyN0sRrLlWqdE0FQOjkrDQrA=",
+        "https://images.unsplash.com/photo-1665615837850-99bfaf83bab8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8VmludGFnZSUyMERlbmltJTIwVHJ1Y2tlciUyMEphY2tldHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1707816508645-d229ddd3aa65?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8VmludGFnZSUyMERlbmltJTIwVHJ1Y2tlciUyMEphY2tldHxlbnwwfHwwfHx8MA%3D%3D"
+      ],
+      "stock": 26,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "14oz Rigid Denim",
+        "Classic Fit",
+        "Button Closure"
+      ],
+      "variations": [
+        {
+          "id": "f4-s",
+          "name": "Size",
+          "value": "S",
+          "stock": 5
+        },
+        {
+          "id": "f4-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 10
+        },
+        {
+          "id": "f4-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": "f5",
+      "title": "Classic White Linen Shirt",
+      "description": "Crisp white linen shirt designed for ultimate comfort in warm climates. Breathable, sweat-wicking properties and a relaxed button-down collar.",
+      "price": 35000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8d2hpdGUlMjBzaGlydHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1671438118097-479e63198629?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8d2hpdGUlMjBzaGlydHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1693242804347-38b4382b3c4d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fHdoaXRlJTIwc2hpcnR8ZW58MHx8MHx8fDA%3D"
+      ],
+      "stock": 39,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "100% Pure Linen",
+        "Standard Fit",
+        "Curved Hem"
+      ],
+      "variations": [
+        {
+          "id": "f5-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 15
+        },
+        {
+          "id": "f5-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 15
+        },
+        {
+          "id": "f5-xl",
+          "name": "Size",
+          "value": "XL",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": "f6",
+      "title": "Women's High-Waist Tailored Trousers",
+      "description": "Chic high-waisted trousers with precise pleats and a wide-leg silhouette. Versatile for office wear or evening outings. Includes belt loops and hidden side pockets.",
+      "price": 42000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1673180608353-63292b332e84?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8V29tZW4ncyUyMEhpZ2gtV2Fpc3QlMjBUYWlsb3JlZCUyMFRyb3VzZXJzfGVufDB8fDB8fHww",
+        "https://images.unsplash.com/photo-1673180597733-dafaa1e8b08b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fFdvbWVuJ3MlMjBIaWdoLVdhaXN0JTIwVGFpbG9yZWQlMjBUcm91c2Vyc3xlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1751399566167-d0c646af5905?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fFdvbWVuJ3MlMjBIaWdoLVdhaXN0JTIwVGFpbG9yZWQlMjBUcm91c2Vyc3xlbnwwfHwwfHx8MA%3D%3D"
+      ],
+      "stock": 30,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Viscose Blend",
+        "Wide Leg",
+        "High Rise"
+      ],
+      "variations": [
+        {
+          "id": "f6-28",
+          "name": "Size",
+          "value": "28",
+          "stock": 10
+        },
+        {
+          "id": "f6-30",
+          "name": "Size",
+          "value": "30",
+          "stock": 10
+        },
+        {
+          "id": "f6-32",
+          "name": "Size",
+          "value": "32",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": "f7",
+      "title": "Heritage Wool Trench Coat",
+      "description": "Full-length heritage trench coat made from a premium wool-cashmere blend. Features a double-breasted closure, waist belt, and signature epaulettes. Timeless Parisian style.",
+      "price": 220000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800",
+        "https://media.istockphoto.com/id/144797271/photo/three-woolen-coats-cut-out.webp?a=1&b=1&s=612x612&w=0&k=20&c=BafIH0GwTKP8mfvXmzpi1E_dDLxGq0uNbcxDQad81CI=",
+        "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 8,
+      "rating": 5,
+      "isFeatured": true,
+      "specifications": [
+        "80% Wool, 20% Cashmere",
+        "Fully Lined",
+        "Tailored Cut"
+      ],
+      "variations": [
+        {
+          "id": "f7-s",
+          "name": "Size",
+          "value": "S",
+          "stock": 2
+        },
+        {
+          "id": "f7-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 4
+        },
+        {
+          "id": "f7-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "id": "f8",
+      "title": "Urban Minimalist Graphic Tee",
+      "description": "Premium heavyweight tee with a subtle architectural graphic on the back. Boxy fit with a thick ribbed collar. Crafted from pre-shrunk cotton for lasting shape.",
+      "price": 18000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1554568218-0f1715e72254?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 99,
+      "rating": 4.4,
+      "isFeatured": false,
+      "specifications": [
+        "100% Dense Cotton",
+        "Boxy Fit",
+        "Screen Printed"
+      ],
+      "variations": [
+        {
+          "id": "f8-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 40
+        },
+        {
+          "id": "f8-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 40
+        },
+        {
+          "id": "f8-xl",
+          "name": "Size",
+          "value": "XL",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "f9",
+      "title": "Silk Button-Down Blouse",
+      "description": "Luxurious 100% mulberry silk blouse with a smooth satin finish. Features a classic collar and mother-of-pearl buttons. A sophisticated piece for effortless day-to-night styling.",
+      "price": 55000,
+      "oldPrice": 68000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1675379086716-95bf8a4d22f2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8U2lsayUyMEJ1dHRvbi1Eb3duJTIwQmxvdXNlfGVufDB8fDB8fHww",
+        "https://images.unsplash.com/photo-1704775983658-2773a9c0cce2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8U2lsayUyMEJ1dHRvbi1Eb3duJTIwQmxvdXNlfGVufDB8fDB8fHww",
+        "https://images.unsplash.com/photo-1704775991545-fc0507822fea?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ],
+      "stock": 25,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "100% Mulberry Silk",
+        "Regular Fit",
+        "Dry Clean Only"
+      ],
+      "variations": [
+        {
+          "id": "f9-w",
+          "name": "Color",
+          "value": "Champagne",
+          "stock": 10
+        },
+        {
+          "id": "f9-b",
+          "name": "Color",
+          "value": "Emerald",
+          "stock": 15
+        }
+      ]
+    },
+    {
+      "id": "f10",
+      "title": "High-Waisted Mom Jeans",
+      "description": "Classic 90s-inspired mom jeans with a flattering high rise and tapered leg. Made from 100% rigid organic cotton for an authentic vintage feel that breaks in over time.",
+      "price": 38000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1475178626620-a4d074967452?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 50,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "100% Organic Cotton",
+        "High Rise",
+        "Tapered Leg"
+      ],
+      "variations": [
+        {
+          "id": "f10-26",
+          "name": "Size",
+          "value": "26",
+          "stock": 10
+        },
+        {
+          "id": "f10-28",
+          "name": "Size",
+          "value": "28",
+          "stock": 20
+        },
+        {
+          "id": "f10-30",
+          "name": "Size",
+          "value": "30",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "f11",
+      "title": "Cashmere Turtleneck Sweater",
+      "description": "Ultra-soft grade-A Mongolian cashmere turtleneck. Lightweight yet incredibly warm, featuring a slightly relaxed fit and ribbed trims. A luxury essential for cold seasons.",
+      "price": 125000,
+      "oldPrice": 150000,
+      "category": "Fashion",
+      "images": [
+        "https://plus.unsplash.com/premium_photo-1698952163279-da370cb759bc?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHVydGxlbmVja3xlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1608739872119-f78feab7f976?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dHVydGxlbmVja3xlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1608739871816-346c9db7e122?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8dHVydGxlbmVja3xlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "100% Cashmere",
+        "Relaxed Fit",
+        "Hand Wash Only"
+      ],
+      "variations": [
+        {
+          "id": "f11-g",
+          "name": "Color",
+          "value": "Oatmeal",
+          "stock": 7
+        },
+        {
+          "id": "f11-n",
+          "name": "Color",
+          "value": "Navy",
+          "stock": 8
+        }
+      ]
+    },
+    {
+      "id": "f12",
+      "title": "Bohemian Maxi Skirt",
+      "description": "Flowing tiered maxi skirt with an intricate paisley print. Crafted from soft rayon for a graceful drape. Features an elasticated drawstring waist for a comfortable fit.",
+      "price": 26000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1732167689626-380220c2cfaa?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Qm9oZW1pYW4lMjBNYXhpJTIwU2tpcnR8ZW58MHx8MHx8fDA%3D",
+        "https://images.unsplash.com/photo-1551163943-3f6a855d1153?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 40,
+      "rating": 4.4,
+      "isFeatured": false,
+      "specifications": [
+        "100% Rayon",
+        "Maxi Length",
+        "Elastic Waist"
+      ],
+      "variations": [
+        {
+          "id": "f12-s",
+          "name": "Size",
+          "value": "S/M",
+          "stock": 20
+        },
+        {
+          "id": "f12-l",
+          "name": "Size",
+          "value": "L/XL",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "f13",
+      "title": "Tailored Slim Blazer",
+      "description": "Sharp tailored blazer with a modern slim fit. Features notched lapels, two-button closure, and subtle padding at the shoulders for a structured look. Fully lined.",
+      "price": 85000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1507679799987-c73774071b9b?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Polyester/Viscose Blend",
+        "Slim Fit",
+        "Two-Button Closure"
+      ],
+      "variations": [
+        {
+          "id": "f13-b",
+          "name": "Color",
+          "value": "Charcoal Black",
+          "stock": 10
+        },
+        {
+          "id": "f13-g",
+          "name": "Color",
+          "value": "Light Grey",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": "f14",
+      "title": "Polka Dot Wrap Dress",
+      "description": "Playful polka dot print wrap dress in a breezy chiffon fabric. Features ruffled sleeves and an adjustable waist tie that creates a beautiful feminine silhouette.",
+      "price": 34000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 35,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Chiffon",
+        "Wrap Style",
+        "Above Knee Length"
+      ],
+      "variations": [
+        {
+          "id": "f14-r",
+          "name": "Color",
+          "value": "Red/White",
+          "stock": 15
+        },
+        {
+          "id": "f14-b",
+          "name": "Color",
+          "value": "Black/White",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "f15",
+      "title": "Leather Biker Jacket",
+      "description": "Rugged yet refined biker jacket made from soft lambskin leather. Features silver-tone hardware, multiple zip pockets, and a classic asymmetric front zip closure.",
+      "price": 165000,
+      "oldPrice": 195000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 10,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "100% Lambskin Leather",
+        "Asymmetric Zip",
+        "Polyester Lining"
+      ],
+      "variations": [
+        {
+          "id": "f15-m",
+          "name": "Size",
+          "value": "M",
+          "stock": 5
+        },
+        {
+          "id": "f15-l",
+          "name": "Size",
+          "value": "L",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "id": "f16",
+      "title": "3-Pack Baby Organic Bodysuits",
+      "description": "Essential organic cotton bodysuits for babies. Soft, breathable, and features easy-snap closures for quick changing. Gentle on delicate baby skin.",
+      "price": 18000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1738023924766-fdf74c30d5c0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8My1QYWNrJTIwQmFieSUyME9yZ2FuaWMlMjBCb2R5c3VpdHN8ZW58MHx8MHx8fDA%3D",
+        "https://plus.unsplash.com/premium_photo-1677260349894-649dbd8f3d3c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8My1QYWNrJTIwQmFieSUyME9yZ2FuaWMlMjBCb2R5c3VpdHN8ZW58MHx8MHx8fDA%3D",
+        "https://images.unsplash.com/photo-1744424846143-59de0fcd871a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fDMtUGFjayUyMEJhYnklMjBPcmdhbmljJTIwQm9keXN1aXRzfGVufDB8fDB8fHww"
+      ],
+      "stock": 50,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "100% Organic Cotton",
+        "Nickel-Free Snaps",
+        "Machine Washable"
+      ],
+      "variations": [
+        {
+          "id": "f16-nb",
+          "name": "Size",
+          "value": "Newborn",
+          "stock": 20
+        },
+        {
+          "id": "f16-3m",
+          "name": "Size",
+          "value": "3 Months",
+          "stock": 30
+        }
+      ]
+    },
+    {
+      "id": "f17",
+      "title": "Toddler Puffer Winter Jacket",
+      "description": "Warm and cozy puffer jacket for little ones. Insulated with lightweight down alternative and features a fleece-lined hood to keep out the chill.",
+      "price": 35000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1640072494352-66220f9ac3b1?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8VG9kZGxlciUyMFB1ZmZlciUyMFdpbnRlciUyMEphY2tldHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1587432816473-9e3409689f12?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8VG9kZGxlciUyMFB1ZmZlciUyMFdpbnRlciUyMEphY2tldHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1760179325525-ec3edff26677?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fFRvZGRsZXIlMjBQdWZmZXIlMjBXaW50ZXIlMjBKYWNrZXR8ZW58MHx8MHx8fDA%3D"
+      ],
+      "stock": 25,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Polyester Fill",
+        "Fleece Lined",
+        "Water Resistant"
+      ],
+      "variations": [
+        {
+          "id": "f17-r",
+          "name": "Color",
+          "value": "Bright Red",
+          "stock": 12
+        },
+        {
+          "id": "f17-y",
+          "name": "Color",
+          "value": "Sunshine Yellow",
+          "stock": 13
+        }
+      ]
+    },
+    {
+      "id": "f18",
+      "title": "Classic Men's Baseball Cap",
+      "description": "Timeless 6-panel baseball cap with an adjustable strap. Crafted from durable cotton twill with an embroidered logo. Perfect for casual weekend wear.",
+      "price": 12000,
+      "category": "Fashion",
+      "images": [
+        "https://plus.unsplash.com/premium_photo-1674586422099-f52a936fd7f5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Q2xhc3NpYyUyME1lbidzJTIwQmFzZWJhbGwlMjBDYXB8ZW58MHx8MHx8fDA%3D",
+        "https://media.istockphoto.com/id/1044149926/photo/baseball-cap-red-templates-front-views-isolated-on-white-background.webp?a=1&b=1&s=612x612&w=0&k=20&c=2XfcLQxnOkTruNKGU7uPvhVKNuo24141y2O3N4Y07JU=",
+        "https://images.unsplash.com/photo-1628925688859-d378985f5206?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fENsYXNzaWMlMjBNZW4ncyUyMEJhc2ViYWxsJTIwQ2FwfGVufDB8fDB8fHww"
+      ],
+      "stock": 100,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "100% Cotton Twill",
+        "Adjustable Strap",
+        "Embroidered"
+      ],
+      "variations": [
+        {
+          "id": "f18-bk",
+          "name": "Color",
+          "value": "Black",
+          "stock": 50
+        },
+        {
+          "id": "f18-nv",
+          "name": "Color",
+          "value": "Navy",
+          "stock": 50
+        }
+      ]
+    },
+    {
+      "id": "f19",
+      "title": "Women's Canvas Sun Hat",
+      "description": "Elegant wide-brimmed sun hat made from natural straw and canvas. Provides excellent UV protection while staying breathable and stylish at the beach.",
+      "price": 15000,
+      "category": "Fashion",
+      "images": [
+        "https://images.unsplash.com/photo-1692283394836-37822c89576e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8V29tZW4ncyUyMENhbnZhcyUyMFN1biUyMEhhdHxlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1700442548171-5f36c881cc49?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fFdvbWVuJ3MlMjBDYW52YXMlMjBTdW4lMjBIYXR8ZW58MHx8MHx8fDA%3D0",
+        "https://media.istockphoto.com/id/1512111987/photo/beautiful-woman.webp?a=1&b=1&s=612x612&w=0&k=20&c=Ra8Dg1PfkoWDKce8ucd50gWrAfmDz4OMn3QXUZ76vsM="
+      ],
+      "stock": 30,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "Natural Straw",
+        "Wide Brim",
+        "UPF 50+"
+      ]
+    },
+    {
+      "id": "f20",
+      "title": "Baby Winter Beanie & Mittens",
+      "description": "Sub-zero protection for your little one. Soft knit hat and matching mittens set lined with plush fleece for maximum warmth.",
+      "price": 10000,
+      "category": "Fashion",
+      "images": [
+        "https://media.istockphoto.com/id/1298088201/photo/little-girl-in-the-cold-looks-at-the-snow-mittens-and-smiles-winter-walk-the-baby-in-the-open.webp?a=1&b=1&s=612x612&w=0&k=20&c=SUTE3fzI3a1qpG9pwq-vVdIINWnhCJbX8zPFInlPwfs=",
+        "https://media.istockphoto.com/id/2245441426/photo/cute-funny-infant-baby-3-5-months-old-lying-in-bed-wearing-knitted-hat-close-up-winter.webp?a=1&b=1&s=612x612&w=0&k=20&c=iMG9wClHxGGgQQ1Z0qfHbPtPNkl__iviTTv_ollGWmg="
+      ],
+      "stock": 40,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "Acrylic Knit",
+        "Fleece Lining",
+        "Stretchy Fit"
+      ]
+    },
+    {
+      "id": "f21",
+      "title": "Newborn Velvet Romper",
+      "description": "Ultra-soft luxury velvet romper for newborns and little babies. Features delicate lace detailing and a button-up front. Perfect for special occasions or cozy naps.",
+      "price": 25000,
+      "category": "Fashion",
+      "images": [
+        "https://plus.unsplash.com/premium_photo-1675183690347-662b2f9f3cf7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8TmV3Ym9ybiUyMFZlbHZldCUyMFJvbXBlcnxlbnwwfHwwfHx8MA%3D%3D",
+        "https://images.unsplash.com/photo-1670529401267-f27a1f9cdb21?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8TmV3Ym9ybiUyMFZlbHZldCUyMFJvbXBlcnxlbnwwfHwwfHx8MA%3D%3D",
+        "https://media.istockphoto.com/id/1444106108/photo/portrait-of-cute-little-baby-boy-laying-in-the-baby-crib.webp?a=1&b=1&s=612x612&w=0&k=20&c=Mqwwb-lRlmTRNkcn_ejv5h5v9azyB7RB9FtFqvWgDRE="
+      ],
+      "stock": 20,
+      "rating": 5,
+      "isFeatured": true,
+      "specifications": [
+        "Micro-Velvet",
+        "Nickel-Free Buttons",
+        "Hypoallergenic"
+      ]
+    },
+    {
+      "id": "s1",
+      "title": "Pro-Performance Running Shoes",
+      "description": "Elite running footwear featuring responsive nitrogen-infused foam cushioning. Breathable engineered mesh upper and carbon fiber plate for maximum energy return.",
+      "price": 125000,
+      "oldPrice": 150000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "Foam Midsole",
+        "Carbon Plate",
+        "6mm Drop"
+      ],
+      "variations": [
+        {
+          "id": "s1-40",
+          "name": "Size",
+          "value": "40",
+          "stock": 5
+        },
+        {
+          "id": "s1-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 8
+        },
+        {
+          "id": "s1-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 7
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Hand-Burnished Leather Loafers",
+      "description": "Classic penny loafers crafted from hand-selected calfskin leather. Features a cushioned cork footbed that molds to your feet over time. Goodyear welted for longevity.",
+      "price": 95000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1449505278894-297fdb3edbc1?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "Calfskin Leather",
+        "Goodyear Welted",
+        "Leather Sole"
+      ],
+      "variations": [
+        {
+          "id": "s2-br",
+          "name": "Color",
+          "value": "Tobacco Brown",
+          "stock": 8
+        },
+        {
+          "id": "s2-bl",
+          "name": "Color",
+          "value": "Midnight Black",
+          "stock": 7
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "All-Star Pro Basketball Sneakers",
+      "description": "High-performance basketball shoes with multi-directional traction patterns and lockdown fit. Internal shank for stability and Zoom air units for explosive jumps.",
+      "price": 135000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1605348532760-6753d2c43329?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 25,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Synthetic Overlay",
+        "Herringbone Traction",
+        "Internal Shank"
+      ],
+      "variations": [
+        {
+          "id": "s3-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 10
+        },
+        {
+          "id": "s3-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 10
+        },
+        {
+          "id": "s3-46",
+          "name": "Size",
+          "value": "46",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Waterproof Suede Chelsea Boots",
+      "description": "Iconic Chelsea silhouette with a modern waterproof treatment. Elastic side panels for easy entry and a rugged Vibram outsole for grip on uneven terrain.",
+      "price": 110000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1603487742131-4160ec999306?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 18,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Italian Suede",
+        "Vibram Sole",
+        "Water Resistant"
+      ],
+      "variations": [
+        {
+          "id": "s4-40",
+          "name": "Size",
+          "value": "40",
+          "stock": 6
+        },
+        {
+          "id": "s4-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 6
+        },
+        {
+          "id": "s4-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 6
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Luxury Satin Stiletto Pumps",
+      "description": "Exquisite satin-covered stilettos with a sleek pointed toe. Features a memory foam cushioned insole for surprising comfort. The ultimate statement piece for black-tie events.",
+      "price": 85000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1698265026614-a49b250850bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8THV4dXJ5JTIwU2F0aW4lMjBTdGlsZXR0byUyMFB1bXBzfGVufDB8fDB8fHww",
+        "https://plus.unsplash.com/premium_photo-1674068280536-ca18252cfa8c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8THV4dXJ5JTIwU2F0aW4lMjBTdGlsZXR0byUyMFB1bXBzfGVufDB8fDB8fHww",
+        "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 10,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "Silk Satin",
+        "100mm Heel",
+        "Pointed Toe"
+      ],
+      "variations": [
+        {
+          "id": "s5-37",
+          "name": "Size",
+          "value": "37",
+          "stock": 3
+        },
+        {
+          "id": "s5-38",
+          "name": "Size",
+          "value": "38",
+          "stock": 4
+        },
+        {
+          "id": "s5-39",
+          "name": "Size",
+          "value": "39",
+          "stock": 3
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Eco-Friendly Canvas Slip-Ons",
+      "description": "Lightweight slip-on sneakers made from recycled organic canvas. Natural rubber outsole and hemp laces. Perfect for casual summer strolls and effortless style.",
+      "price": 38000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1611312449412-6cefac5c684f?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1626497746270-394c507c9735?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 50,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "Organic Canvas",
+        "Recycled Rubber",
+        "Vegan Friendly"
+      ],
+      "variations": [
+        {
+          "id": "s6-nv",
+          "name": "Color",
+          "value": "Navy Blue",
+          "stock": 25
+        },
+        {
+          "id": "s6-gr",
+          "name": "Color",
+          "value": "Forest Green",
+          "stock": 25
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "TerrainMaster Pro Hiking Boots",
+      "description": "Rugged mid-cut hiking boots designed for serious adventures. Gore-Tex lining for complete waterproofing and a protective toe cap. Deep lugged outsole for mud and rock grip.",
+      "price": 155000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 12,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Gore-Tex Lining",
+        "Suede Overlay",
+        "Impact-Shield Toe"
+      ],
+      "variations": [
+        {
+          "id": "s7-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 4
+        },
+        {
+          "id": "s7-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 4
+        },
+        {
+          "id": "s7-45",
+          "name": "Size",
+          "value": "45",
+          "stock": 4
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "Hand-Crafted Full-Grain Sandals",
+      "description": "Premium sandals with thick full-grain leather straps and a contoured anatomical footbed. Sole features a non-slip pattern. Built to last for multiple summers.",
+      "price": 45000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1562273138-f46be4ebdf33?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 30,
+      "rating": 4.4,
+      "isFeatured": false,
+      "specifications": [
+        "Full-Grain Leather",
+        "Contoured Footbed",
+        "Rubber Grip"
+      ],
+      "variations": [
+        {
+          "id": "s8-br",
+          "name": "Color",
+          "value": "Bark Brown",
+          "stock": 15
+        },
+        {
+          "id": "s8-bl",
+          "name": "Color",
+          "value": "Coal Black",
+          "stock": 15
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "Classic Leather Brogues",
+      "description": "Exquisitely detailed wingtip brogues crafted from premium tan leather. Features traditional perforated detailing and a durable rubber sole for grip. The perfect balance of style and comfort.",
+      "price": 78000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Genuine Leather",
+        "Wingtip Design",
+        "Anti-Slip Sole"
+      ],
+      "variations": [
+        {
+          "id": "s9-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 10
+        },
+        {
+          "id": "s9-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "Platform Ankle Boots",
+      "description": "Trendy platform ankle boots with a chunky heel and side zip. Made from high-quality faux leather with a comfortable padded footbed. Elevate your urban look.",
+      "price": 52000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1603487742131-4160ec999306?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 25,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Synthetic Leather",
+        "Platform Sole",
+        "8cm Heel"
+      ],
+      "variations": [
+        {
+          "id": "s10-38",
+          "name": "Size",
+          "value": "38",
+          "stock": 12
+        },
+        {
+          "id": "s10-40",
+          "name": "Size",
+          "value": "40",
+          "stock": 13
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "Lightweight Mesh Trainers",
+      "description": "Breathable and ultra-lightweight trainers designed for casual wear and light exercise. Features a flexible grooved sole that moves naturally with your foot.",
+      "price": 45000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 60,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "Engineered Mesh",
+        "Phylon Midsole",
+        "Lace-up Closure"
+      ],
+      "variations": [
+        {
+          "id": "s11-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 30
+        },
+        {
+          "id": "s11-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 30
+        }
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "Strappy Block Heels",
+      "description": "Elegant strappy block heels featuring a slender ankle strap and stable block heel. Ideal for long hours at weddings or parties. Versatile nude shade.",
+      "price": 48000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1596702994270-9c2da59f333b?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1581101767113-1677ea2bef43?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 18,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "Suedette Material",
+        "6cm Block Heel",
+        "Adjustable Ankle Strap"
+      ],
+      "variations": [
+        {
+          "id": "s12-37",
+          "name": "Size",
+          "value": "37",
+          "stock": 9
+        },
+        {
+          "id": "s12-39",
+          "name": "Size",
+          "value": "39",
+          "stock": 9
+        }
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "Suede Desert Boots",
+      "description": "Casual and timeless mid-cut desert boots in soft genuine suede. Features a classic two-eyelet lace design and a shock-absorbing crepe-style sole.",
+      "price": 72000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1603487742131-4160ec999306?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 22,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Genuine Suede",
+        "Crepe Sole",
+        "Mid-Cut Design"
+      ],
+      "variations": [
+        {
+          "id": "s13-42",
+          "name": "Size",
+          "value": "42",
+          "stock": 11
+        },
+        {
+          "id": "s13-44",
+          "name": "Size",
+          "value": "44",
+          "stock": 11
+        }
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "Pointed-Toe Ballet Flats",
+      "description": "Sophisticated ballet flats with a chic pointed toe and minimal bow detail. Perfect for professional office wear or dressing up a casual outfit.",
+      "price": 32000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1611312449412-6cefac5c684f?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 30,
+      "rating": 4.4,
+      "isFeatured": false,
+      "specifications": [
+        "Synthetic Material",
+        "Cushioned Insole",
+        "Flat Sole"
+      ],
+      "variations": [
+        {
+          "id": "s14-bk",
+          "name": "Color",
+          "value": "Classic Black",
+          "stock": 15
+        },
+        {
+          "id": "s14-nd",
+          "name": "Color",
+          "value": "Soft Nude",
+          "stock": 15
+        }
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "All-Weather Rain Boots",
+      "description": "Durable and 100% waterproof rubber rain boots. Features a high-traction outsole and a soft fabric lining to keep feet warm and dry in heavy downpours.",
+      "price": 34000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1582845512747-e42001c95638?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 40,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Vulcanized Rubber",
+        "High-Grip Tread",
+        "Waterproof"
+      ],
+      "variations": [
+        {
+          "id": "s15-y",
+          "name": "Color",
+          "value": "Sunny Yellow",
+          "stock": 20
+        },
+        {
+          "id": "s15-r",
+          "name": "Color",
+          "value": "Classic Red",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "s16",
+      "title": "Soft-Sole Baby Walkers",
+      "description": "Ultra-soft genuine leather shoes for babies starting to crawl or walk. Flexible soles mimic barefoot movement for healthy foot development. Non-slip grip.",
+      "price": 15000,
+      "category": "Shoes",
+      "images": [
+        "https://media.istockphoto.com/id/1440750926/photo/image-of-shoes-white-background.webp?a=1&b=1&s=612x612&w=0&k=20&c=U7oAktzBLHDeC1te2lPrLbruDq1GD56qlhWWVLILbV4=",
+        "https://media.istockphoto.com/id/1370796013/photo/baby-shoes.webp?a=1&b=1&s=612x612&w=0&k=20&c=rwwnztvUwM0d2y66MnV5VHtAfBMYT-4EpawN5plHUB0="
+      ],
+      "stock": 40,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "100% Soft Leather",
+        "Anti-Slip Sole",
+        "Breathable"
+      ],
+      "variations": [
+        {
+          "id": "s16-6",
+          "name": "Size",
+          "value": "6-12 Months",
+          "stock": 20
+        },
+        {
+          "id": "s16-12",
+          "name": "Size",
+          "value": "12-18 Months",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "s17",
+      "title": "Toddler Light-Up Sneakers",
+      "description": "Fun and vibrant sneakers for toddlers with motion-activated LED lights in the sole. Easy hook-and-loop straps for independent dressing. Durable and easy to clean.",
+      "price": 22000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1512374382149-433a72b9a5a5?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 35,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "LED Lights",
+        "Easy-Strap",
+        "Synthetic Upper"
+      ],
+      "variations": [
+        {
+          "id": "s17-b",
+          "name": "Color",
+          "value": "Blue Rocket",
+          "stock": 15
+        },
+        {
+          "id": "s17-p",
+          "name": "Color",
+          "value": "Pink Sparkle",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "s18",
+      "title": "Newborn Crochet Booties",
+      "description": "Hand-knit soft cotton booties for little babies. Gentle on sensitive skin and keeps tiny feet warm and cozy. Elasticated ankle for a secure yet comfortable fit.",
+      "price": 8000,
+      "category": "Shoes",
+      "images": [
+        "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 50,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "Hand-Knit Cotton",
+        "Newborn Size",
+        "Hypoallergenic"
+      ]
+    },
+    {
+      "id": "e1",
+      "title": "X-Phone Pro 256GB Platinum",
+      "description": "Industry-leading smartphone with a 6.7-inch OLED ProMotion display and triple-lens cinema-grade camera system. Features satellite connectivity and 48-hour battery life.",
+      "price": 1350000,
+      "oldPrice": 1420000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1592890678914-710185730612?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1556656793-062ff987b50d?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "A17 Bionic Chip",
+        "256GB Storage",
+        "5G Ready",
+        "IP68 Waterproof"
+      ],
+      "variations": [
+        {
+          "id": "e1-pl",
+          "name": "Color",
+          "value": "Platinum Silver",
+          "stock": 5
+        },
+        {
+          "id": "e1-go",
+          "name": "Color",
+          "value": "Radiant Gold",
+          "stock": 5
+        },
+        {
+          "id": "e1-bl",
+          "name": "Color",
+          "value": "Abyss Black",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "id": "e9",
+      "title": "4K UHD Action Camera",
+      "description": "Rugged 4K action camera with advanced image stabilization and waterproof casing up to 30m. Features a wide-angle lens and touch screen for easy framing. Capture every adventure.",
+      "price": 145000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1502933691298-84fc14542831?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1552120449-3e0e7a561140?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1550439062-609e154f2723?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "4K 60fps",
+        "20MP Photos",
+        "Waterproof 30m"
+      ]
+    },
+    {
+      "id": "e10",
+      "title": "Wireless Mechanical Keyboard",
+      "description": "Premium mechanical keyboard with customizable RGB lighting and tactile brown switches. Features high-speed wireless connectivity and a long-lasting rechargeable battery.",
+      "price": 110000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 25,
+      "rating": 4.9,
+      "isFeatured": false,
+      "specifications": [
+        "RGB Backlit",
+        "Brown Switches",
+        "Bluetooth/2.4G"
+      ]
+    },
+    {
+      "id": "e11",
+      "title": "10.5-inch Ultra Tablet",
+      "description": "Powerful 10.5-inch tablet with a stunning AMOLED display and octa-core processor. Perfect for productivity, creative work, and immersive entertainment on the go.",
+      "price": 385000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1544244015-024b702ecac1?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 12,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "AMOLED Display",
+        "128GB Storage",
+        "Stylus Support"
+      ]
+    },
+    {
+      "id": "e12",
+      "title": "Over-Ear Noise Canceling Headphones",
+      "description": "Premium over-ear headphones with superior active noise cancellation. Delivers high-fidelity audio with deep bass and clear highs. Cushioned ear cups for all-day comfort.",
+      "price": 245000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1583394838336-acd977730f90?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "Active Noise Canceling",
+        "40h Battery",
+        "Bluetooth 5.3"
+      ]
+    },
+    {
+      "id": "e13",
+      "title": "Smart Fitness Watch",
+      "description": "Comprehensive fitness tracker with heart rate monitoring, sleep tracking, and GPS. Water-resistant design with a vibrant color touch screen. Stay healthy and connected.",
+      "price": 85000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1745256375848-1d599594635d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fFNtYXJ0JTIwRml0bmVzcyUyMFdhdGNofGVufDB8fDB8fHww",
+        "https://images.unsplash.com/photo-1767903622388-4949aad2bd93?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDB8fFNtYXJ0JTIwRml0bmVzcyUyMFdhdGNofGVufDB8fDB8fHww"
+      ],
+      "stock": 45,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Heart Rate Monitor",
+        "GPS Track",
+        "Water Resistant"
+      ]
+    },
+    {
+      "id": "e14",
+      "title": "1TB Portable SSD",
+      "description": "Ultra-fast and compact portable SSD for high-speed data transfer. Durable shock-resistant design with a USB-C interface. Perfect for photographers and power users.",
+      "price": 125000,
+      "category": "Electronics",
+      "images": [
+        "https://media.istockphoto.com/id/186360824/photo/1tb-ssd-drive.webp?a=1&b=1&s=612x612&w=0&k=20&c=MaVVFFuLSCNqS2_jPjKlkmV0m8R4yl9Fp6chtsiVkvo=",
+        "https://plus.unsplash.com/premium_photo-1723651280322-513220315969?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8MVRCJTIwUG9ydGFibGUlMjBTU0R8ZW58MHx8MHx8fDA%3D"
+      ],
+      "stock": 30,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "1TB Capacity",
+        "1050MB/s Speed",
+        "USB 3.2 Gen 2"
+      ]
+    },
+    {
+      "id": "e15",
+      "title": "Studio Condenser Mic Kit",
+      "description": "Professional-grade condenser microphone kit for streaming, podcasting, and studio recording. Includes adjustable boom arm, shock mount, and pop filter.",
+      "price": 95000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 18,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Cardioid Pattern",
+        "XLR Connectivity",
+        "Pop Filter Included"
+      ]
+    },
+    {
+      "id": "e16",
+      "title": "iPhone 15 Pro Max 512GB",
+      "description": "The peak of mobile technology. Titanium design, A17 Pro chip, and the most advanced camera system on an iPhone. Experience unprecedented power and elegance.",
+      "price": 1850000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1696446702181-4eb15830f69f?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1695048133142-1a20484d25fa?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 12,
+      "rating": 5,
+      "isFeatured": true,
+      "specifications": [
+        "Titanium Body",
+        "A17 Pro Chip",
+        "512GB Storage",
+        "Action Button"
+      ],
+      "variations": [
+        {
+          "id": "e16-nt",
+          "name": "Color",
+          "value": "Natural Titanium",
+          "stock": 6
+        },
+        {
+          "id": "e16-bt",
+          "name": "Color",
+          "value": "Blue Titanium",
+          "stock": 6
+        }
+      ]
+    },
+    {
+      "id": "e17",
+      "title": "Vanguard Gaming Desktop RT",
+      "description": "Extreme performance desktop for gaming and professional rendering. Liquid-cooled system with the latest RTX 4090 GPU and i9 processor. No compromises.",
+      "price": 4500000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 5,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "RTX 4090 24GB",
+        "Intel i9-14900K",
+        "64GB DDR5 RAM",
+        "2TB NVMe SSD"
+      ]
+    },
+    {
+      "id": "e18",
+      "title": "Heritage Wood FM/AM Radio",
+      "description": "Vintage-inspired analog radio with modern internals. High-fidelity speakers housed in a handcrafted walnut wood cabinet. Features Bluetooth connectivity and analog tuning.",
+      "price": 85000,
+      "category": "Electronics",
+      "images": [
+        "https://media.istockphoto.com/id/2265426886/photo/vintage-retro-style-radio-with-wooden-case-on-bedding-with-soft-morning-light.webp?a=1&b=1&s=612x612&w=0&k=20&c=Hv8Z_-NKOGI7nAmHZRuNbb7VQLDQaoQmNb3KTW4iCM0=",
+        "https://media.istockphoto.com/id/1401352528/photo/a-radio-receiver-and-a-cup-of-coffee-on-a-wooden-nightstand-in-the-morning-sun.webp?a=1&b=1&s=612x612&w=0&k=20&c=LFtk3imnxICK0S4v9PNM4pvqoUY7dGHGq0PYQVf68O8="
+      ],
+      "stock": 20,
+      "rating": 4.7,
+      "isFeatured": true,
+      "specifications": [
+        "Walnut Wood",
+        "Bluetooth 5.0",
+        "FM/AM/Shortwave",
+        "Built-in Battery"
+      ]
+    },
+    {
+      "id": "e19",
+      "title": "UltraSlim 85\" 4K Smart TV",
+      "description": "Turn your living room into a cinema. Massive 85-inch display with mini-LED technology for HDR contrast. Built-in smart platform with all your favorite apps.",
+      "price": 3200000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1461151304267-38535e770d79?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 8,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "85-inch Screen",
+        "Mini-LED 4K",
+        "120Hz Refresh",
+        "Smart OS"
+      ]
+    },
+    {
+      "id": "e2",
+      "title": "Pro-Cam Mirrorless Full-Frame",
+      "description": "Professional mirrorless camera with a 45MP full-frame sensor and 8K video recording capabilities. Features hybrid autofocus and in-body image stabilization.",
+      "price": 3200000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1526170315873-3a98ce50d7d6?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 5,
+      "rating": 5,
+      "isFeatured": true,
+      "specifications": [
+        "45MP Sensor",
+        "8K 60fps Video",
+        "32000 Max ISO"
+      ]
+    },
+    {
+      "id": "e3",
+      "title": "SonicFlow Noise-Canceling Buds",
+      "description": "Premium true wireless earbuds with adaptive noise cancellation and spatial audio. Includes a wireless charging case with up to 30 hours of total playback time.",
+      "price": 185000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1588423637152-44f2cdb51820?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1606220588913-b3aac24d8f41?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 40,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "ANC Technology",
+        "USB-C Fast Charge",
+        "Touch Controls"
+      ],
+      "variations": [
+        {
+          "id": "e3-wh",
+          "name": "Color",
+          "value": "Arctic White",
+          "stock": 20
+        },
+        {
+          "id": "e3-bg",
+          "name": "Color",
+          "value": "Graphite Grey",
+          "stock": 20
+        }
+      ]
+    },
+    {
+      "id": "e4",
+      "title": "Book-Pro 15 Ultra Laptop",
+      "description": "The ultimate productivity laptop featuring a Liquid Retina display and the M3 Pro chip. Includes four Thunderbolt ports and a high-fidelity six-speaker system.",
+      "price": 2450000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1525547718571-03943d29a1bd?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 8,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "16GB Unified Memory",
+        "1TB SSD",
+        "20-hour Battery"
+      ]
+    },
+    {
+      "id": "e5",
+      "title": "SmartHome Hub Display 10\"",
+      "description": "Centralize your smart home with this 10-inch interactive touch display. Features built-in voice assistant, security camera previews, and music streaming controls.",
+      "price": 195000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1544006659-f0b21f04cb1d?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1518997554304-484f3674345c?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1558002038-103792e37984?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "10\" HD Screen",
+        "Far-Field Mics",
+        "Bluetooth 5.2"
+      ]
+    },
+    {
+      "id": "e6",
+      "title": "Rugged Peak Bluetooth Speaker",
+      "description": "Fully waterproof and dustproof portable speaker designed for the outdoors. Delivers deep bass and 360-degree sound with a rugged shockproof silicone exterior.",
+      "price": 65000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1608156639585-b3a032ef9689?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1589003077984-894e133dabab?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 35,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "IPX7 Waterproof",
+        "15-hour Runtime",
+        "Daisy Chain Link"
+      ]
+    },
+    {
+      "id": "e7",
+      "title": "Cinema-Series 65\" OLED TV",
+      "description": "Experience infinite contrast and perfect black levels with our latest 65-inch OLED display. AI-powered upscaling and high-refresh-rate gaming mode built-in.",
+      "price": 2850000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1558885544-2defc62e2e2b?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1593784991095-a205029471b6?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 6,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "4K OLED Panel",
+        "120Hz Native",
+        "Dolby Atmos Audio"
+      ]
+    },
+    {
+      "id": "e8",
+      "title": "FlashCharge 20000mAh Power Bank",
+      "description": "Ultra-high capacity portable charger with 45W PD fast charging. Can charge a smartphone up to 5 times. Features simultaneous dual-device charging and safety guards.",
+      "price": 48000,
+      "category": "Electronics",
+      "images": [
+        "https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1593941707874-ef25b8b4a92b?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 100,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "45W PD Out",
+        "LCD Battery Display",
+        "Dual Port Output"
+      ]
+    },
+    {
+      "id": "h1",
+      "title": "Scandi Velvet Accent Chair",
+      "description": "Soft velvet upholstery paired with natural oak legs. This Scandinavian-inspired accent chair provides both exceptional comfort and a touch of modern sophistication.",
+      "price": 145000,
+      "oldPrice": 175000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1581539250439-c96689b516dd?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 10,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "Italian Velvet",
+        "Solid Oak Legs",
+        "Easy Assembly"
+      ],
+      "variations": [
+        {
+          "id": "h1-em",
+          "name": "Color",
+          "value": "Emerald Green",
+          "stock": 4
+        },
+        {
+          "id": "h1-nv",
+          "name": "Color",
+          "value": "Navy Blue",
+          "stock": 3
+        },
+        {
+          "id": "h1-ms",
+          "name": "Color",
+          "value": "Sunset Mustard",
+          "stock": 3
+        }
+      ]
+    },
+    {
+      "id": "h9",
+      "title": "Ceramic Essential Oil Diffuser",
+      "description": "Elegant ceramic ultrasonic diffuser that disperses essential oils into a fine cool mist. Features multiple timer settings and a soft ambient glow light. Perfect for aromatherapy.",
+      "price": 34000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1602928290749-b3a032ef9689?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1595187425624-9b0d23807fb5?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 25,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Ceramic Cover",
+        "100ml Capacity",
+        "BPA-Free Plastics"
+      ]
+    },
+    {
+      "id": "h10",
+      "title": "Geometric Wool Rug",
+      "description": "Hand-tufted wool rug featuring a bold geometric pattern in neutral tones. Soft underfoot and durable enough for high-traffic areas. Adds a touch of modern art to your floor.",
+      "price": 185000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-153168525005d-1bd9e205788e?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1575414003591-ece8d0416c7a?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 10,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "100% Wool",
+        "5' x 8' Size",
+        "Hand-Tufted"
+      ]
+    },
+    {
+      "id": "h11",
+      "title": "Bamboo Bathtub Caddy",
+      "description": "Luxurious expandable bamboo caddy for the ultimate bath experience. Features a built-in wine glass holder, book/tablet stand, and space for candles and soap.",
+      "price": 42000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6199f7a096?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1584622781480-55866164283b?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "100% Natural Bamboo",
+        "Waterproof Coating",
+        "Expandable Sides"
+      ]
+    },
+    {
+      "id": "h12",
+      "title": "Blackout Curtains Set",
+      "description": "Premium double-layered blackout curtains that block 100% of sunlight and harmful UV rays. Helps insulate against heat and cold while reducing outside noise.",
+      "price": 48000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1513519245088-0e12902e15da?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 30,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Polyester Fabric",
+        "Room Darkening",
+        "Thermal Insulated"
+      ]
+    },
+    {
+      "id": "h13",
+      "title": "Stainless Steel Knife Block",
+      "description": "Elegant 7-piece kitchen knife set forged from high-carbon stainless steel. Features ergonomic handles and a sleek matching storage block. Essential for every home chef.",
+      "price": 125000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1580915411954-282cb1b0d780?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1593618998160-e34014e67546?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 12,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "Forged Stainless Steel",
+        "Full Tang Construction",
+        "Ergonomic Handles"
+      ]
+    },
+    {
+      "id": "h14",
+      "title": "Wall-Mounted Spice Rack",
+      "description": "Minimalist two-tier spice rack crafted from matte black iron. Includes 12 glass jars with airtight lids and customizable labels. Keeps your pantry organized and stylish.",
+      "price": 28000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1506484334402-40ff22693541?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 40,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "Powder-Coated Iron",
+        "12 Glass Jars",
+        "Wall Mountable"
+      ]
+    },
+    {
+      "id": "h15",
+      "title": "Orthopedic Office Chair",
+      "description": "High-performance office chair designed for maximum comfort and spinal support. Features breathable mesh back, adjustable lumbar support, and 4D armrests. Ideal for long work sessions.",
+      "price": 220000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1505797149-35ebcb05a6fd?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1580482104618-97217316338c?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 8,
+      "rating": 5,
+      "isFeatured": true,
+      "specifications": [
+        "Ergonomic Design",
+        "Breathable Mesh",
+        "Heavy-Duty Base"
+      ]
+    },
+    {
+      "id": "h2",
+      "title": "Minimalist Arc Floor Lamp",
+      "description": "Sleek and tall arc floor lamp with a matte black finish and a weighted marble base. Provides warm, targeted lighting for reading nooks and living spaces.",
+      "price": 58000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1507473885765-e6ed657f6970?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1534073828943-f801091bb18c?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1507473885765-e6ed657f6970?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 25,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Matte Black Metal",
+        "Marble Base",
+        "Adjustable Neck"
+      ]
+    },
+    {
+      "id": "h3",
+      "title": "DreamCloud Memory Foam Mattress",
+      "description": "Multi-layered orthopedic memory foam mattress designed for temperature regulation and spinal alignment. Breathable bamboo cover included for extra softness.",
+      "price": 450000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1505691938895-1758d7eaa511?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1595830302920-ca6dd4f8ddb0?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "7-Zone Foam",
+        "Bamboo Cover",
+        "Motion Isolation"
+      ],
+      "variations": [
+        {
+          "id": "h3-qn",
+          "name": "Size",
+          "value": "Queen",
+          "stock": 10
+        },
+        {
+          "id": "h3-kg",
+          "name": "Size",
+          "value": "King",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "id": "h4",
+      "title": "Reactive Glaze Dinnerware Set",
+      "description": "12-piece ceramic dinnerware set with a unique reactive glaze finish. Each piece has its own distinctive character. Microwave and dishwasher safe.",
+      "price": 75000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1577401239170-897942555fb3?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1580913428733-53164bb8272a?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "Hand-Finished Ceramic",
+        "12-Piece Set",
+        "Dishwasher Safe"
+      ]
+    },
+    {
+      "id": "h5",
+      "title": "Artisan Soy Candle Bundle",
+      "description": "Set of three hand-poured soy wax candles with premium essential oil infusions. Includes scents of Lavender Fields, Cedarwood, and Eucalyptus Mint.",
+      "price": 24000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1554181053-ec56d98d2874?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1602143328230-724bbba0a058?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 50,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "Natural Soy Wax",
+        "40-hr Burn Time",
+        "Essential Oils"
+      ]
+    },
+    {
+      "id": "h6",
+      "title": "Egyptian Cotton Linen Set",
+      "description": "Superior 600 thread-count Egyptian cotton bed linens. Experience the hotel-quality softness every night. Includes one fitted sheet and four pillowcases.",
+      "price": 62000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1505691938895-1758d7eaa511?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 30,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "100% Egyptian Cotton",
+        "600 TC",
+        "Sateen Weave"
+      ],
+      "variations": [
+        {
+          "id": "h6-wh",
+          "name": "Color",
+          "value": "Pure White",
+          "stock": 15
+        },
+        {
+          "id": "h6-gr",
+          "name": "Color",
+          "value": "Cloud Grey",
+          "stock": 15
+        }
+      ]
+    },
+    {
+      "id": "h7",
+      "title": "PureAir Smart Air Purifier",
+      "description": "A dual-HEPA air purifier that captures 99.9% of airborne particles. Features smart sensor technology that automatically adjusts fan speed based on air quality.",
+      "price": 185000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1585771724684-2428f9360c4e?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1518997554304-484f3674345c?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 14,
+      "rating": 4.7,
+      "isFeatured": true,
+      "specifications": [
+        "Dual HEPA Filter",
+        "App Control",
+        "Silent Sleep Mode"
+      ]
+    },
+    {
+      "id": "h8",
+      "title": "Abstract 'Echo' Wall Art",
+      "description": "Commissioned abstract wall art printed on high-quality gallery-wrapped canvas. Adds a modern, artistic focal point to any room. UV-resistant inks for lasting color.",
+      "price": 38000,
+      "category": "Home Items",
+      "images": [
+        "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1580136579312-94651dfd596d?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 15,
+      "rating": 4.4,
+      "isFeatured": false,
+      "specifications": [
+        "Gallery-Wrap Canvas",
+        "UV-Resistant Ink",
+        "Large 60x90cm"
+      ]
+    },
+    {
+      "id": "g1",
+      "title": "Heritage Leather Messenger",
+      "description": "Handcrafted messenger bag made from vegetable-tanned full-grain leather. Thick padded section for a 14-inch laptop and multiple internal organizers.",
+      "price": 135000,
+      "oldPrice": 165000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1547949003-9792a18a2601?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 10,
+      "rating": 4.9,
+      "isFeatured": true,
+      "specifications": [
+        "Full-Grain Leather",
+        "Laptop Section",
+        "Brass Hardware"
+      ]
+    },
+    {
+      "id": "g2",
+      "title": "Stainless Steel Insulated Bottle",
+      "description": "Double-walled vacuum-insulated water bottle. Keeps drinks cold for 24 hours or hot for 12. Durable powder-coated finish for a non-slip grip.",
+      "price": 18000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1602143328230-724bbba0a058?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1523362628744-0c100150b497?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1574634534894-89d7576c8259?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 150,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "750ml Capacity",
+        "BPA Free",
+        "Powder-Coated"
+      ],
+      "variations": [
+        {
+          "id": "g2-st",
+          "name": "Color",
+          "value": "Satin Steel",
+          "stock": 50
+        },
+        {
+          "id": "g2-bl",
+          "name": "Color",
+          "value": "Matte Black",
+          "stock": 50
+        },
+        {
+          "id": "g2-rg",
+          "name": "Color",
+          "value": "Rose Gold",
+          "stock": 50
+        }
+      ]
+    },
+    {
+      "id": "g9",
+      "title": "UV-C Sterilizer Box",
+      "description": "Multi-purpose UV-C sterilizer box that kills 99.9% of bacteria and viruses on phones, keys, and accessories in just 5 minutes. Includes an integrated wireless charger.",
+      "price": 45000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1591197172021-015bc4ef7e32?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 25,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "UV-C Light",
+        "5-Min Cycle",
+        "Wireless Charging Top"
+      ]
+    },
+    {
+      "id": "g10",
+      "title": "15-in-1 Multi-Tool",
+      "description": "Compact and durable stainless steel multi-tool for everyday carry. Includes pliers, knife, screwdrivers, bottle opener, and more. Comes with a nylon belt sheath.",
+      "price": 32000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1593036666687-f8cc0e62c823?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1580913428706-c311e69da51c?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 50,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "Stainless Steel",
+        "15 Functions",
+        "Nylon Sheath"
+      ]
+    },
+    {
+      "id": "g11",
+      "title": "Eco-Friendly Bento Box",
+      "description": "Leak-proof bento lunch box made from sustainable wheat straw fiber. Features three compartments to keep food separate and includes reusable utensils. Microwave and freezer safe.",
+      "price": 18000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1512423175373-398af6a8933b?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 100,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Wheat Straw Material",
+        "1100ml Capacity",
+        "BPA-Free"
+      ]
+    },
+    {
+      "id": "g12",
+      "title": "Backlit Travel Luggage Scale",
+      "description": "Precision digital luggage scale with a clear backlit LCD screen. Features a high-capacity sensor up to 50kg and a durable nylon strap. Never pay overweight fees again.",
+      "price": 15000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1592500305630-419da01a7c33?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 80,
+      "rating": 4.7,
+      "isFeatured": false,
+      "specifications": [
+        "50kg Capacity",
+        "g/kg/lb/oz Units",
+        "LCD Backlight"
+      ]
+    },
+    {
+      "id": "g13",
+      "title": "Large Travel Duffel Bag",
+      "description": "Versatile and spacious travel duffel made from water-resistant canvas. Features a separate ventilated shoe compartment and multiple internal pockets for organization.",
+      "price": 55000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1542272454371-331006935fcc?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 35,
+      "rating": 4.8,
+      "isFeatured": true,
+      "specifications": [
+        "Water-Resistant Canvas",
+        "55L Capacity",
+        "Shoe Compartment"
+      ]
+    },
+    {
+      "id": "g14",
+      "title": "Minimalist Bifold Wallet",
+      "description": "Slim bifold wallet crafted from premium top-grain leather. Features RFID-blocking technology to protect your cards and a streamlined design that fits comfortably in any pocket.",
+      "price": 24000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1506484334402-40ff22693541?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 60,
+      "rating": 4.9,
+      "isFeatured": false,
+      "specifications": [
+        "Top-Grain Leather",
+        "RFID Blocking",
+        "Slim Profile"
+      ]
+    },
+    {
+      "id": "g15",
+      "title": "Windproof Folding Umbrella",
+      "description": "Automatic open/close folding umbrella with a reinforced 10-rib windproof frame. Features a large canopy with high-density water-repellent coating. Built to withstand strong gusts.",
+      "price": 18000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1502444330042-d1a1ddf9bb5c?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 70,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "Auto Open/Close",
+        "10-Rib Construction",
+        "Teflon Coating"
+      ]
+    },
+    {
+      "id": "g3",
+      "title": "Pro-Grip Alignment Yoga Mat",
+      "description": "Superior grip yoga mat with instructional alignment lines etched into the surface. 6mm cushioning provides joint protection for intense sessions.",
+      "price": 45000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1592432678894-061005a74ef4?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1518611012118-29a8ad52d4bc?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 40,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "6mm Thick TPE",
+        "Alignment Lines",
+        "Non-Toxic TPE"
+      ]
+    },
+    {
+      "id": "g4",
+      "title": "Minimalist Silver Mesh Watch",
+      "description": "Elegant and slim analog watch with a highly durable surgical-grade stainless steel mesh strap. Swiss-quartz movement and scratch-resistant sapphire glass.",
+      "price": 85000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1508685096489-77a4bb76cca0?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.7,
+      "isFeatured": true,
+      "specifications": [
+        "Swiss Quartz",
+        "Sapphire Glass",
+        "5 ATM Waterproof"
+      ],
+      "variations": [
+        {
+          "id": "g4-si",
+          "name": "Color",
+          "value": "Silver",
+          "stock": 10
+        },
+        {
+          "id": "g4-gd",
+          "name": "Color",
+          "value": "Rose Gold",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": "g5",
+      "title": "Defender Anti-Theft Backpack",
+      "description": "Maximum security travel backpack with hidden zippers, slash-proof fabric and integrated USB charging port. Spacious interior with multiple hidden compartments.",
+      "price": 58000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1546750248-a135a583307b?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 45,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Slash-Proof Mesh",
+        "Hidden Zippers",
+        "USB Port"
+      ]
+    },
+    {
+      "id": "g6",
+      "title": "Classic Silver Aviators",
+      "description": "Timeless aviator sunglasses featuring polarized G-15 lenses for superior clarity and glare reduction. Lightweight silver-tone titanium frame.",
+      "price": 42000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1511499767390-a51167169647?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 60,
+      "rating": 4.5,
+      "isFeatured": false,
+      "specifications": [
+        "Titanium Frame",
+        "Polarized Lenses",
+        "UV400 Protection"
+      ]
+    },
+    {
+      "id": "g7",
+      "title": "Total Care Grooming & Skincare Kit",
+      "description": "Complete organic grooming set containing cedarwood beard oil, charcoal face wash, and hydrating moisturizer. All-natural ingredients for a premium feel.",
+      "price": 35000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1594433830870-ab4a93014cae?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 30,
+      "rating": 4.8,
+      "isFeatured": false,
+      "specifications": [
+        "100% Organic",
+        "Cedarwood Scent",
+        "Paraben-Free"
+      ]
+    },
+    {
+      "id": "g8",
+      "title": "Executive Black Stationery Set",
+      "description": "Elevate your workspace with this executive stationery set. Includes a heavyweight brass fountain pen, large journal, and a minimalist card holder.",
+      "price": 52000,
+      "category": "General Merchandise",
+      "images": [
+        "https://images.unsplash.com/photo-1603484477819-3bc6e6f66300?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=800"
+      ],
+      "stock": 20,
+      "rating": 4.6,
+      "isFeatured": false,
+      "specifications": [
+        "Brass & Leather",
+        "Acid-Free Paper",
+        "Black Matte Finish"
+      ]
+    },
+    {
+      "title": "house",
+      "price": 90000,
+      "oldPrice": 120000,
+      "category": "Home Items",
+      "description": "A house of your dream",
+      "stock": 1,
+      "images": [
+        "/uploads/1781269663465-40363143.jpeg"
+      ],
+      "variations": [
+        {
+          "id": "c7l9i9ude",
+          "name": "Color",
+          "value": "Black",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "o7kg9jcpl",
+          "name": "Color",
+          "value": "White",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "mx503g2js",
+          "name": "Color",
+          "value": "Red",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "iahp8us4s",
+          "name": "Color",
+          "value": "Blue",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "b09qr42l7",
+          "name": "Color",
+          "value": "Brown",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "fz0ws936b",
+          "name": "Color",
+          "value": "Black",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "tf2ozvwyd",
+          "name": "Color",
+          "value": "White",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "326iqo2w4",
+          "name": "Color",
+          "value": "Red",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "118np7e68",
+          "name": "Color",
+          "value": "Blue",
+          "stock": 10,
+          "priceModifier": 0
+        },
+        {
+          "id": "3y81vdomm",
+          "name": "Color",
+          "value": "Brown",
+          "stock": 10,
+          "priceModifier": 0
+        }
+      ],
+      "id": "ii48jwnii",
+      "rating": 5,
+      "isFeatured": false
+    }
+  ],
+  "categories": [
+    "Fashion",
+    "Shoes",
+    "Electronics",
+    "Home Items",
+    "General Merchandise"
+  ],
+  "orders": [
+    {
+      "id": "ORD-OKISB8MLY",
+      "customerName": "NIYIGENA Eric",
+      "phone": "0782021871",
+      "address": "Rwanda, Rulindo, Northern Province, Rwanda",
+      "items": [
+        {
+          "id": "f3",
+          "title": "Oversized Streetwear Hoodie",
+          "description": "Heavyweight 400GSM cotton fleece hoodie with a relaxed aesthetic. Features dropped shoulders, a spacious kangaroo pocket, and ribbed cuffs. Minimalist streetwear essential.",
+          "price": 28000,
+          "category": "Fashion",
+          "images": [
+            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=800",
+            "https://plus.unsplash.com/premium_photo-1673827311290-d435f481152e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8T3ZlcnNpemVkJTIwU3RyZWV0d2VhciUyMEhvb2RpZXxlbnwwfHwwfHx8MA%3D%3D",
+            "https://media.istockphoto.com/id/2149765119/photo/realistic-hoodie-front-and-back-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=GkR0z-k_hMh84xJUpaYL5c-iuRkwUo4ggrA6SE0h98M=",
+            "https://images.unsplash.com/photo-1721111260570-456f3306f8d4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8T3ZlcnNpemVkJTIwU3RyZWV0d2VhciUyMEhvb2RpZXxlbnwwfHwwfHx8MA%3D%3D"
+          ],
+          "stock": 54,
+          "rating": 4.6,
+          "isFeatured": false,
+          "specifications": [
+            "100% Organic Cotton",
+            "Oversized Fit",
+            "Machine Wash Cold"
+          ],
+          "variations": [
+            {
+              "id": "f3-m",
+              "name": "Size",
+              "value": "M",
+              "stock": 20
+            },
+            {
+              "id": "f3-l",
+              "name": "Size",
+              "value": "L",
+              "stock": 20
+            },
+            {
+              "id": "f3-xl",
+              "name": "Size",
+              "value": "XL",
+              "stock": 20
+            },
+            {
+              "id": "f3-black",
+              "name": "Color",
+              "value": "Onyx Black",
+              "stock": 30
+            },
+            {
+              "id": "f3-grey",
+              "name": "Color",
+              "value": "Heather Grey",
+              "stock": 30
+            }
+          ],
+          "quantity": 4
+        },
+        {
+          "id": "f2",
+          "title": "Men's Slim-Fit Tuxedo Suit",
+          "description": "Premium wool-blend navy tuxedo suit. Includes a single-button jacket with satin lapels and matching tailored trousers. Ideal for weddings and formal events.",
+          "price": 185000,
+          "oldPrice": 210000,
+          "category": "Fashion",
+          "images": [
+            "https://images.unsplash.com/photo-1592878897400-43fb1f1cc324?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "https://images.unsplash.com/photo-1622497170185-5d668f816a56?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVuJTIwc3VpdHxlbnwwfHwwfHx8MA%3D%3D",
+            "https://images.unsplash.com/photo-1623880840102-7df0a9f3545b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fG1lbiUyMHN1aXR8ZW58MHx8MHx8fDA%3D"
+          ],
+          "stock": 12,
+          "rating": 4.9,
+          "isFeatured": true,
+          "specifications": [
+            "80% Wool, 20% Polyester",
+            "Slim Fit",
+            "Dry Clean Only"
+          ],
+          "variations": [
+            {
+              "id": "f2-48",
+              "name": "Size",
+              "value": "48",
+              "stock": 3
+            },
+            {
+              "id": "f2-50",
+              "name": "Size",
+              "value": "50",
+              "stock": 4
+            },
+            {
+              "id": "f2-52",
+              "name": "Size",
+              "value": "52",
+              "stock": 5
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "id": "f5",
+          "title": "Classic White Linen Shirt",
+          "description": "Crisp white linen shirt designed for ultimate comfort in warm climates. Breathable, sweat-wicking properties and a relaxed button-down collar.",
+          "price": 35000,
+          "category": "Fashion",
+          "images": [
+            "https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8d2hpdGUlMjBzaGlydHxlbnwwfHwwfHx8MA%3D%3D",
+            "https://images.unsplash.com/photo-1671438118097-479e63198629?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8d2hpdGUlMjBzaGlydHxlbnwwfHwwfHx8MA%3D%3D",
+            "https://plus.unsplash.com/premium_photo-1693242804347-38b4382b3c4d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fHdoaXRlJTIwc2hpcnR8ZW58MHx8MHx8fDA%3D"
+          ],
+          "stock": 40,
+          "rating": 4.5,
+          "isFeatured": false,
+          "specifications": [
+            "100% Pure Linen",
+            "Standard Fit",
+            "Curved Hem"
+          ],
+          "variations": [
+            {
+              "id": "f5-m",
+              "name": "Size",
+              "value": "M",
+              "stock": 15
+            },
+            {
+              "id": "f5-l",
+              "name": "Size",
+              "value": "L",
+              "stock": 15
+            },
+            {
+              "id": "f5-xl",
+              "name": "Size",
+              "value": "XL",
+              "stock": 10
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "id": "f8",
+          "title": "Urban Minimalist Graphic Tee",
+          "description": "Premium heavyweight tee with a subtle architectural graphic on the back. Boxy fit with a thick ribbed collar. Crafted from pre-shrunk cotton for lasting shape.",
+          "price": 18000,
+          "category": "Fashion",
+          "images": [
+            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800",
+            "https://images.unsplash.com/photo-1554568218-0f1715e72254?auto=format&fit=crop&q=80&w=800"
+          ],
+          "stock": 100,
+          "rating": 4.4,
+          "isFeatured": false,
+          "specifications": [
+            "100% Dense Cotton",
+            "Boxy Fit",
+            "Screen Printed"
+          ],
+          "variations": [
+            {
+              "id": "f8-m",
+              "name": "Size",
+              "value": "M",
+              "stock": 40
+            },
+            {
+              "id": "f8-l",
+              "name": "Size",
+              "value": "L",
+              "stock": 40
+            },
+            {
+              "id": "f8-xl",
+              "name": "Size",
+              "value": "XL",
+              "stock": 20
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "total": 350000,
+      "status": "pending",
+      "paymentMethod": "momo",
+      "paymentStatus": "Waiting Confirmation",
+      "paymentMessage": "",
+      "payerPhone": "0782021871",
+      "receiverPhone": "0782021871",
+      "paymentDate": "2026-04-30T12:44:40.810Z",
+      "createdAt": "2026-04-30T12:44:40.810Z"
+    },
+    {
+      "id": "ORD-GL52S85VP",
+      "customerName": "NIYIGENA Eric",
+      "phone": "0782021871",
+      "address": "Rwanda, Musanze, Northern Province, Rwanda",
+      "items": [
+        {
+          "id": "f3",
+          "title": "Oversized Streetwear Hoodie",
+          "description": "Heavyweight 400GSM cotton fleece hoodie with a relaxed aesthetic. Features dropped shoulders, a spacious kangaroo pocket, and ribbed cuffs. Minimalist streetwear essential.",
+          "price": 28000,
+          "category": "Fashion",
+          "images": [
+            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=800",
+            "https://plus.unsplash.com/premium_photo-1673827311290-d435f481152e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8T3ZlcnNpemVkJTIwU3RyZWV0d2VhciUyMEhvb2RpZXxlbnwwfHwwfHx8MA%3D%3D",
+            "https://media.istockphoto.com/id/2149765119/photo/realistic-hoodie-front-and-back-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=GkR0z-k_hMh84xJUpaYL5c-iuRkwUo4ggrA6SE0h98M=",
+            "https://images.unsplash.com/photo-1721111260570-456f3306f8d4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8T3ZlcnNpemVkJTIwU3RyZWV0d2VhciUyMEhvb2RpZXxlbnwwfHwwfHx8MA%3D%3D"
+          ],
+          "stock": 60,
+          "rating": 4.6,
+          "isFeatured": false,
+          "specifications": [
+            "100% Organic Cotton",
+            "Oversized Fit",
+            "Machine Wash Cold"
+          ],
+          "variations": [
+            {
+              "id": "f3-m",
+              "name": "Size",
+              "value": "M",
+              "stock": 20
+            },
+            {
+              "id": "f3-l",
+              "name": "Size",
+              "value": "L",
+              "stock": 20
+            },
+            {
+              "id": "f3-xl",
+              "name": "Size",
+              "value": "XL",
+              "stock": 20
+            },
+            {
+              "id": "f3-black",
+              "name": "Color",
+              "value": "Onyx Black",
+              "stock": 30
+            },
+            {
+              "id": "f3-grey",
+              "name": "Color",
+              "value": "Heather Grey",
+              "stock": 30
+            }
+          ],
+          "quantity": 6
+        }
+      ],
+      "total": 168000,
+      "status": "pending",
+      "paymentMethod": "bank_transfer",
+      "paymentStatus": "Waiting for Bank Transfer",
+      "paymentMessage": "",
+      "paymentDate": "2026-04-30T12:40:47.357Z",
+      "createdAt": "2026-04-30T12:40:47.357Z"
+    },
+    {
+      "id": "ORD-OZ73KR04W",
+      "customerName": "NIYIGENA Eric",
+      "phone": "0782021871",
+      "address": "Rwanda, Gicumbi, Northern Province, Rwanda",
+      "items": [
+        {
+          "id": "f1",
+          "title": "Floral Summer Midi Dress",
+          "description": "Elegant floral print midi dress crafted from breathable linen blend. Features a flattering V-neckline and adjustable waist tie. Perfect for garden parties and brunch.",
+          "price": 32000,
+          "oldPrice": 45000,
+          "category": "Fashion",
+          "images": [
+            "https://plus.unsplash.com/premium_photo-1673481601147-ee95199d3896?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3VtbWVyJTIwZHJlc3N8ZW58MHx8MHx8fDA%3D",
+            "https://images.unsplash.com/photo-1604506272685-a999a4d122e7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHN1bW1lciUyMGRyZXNzfGVufDB8fDB8fHww",
+            "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=800"
+          ],
+          "stock": 45,
+          "rating": 4.8,
+          "isFeatured": true,
+          "specifications": [
+            "Linen Blend",
+            "Midi Length",
+            "Hand Wash Recommended"
+          ],
+          "variations": [
+            {
+              "id": "f1-s",
+              "name": "Size",
+              "value": "S",
+              "stock": 15
+            },
+            {
+              "id": "f1-m",
+              "name": "Size",
+              "value": "M",
+              "stock": 20
+            },
+            {
+              "id": "f1-l",
+              "name": "Size",
+              "value": "L",
+              "stock": 10
+            },
+            {
+              "id": "f1-blue",
+              "name": "Color",
+              "value": "Sky Blue",
+              "stock": 25
+            },
+            {
+              "id": "f1-pink",
+              "name": "Color",
+              "value": "Petal Pink",
+              "stock": 20
+            }
+          ],
+          "quantity": 1,
+          "selectedVariations": [
+            {
+              "id": "f1-m",
+              "name": "Size",
+              "value": "M",
+              "stock": 20
+            },
+            {
+              "id": "f1-pink",
+              "name": "Color",
+              "value": "Petal Pink",
+              "stock": 20
+            }
+          ],
+          "selectedVariation": {
+            "id": "f1-m",
+            "name": "Size",
+            "value": "M",
+            "stock": 20
+          }
+        }
+      ],
+      "total": 32000,
+      "status": "confirmed",
+      "paymentMethod": "momo",
+      "paymentStatus": "Paid",
+      "paymentMessage": "",
+      "payerPhone": "0782021871",
+      "receiverPhone": "0782021871",
+      "paymentDate": "2026-04-30T12:34:29.855Z",
+      "createdAt": "2026-04-30T12:34:29.855Z"
+    }
+  ],
+  "notifications": [
+    {
+      "title": "New Order Received",
+      "message": "Order ORD-OKISB8MLY has been placed by NIYIGENA Eric.",
+      "type": "order",
+      "id": "t3tv03bir",
+      "createdAt": "2026-04-30T12:44:40.810Z",
+      "read": false
+    },
+    {
+      "title": "New Order Received",
+      "message": "Order ORD-GL52S85VP has been placed by NIYIGENA Eric.",
+      "type": "order",
+      "id": "a51j03pa5",
+      "createdAt": "2026-04-30T12:40:47.357Z",
+      "read": false
+    },
+    {
+      "title": "New Order Received",
+      "message": "Order ORD-OZ73KR04W has been placed by NIYIGENA Eric.",
+      "type": "order",
+      "id": "ml80jszgm",
+      "createdAt": "2026-04-30T12:34:29.855Z",
+      "read": false
+    },
+    {
+      "id": "1",
+      "title": "Welcome Admin",
+      "message": "Welcome to your new dashboard!",
+      "type": "system",
+      "createdAt": "2026-04-29T22:15:01.241Z",
+      "read": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "subject": "Product Inquiry",
+      "message": "Is the Smart LED TV still in stock?",
+      "createdAt": "2026-04-29T22:15:01.241Z",
+      "read": false
+    }
+  ],
+  "analytics": {
+    "totalVisitors": 220,
+    "dailyTraffic": [],
+    "pageViews": [
+      {
+        "path": "/",
+        "count": 37
+      },
+      {
+        "path": "/shop",
+        "count": 57
+      },
+      {
+        "path": "/about",
+        "count": 22
+      },
+      {
+        "path": "/contact",
+        "count": 12
+      },
+      {
+        "path": "/delivery",
+        "count": 8
+      },
+      {
+        "path": "/order-tracking",
+        "count": 6
+      },
+      {
+        "path": "/product/s1",
+        "count": 2
+      },
+      {
+        "path": "/admin/login",
+        "count": 20
+      },
+      {
+        "path": "/admin",
+        "count": 13
+      },
+      {
+        "path": "/product/f1",
+        "count": 6
+      },
+      {
+        "path": "/cart",
+        "count": 12
+      },
+      {
+        "path": "/checkout",
+        "count": 5
+      },
+      {
+        "path": "/product/f2",
+        "count": 2
+      },
+      {
+        "path": "/product/f20",
+        "count": 2
+      },
+      {
+        "path": "/product/f3",
+        "count": 1
+      },
+      {
+        "path": "/product/f4",
+        "count": 1
+      },
+      {
+        "path": "/product/f5",
+        "count": 1
+      },
+      {
+        "path": "/product/f6",
+        "count": 1
+      },
+      {
+        "path": "/product/f7",
+        "count": 1
+      },
+      {
+        "path": "/product/f8",
+        "count": 1
+      },
+      {
+        "path": "/product/f9",
+        "count": 1
+      },
+      {
+        "path": "/product/f16",
+        "count": 1
+      },
+      {
+        "path": "/product/f17",
+        "count": 1
+      },
+      {
+        "path": "/product/f18",
+        "count": 1
+      },
+      {
+        "path": "/product/f19",
+        "count": 1
+      },
+      {
+        "path": "/product/f21",
+        "count": 1
+      },
+      {
+        "path": "/product/e18",
+        "count": 1
+      },
+      {
+        "path": "/product/s16",
+        "count": 1
+      },
+      {
+        "path": "/product/s2",
+        "count": 1
+      },
+      {
+        "path": "/product/ii48jwnii",
+        "count": 1
+      }
+    ],
+    "activeUsers": 0
+  },
+  "activityLog": [
+    {
+      "id": "wawyyr3rg",
+      "action": "New product added: house",
+      "timestamp": "2026-06-12T13:11:05.590Z",
+      "type": "product",
+      "adminName": "System"
+    },
+    {
+      "id": "9m9crkc5e",
+      "action": "New order placed: ORD-OKISB8MLY",
+      "timestamp": "2026-04-30T12:44:40.810Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "d9qakcqhc",
+      "action": "New order placed: ORD-GL52S85VP",
+      "timestamp": "2026-04-30T12:40:47.357Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "2f2txyfvw",
+      "action": "Order ORD-OZ73KR04W status updated to confirmed",
+      "timestamp": "2026-04-30T12:38:31.951Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "ewf1syfei",
+      "action": "Order ORD-OZ73KR04W status updated to pending",
+      "timestamp": "2026-04-30T12:38:28.958Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "4vudbtg2r",
+      "action": "Order ORD-OZ73KR04W status updated to delivered",
+      "timestamp": "2026-04-30T12:37:57.329Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "rlgr3ctt5",
+      "action": "Order ORD-OZ73KR04W status updated to confirmed",
+      "timestamp": "2026-04-30T12:37:24.700Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "mc0wpo8wq",
+      "action": "Order ORD-OZ73KR04W status updated to confirmed",
+      "timestamp": "2026-04-30T12:37:14.927Z",
+      "type": "order",
+      "adminName": "System"
+    },
+    {
+      "id": "9z3l6q810",
+      "action": "New order placed: ORD-OZ73KR04W",
+      "timestamp": "2026-04-30T12:34:29.855Z",
+      "type": "order",
+      "adminName": "System"
+    }
+  ],
+  "siteSettings": {
+    "logoUrl": "/logo.png",
+    "heroSlides": [
+      {
+        "image": "https://images.unsplash.com/photo-1692865217408-5e09d8958be2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8RWxpdGUlMjBGYXNoaW9uJTIwJTI2JTIwU3VpdHN8ZW58MHx8MHx8fDA%3D",
+        "title": {
+          "en": "Elite Fashion & Suits",
+          "fr": "Mode et Costumes d'Élite",
+          "rw": "Imyenda n'Amakositime"
+        },
+        "subtitle": {
+          "en": "Premium Tuxedos, Baby Designer Wear & More",
+          "fr": "Tuxedos Premium, Vêtements Bébé & Plus",
+          "rw": "Amakositime n'Imyenda y'abana"
+        },
+        "cta": {
+          "en": "Shop Fashion",
+          "fr": "Acheter la Mode",
+          "rw": "Gura Imyenda"
+        }
+      },
+      {
+        "image": "https://images.unsplash.com/photo-1695822822491-d92cee704368?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aVBob25lJTIwMTUlMjBQcm8lMjBNYXh8ZW58MHx8MHx8fDA%3D",
+        "title": {
+          "en": "iPhone 15 Pro Max",
+          "fr": "iPhone 15 Pro Max",
+          "rw": "iPhone 15 Pro Max"
+        },
+        "subtitle": {
+          "en": "Experience the Peak of Mobile Intelligence",
+          "fr": "Le Sommet de l'Intelligence Mobile",
+          "rw": "Telefone nshya ya iPhone 15"
+        },
+        "cta": {
+          "en": "Get Yours",
+          "fr": "Obtenir le Vôtre",
+          "rw": "Yigure ubu"
+        }
+      },
+      {
+        "image": "https://images.unsplash.com/photo-1643753072729-d54252008db0?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "title": {
+          "en": "Grand Cinema Experience",
+          "fr": "Expérience Grand Cinéma",
+          "rw": "Sinema mu rugo iwawe"
+        },
+        "subtitle": {
+          "en": "Massive 85\" 4K Smart TVs and Luxury Audio",
+          "fr": "TV 85\" 4K Géantes & Audio de Luxe",
+          "rw": "TV nini n'ibyuma bisohora amajwi"
+        },
+        "cta": {
+          "en": "Browse Home Tech",
+          "fr": "Voir la Tech Maison",
+          "rw": "Reba ibikoresho"
+        }
+      }
+    ],
+    "teamMembers": [
+      {
+        "name": "MANIRAKIZA Emmanuel",
+        "role": {
+          "en": "CHief Executive Officer (CEO)",
+          "fr": "Fondateur & PDG",
+          "rw": "Umuyobozi Mukuru"
+        },
+        "slogan": {
+          "en": "Drive innovation and lead all operations to deliver a better shopping experience, ensuring customer needs are met and satisfaction is achieved.",
+          "fr": "Stimuler l'innovation et piloter l'ensemble des opérations afin d'offrir une expérience d'achat optimale, en veillant à ce que les besoins des clients soient satisfaits et que leur satisfaction soit atteinte.",
+          "rw": "Guteza imbere udushya no kuyobora ibikorwa byose kugira ngo utange uburambe bwiza bwo guhaha, urebe neza ko ibyo abakiriya bakeneye byujujwe kandi ko banyuzwe."
+        },
+        "phone": "+250780707472",
+        "image": "https://scontent.fkgl2-2.fna.fbcdn.net/v/t39.30808-6/687667743_1801776307448397_1130785344557065975_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=2a1932&_nc_eui2=AeElL4rHS_es8HcX2bWsjuwKinrjCtU7bKGKeuMK1TtsofpA4KWfLi48UHos-S_l6ViqB9IOKT4j2C_g98b3Alj2&_nc_ohc=whi10k1TNnMQ7kNvwHCKuC0&_nc_oc=AdpSVKYR-YSHjau5eJ1JTMVxrHIms6Hv-WfzI4QL871TEZcqObuYbe1uPnTMW1cPQfk&_nc_zt=23&_nc_ht=scontent.fkgl2-2.fna&_nc_gid=eP8GvCfI1KOlb4DNrlIRIQ&_nc_ss=7b2a8&oh=00_Af6UnT5PDb6K0exSL9B5FhwoZueNjdjRTxoNSK602EVrXg&oe=69FE91F5",
+        "socials": {
+          "facebook": "https://web.facebook.com/profile.php?id=61582762229491",
+          "instagram": "https://www.instagram.com/iwacu_eu_company_ltd?igsh=MXY5dzA1MGU0bm54Nw==",
+          "tiktok": "https://tiktok.com/@iwacu_eu_company_ltd"
+        }
+      },
+      {
+        "name": "UJENEZA Annonciata",
+        "role": {
+          "en": "Operations Manager",
+          "fr": "Responsable des Opérations",
+          "rw": "Umuyobozi w'Imirimo"
+        },
+        "slogan": {
+          "en": "Ensuring that all company operations run smoothly on a daily basis.",
+          "fr": "Veiller au bon déroulement de toutes les opérations de l'entreprise au quotidien.",
+          "rw": "Gukora ku buryo ibikorwa byose by'ikigo bigenda neza buri munsi."
+        },
+        "phone": "+250791318444",
+        "image": "https://scontent.fkgl2-1.fna.fbcdn.net/v/t39.30808-6/687711175_1801678717458156_7949658238116255371_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=b895b5&_nc_eui2=AeG2Si1vG7Wr5NhkSp_zZcnmiavVpijAKsuJq9WmKMAqy-d3had9vCOYAZ2VIgBY7SK2je5NwwiC0u2rPm_rXaz2&_nc_ohc=qKe1AJ-mk40Q7kNvwHNddVp&_nc_oc=AdqqPihZqL4RmV6MQf-rWCtniHKRjrGpTX2LADDdbshXtXWJNF91S7yK56rVlBmoroY&_nc_zt=23&_nc_ht=scontent.fkgl2-1.fna&_nc_gid=wcKsqr7Z9dzFDT7-MWvmyw&_nc_ss=7b2a8&oh=00_Af540P0dZBOb58BwFX2ve5NgWYtuVV44e9pqQTJzGJQU3w&oe=69FE6F49",
+        "socials": {
+          "facebook": "https://web.facebook.com/profile.php?id=61582762229491",
+          "instagram": "https://www.instagram.com/iwacu_eu_company_ltd?igsh=MXY5dzA1MGU0bm54Nw==",
+          "tiktok": "https://tiktok.com/@iwacu_eu_company_ltd"
+        }
+      }
+    ],
+    "testimonials": [
+      {
+        "id": "1",
+        "name": "Diane Mukeshimana",
+        "location": "Kigali, Rwanda",
+        "message": "I am absolutely thrilled with the quality of the premium denim jacket I bought. The delivery was incredibly fast—arrived in under 3 hours! Highly recommend for anyone looking for authentic brands.",
+        "rating": 5,
+        "image": "https://static.vecteezy.com/system/resources/previews/002/002/257/non_2x/beautiful-woman-avatar-character-icon-free-vector.jpg"
+      },
+      {
+        "id": "2",
+        "name": "Jean-Paul Tuyisenge",
+        "location": "Rubavu, Rwanda",
+        "message": "Smart Market has the best electronics prices in the country. My new Pro-Cam arrived well-packaged and works perfectly. The customer support guided me through the setup.",
+        "rating": 5,
+        "image": "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-avatar-image-for-profile-png-image_13001877.png"
+      },
+      {
+        "id": "3",
+        "name": "Sarah Umutoni",
+        "location": "Huye, Rwanda",
+        "message": "The home decor collection is stunning. I bought the Scandi accent chair and it transformed my living room. Excellent quality and very professional staff.",
+        "rating": 4,
+        "image": "https://static.vecteezy.com/system/resources/previews/001/993/889/non_2x/beautiful-latin-woman-avatar-character-icon-free-vector.jpg"
+      }
+    ]
+  }
+}

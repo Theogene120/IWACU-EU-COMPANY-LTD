@@ -1,0 +1,3275 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useShop, ActivityLog } from '../context/ProductContext';
+import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { Navigate, Link } from 'react-router-dom';
+import { 
+  LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Plus, 
+  Search, Edit, Trash2, CheckCircle, Clock, Truck, PackageCheck, 
+  TrendingUp, DollarSign, ShoppingCart as CartIcon, ArrowUpRight,
+  Bell, X as LucideX, Tag, Shield, Settings, Mail, Activity,
+  Lock, Key, ShieldCheck, History, Terminal, Database, RefreshCw,
+  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send
+} from 'lucide-react';
+import { cn } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { Product, Variation, Order, Testimonial } from '../types';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+const AdminDashboard = () => {
+  const { isAdmin } = useAuth();
+  const { formatPrice } = useCurrency();
+  const { 
+    products, orders, updateOrderStatus, updateOrder, deleteOrder, deleteProduct, addProduct, updateProduct,
+    categories, addCategory, updateCategory, deleteCategory, notifications, markNotificationAsRead,
+    messages, markMessageAsRead, deleteMessage, replyToMessage, analytics, activityLog, trackPageView,
+    siteSettings, updateSiteSettings, addActivity
+  } = useShop();
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'messages' | 'settings' | 'analytics' | 'site-content'>('overview');
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<{ oldName: string, newName: string } | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
+  const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState<string | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingOrder, setEditingOrder] = useState<any | null>(null);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
+  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
+  const [maintenanceProgress, setMaintenanceProgress] = useState(0);
+  const [isMaintenanceRunning, setIsMaintenanceRunning] = useState(false);
+  const [isAddingLog, setIsAddingLog] = useState(false);
+  const [newLogAction, setNewLogAction] = useState('');
+  const [newLogType, setNewLogType] = useState<ActivityLog['type']>('system');
+  const [productSearch, setProductSearch] = useState('');
+  const [orderSearch, setOrderSearch] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+
+  const [adminPhoto, setAdminPhoto] = useState(() => localStorage.getItem('adminPhoto') || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400");
+  const [adminName, setAdminName] = useState(() => localStorage.getItem('adminName') || "MANIRAKIZA Emmanuel");
+
+  // PDF Export Helpers
+  const exportInventoryPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text("Inventory Report - Remaining Products", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    
+    const tableRows = filteredProducts.map(p => [
+      p.id,
+      p.title,
+      p.category,
+      formatPrice(p.price),
+      p.stock,
+      p.stock > 0 ? 'In Stock' : 'Out of Stock'
+    ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['ID', 'Product Name', 'Category', 'Price', 'Stock', 'Status']],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235] },
+      styles: { fontSize: 9 }
+    });
+
+    doc.save(`Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success("Inventory PDF exported successfully");
+  };
+
+  const exportSalesReportPDF = () => {
+    const doc = new jsPDF();
+    const releasedOrders = orders.filter(o => o.status !== 'pending');
+    
+    doc.setFontSize(20);
+    doc.text("Sales Report - Released Products", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableRows = releasedOrders.map(o => [
+      o.id,
+      o.customerName,
+      new Date(o.createdAt).toLocaleDateString(),
+      o.status.toUpperCase(),
+      formatPrice(o.total)
+    ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['Order ID', 'Customer', 'Date', 'Status', 'Amount']],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [22, 163, 74] },
+      styles: { fontSize: 9 }
+    });
+
+    const totalSalesAmount = releasedOrders.reduce((sum, o) => sum + o.total, 0);
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Total Released Sales: ${formatPrice(totalSalesAmount)}`, 14, finalY);
+
+    doc.save(`Sales_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success("Sales PDF exported successfully");
+  };
+
+  const exportPaymentReportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text("Payment & Transaction Report", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableRows = orders.map(o => [
+      o.id,
+      o.customerName,
+      o.paymentMethod.replace('_', ' ').toUpperCase(),
+      o.paymentStatus,
+      o.transactionId || 'N/A',
+      formatPrice(o.total)
+    ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['Order ID', 'Customer', 'Method', 'Status', 'Transaction ID', 'Amount']],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229] },
+      styles: { fontSize: 8 }
+    });
+
+    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Total Revenue: ${formatPrice(totalRevenue)}`, 14, finalY);
+
+    doc.save(`Payment_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success("Payment Report PDF exported successfully");
+  };
+
+  useEffect(() => {
+    localStorage.setItem('adminPhoto', adminPhoto);
+  }, [adminPhoto]);
+
+  useEffect(() => {
+    localStorage.setItem('adminName', adminName);
+  }, [adminName]);
+
+  if (!isAdmin) return <Navigate to="/admin/login" />;
+
+  // Stats
+  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const totalSales = orders.length;
+  const totalProducts = products.length;
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+
+  const filteredProducts = products.filter(p => 
+    p.title.toLowerCase().includes(productSearch.toLowerCase()) || 
+    p.id.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
+  const filteredOrders = orders.filter(o => 
+    o.id.toLowerCase().includes(orderSearch.toLowerCase()) || 
+    o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) ||
+    o.phone.includes(orderSearch)
+  );
+
+  const chartData = [
+    { name: 'Mon', sales: 4000 },
+    { name: 'Tue', sales: 3000 },
+    { name: 'Wed', sales: 2000 },
+    { name: 'Thu', sales: 2780 },
+    { name: 'Fri', sales: 1890 },
+    { name: 'Sat', sales: 2390 },
+    { name: 'Sun', sales: 3490 },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-blue-900 text-white hidden lg:flex flex-col sticky top-0 h-screen">
+        <div className="p-8">
+          <Link to="/" className="flex items-center space-x-2">
+            <CartIcon className="h-8 w-8 text-orange-400" />
+            <span className="text-xl font-bold tracking-tight">SMART ADMIN</span>
+          </Link>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-2">
+          {[
+            { id: 'overview', icon: <LayoutDashboard className="h-5 w-5" />, label: 'Overview' },
+            { id: 'products', icon: <Package className="h-5 w-5" />, label: 'Products' },
+            { id: 'orders', icon: <ShoppingBag className="h-5 w-5" />, label: 'Orders' },
+            { id: 'analytics', icon: <BarChart3 className="h-5 w-5" />, label: 'Analytics' },
+            { id: 'site-content', icon: <Globe className="h-5 w-5" />, label: 'Site Content' },
+            { id: 'messages', icon: <Mail className="h-5 w-5" />, label: 'Messages' },
+            { id: 'settings', icon: <Settings className="h-5 w-5" />, label: 'Settings' },
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as any)}
+              className={cn(
+                "w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all",
+                activeTab === item.id ? "bg-blue-800 text-white font-bold" : "text-blue-100 hover:bg-blue-800/50"
+              )}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-8 border-t border-blue-800">
+          <div className="bg-blue-800/50 p-4 rounded-xl flex items-center space-x-3">
+            <img src={adminPhoto} alt="Admin" className="w-10 h-10 rounded-full border-2 border-blue-400 object-cover" />
+            <div>
+              <p className="text-xs text-blue-300 uppercase font-bold mb-0.5">Logged in as</p>
+              <p className="text-sm font-bold truncate max-w-[120px]">{adminName}</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 capitalize">{activeTab}</h1>
+            <p className="text-gray-500">Manage your business operations</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 mr-4 border-r pr-4 border-gray-200">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-gray-900">{adminName}</p>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Super Admin</p>
+              </div>
+              <img src={adminPhoto} alt="Admin" className="w-10 h-10 rounded-full border border-gray-200 shadow-sm object-cover" />
+            </div>
+            <div className="relative">
+              <button 
+                onClick={() => setActiveTab('messages')}
+                className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-600 hover:text-blue-600 transition-all relative"
+              >
+                <Mail className="h-6 w-6" />
+                {messages.filter(m => !m.read).length > 0 && (
+                  <span className="absolute top-2 right-2 w-3 h-3 bg-blue-500 border-2 border-white rounded-full" />
+                )}
+              </button>
+            </div>
+
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-600 hover:text-blue-600 transition-all relative"
+              >
+                <Bell className="h-6 w-6" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 border-2 border-white rounded-full" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+                    >
+                      <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-900">Notifications</h3>
+                        <span className="text-xs text-blue-600 font-bold">{notifications.filter(n => !n.read).length} New</span>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map(notif => (
+                            <div 
+                              key={notif.id} 
+                              onClick={() => markNotificationAsRead(notif.id)}
+                              className={cn(
+                                "p-4 border-b last:border-0 cursor-pointer hover:bg-gray-50 transition-colors",
+                                !notif.read ? "bg-blue-50/30" : ""
+                              )}
+                            >
+                              <div className="flex justify-between items-start mb-1">
+                                <p className="text-sm font-bold text-gray-900">{notif.title}</p>
+                                <span className="text-[10px] text-gray-400">{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                              <p className="text-xs text-gray-600 line-clamp-2">{notif.message}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center text-gray-400 text-sm">
+                            No notifications
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {activeTab === 'products' && (
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => setIsAddingCategory(true)}
+                  className="bg-white border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold flex items-center space-x-2 hover:bg-gray-50 transition-all"
+                >
+                  <Tag className="h-5 w-5" />
+                  <span>Categories</span>
+                </button>
+                <button 
+                  onClick={() => setIsAddingProduct(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 transition-all shadow-lg shadow-blue-200"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Add Product</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Tabs Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'analytics' && (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-10"
+            >
+              {/* Analytics Widgets */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[
+                  { label: 'Total Visitors', value: (analytics.totalVisitors || 0).toLocaleString(), icon: <Users className="h-6 w-6" />, color: 'bg-indigo-500' },
+                  { label: 'Active Users', value: analytics.activeUsers || 0, icon: <Activity className="h-6 w-6" />, color: 'bg-green-500' },
+                  { label: 'Daily Traffic', value: (analytics.dailyTraffic && analytics.dailyTraffic.length > 0) ? analytics.dailyTraffic[analytics.dailyTraffic.length - 1].count : 0, icon: <TrendingUp className="h-6 w-6" />, color: 'bg-orange-500' },
+                  { label: 'Total Page Views', value: (analytics.pageViews || []).reduce((sum, p) => sum + (p.count || 0), 0).toLocaleString(), icon: <BarChart3 className="h-6 w-6" />, color: 'bg-purple-500' },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={cn("p-3 rounded-2xl text-white shadow-lg", stat.color)}>
+                        {stat.icon}
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Traffic Chart */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-gray-900 mb-8">Traffic Analytics</h3>
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analytics.dailyTraffic}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                        <Line type="monotone" dataKey="count" stroke="#4f46e5" strokeWidth={3} dot={{ r: 4, fill: '#4f46e5' }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Most Visited Pages */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-gray-900 mb-8">Most Visited Pages</h3>
+                  <div className="space-y-4">
+                    {(analytics.pageViews || []).slice().sort((a, b) => (b.count || 0) - (a.count || 0)).map((page, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                        <span className="text-sm font-medium text-gray-700">{page.path}</span>
+                        <span className="text-sm font-bold text-blue-600">{(page.count || 0).toLocaleString()} views</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'site-content' && (
+            <motion.div
+              key="site-content"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <SiteContentManager />
+            </motion.div>
+          )}
+
+          {activeTab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-10"
+            >
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">Dashboard Statistics</h2>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={exportPaymentReportPDF}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold flex items-center space-x-2 hover:bg-indigo-700 transition-all shadow-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Payment Report</span>
+                  </button>
+                  <button 
+                    onClick={() => toast.info("Generating detailed statistics report...")}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold flex items-center space-x-2 hover:bg-blue-700 transition-all shadow-sm"
+                  >
+                    <Activity className="h-4 w-4" />
+                    <span>Statistic</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[
+                  { label: 'Total Revenue', value: formatPrice(orders.reduce((sum, o) => sum + o.total, 0)), icon: <TrendingUp className="h-6 w-6" />, color: 'bg-blue-500', trend: '+12%' },
+                  { label: 'Total Sales', value: orders.length, icon: <ShoppingBag className="h-6 w-6" />, color: 'bg-green-500', trend: '+5%' },
+                  { label: 'Total Products', value: products.length, icon: <Package className="h-6 w-6" />, color: 'bg-purple-500', trend: '+2' },
+                  { label: 'Pending Orders', value: orders.filter(o => o.status === 'pending').length, icon: <Clock className="h-6 w-6" />, color: 'bg-orange-500', trend: '-1' },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={cn("p-3 rounded-2xl text-white shadow-lg", stat.color)}>
+                        {stat.icon}
+                      </div>
+                      <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        {stat.trend}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Revenue Chart */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="font-bold text-gray-900">Revenue Analytics</h3>
+                    <button className="text-blue-600 text-sm font-bold flex items-center">
+                      View Report <ArrowUpRight className="h-4 w-4 ml-1" />
+                    </button>
+                  </div>
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[
+                        { name: 'Mon', sales: 4000 },
+                        { name: 'Tue', sales: 3000 },
+                        { name: 'Wed', sales: 2000 },
+                        { name: 'Thu', sales: 2780 },
+                        { name: 'Fri', sales: 1890 },
+                        { name: 'Sat', sales: 2390 },
+                        { name: 'Sun', sales: 3490 },
+                      ]}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Bar dataKey="sales" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Recent Orders */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-gray-900 mb-8">Recent Orders</h3>
+                  <div className="space-y-6">
+                    {orders.slice(0, 5).map(order => (
+                      <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-white p-2 rounded-xl shadow-sm">
+                            <ShoppingBag className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{order.customerName}</p>
+                            <p className="text-xs text-gray-500">{order.id}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-sm text-blue-900">{formatPrice(order.total)}</p>
+                          <span className={cn(
+                            "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase",
+                            order.status === 'pending' ? "bg-orange-100 text-orange-600" : "bg-green-100 text-green-600"
+                          )}>
+                            {order.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {orders.length === 0 && <p className="text-center text-gray-400 py-10">No recent orders</p>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Recent Activity Log */}
+                <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between mb-8">
+                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                      <History className="h-5 w-5 text-blue-600" />
+                      Admin Activity Log
+                    </h3>
+                  </div>
+                  <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {activityLog.length > 0 ? (
+                      activityLog.map((log) => (
+                        <div key={log.id} className="flex gap-4 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="p-2 bg-white rounded-xl shadow-sm">
+                              <User className="h-4 w-4 text-gray-400" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-sm font-bold text-gray-900">{log.adminName}</p>
+                              <span className="text-[10px] font-medium text-gray-400">{new Date(log.timestamp).toLocaleString()}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 leading-relaxed">{log.action}</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-10">
+                        <p className="text-sm text-gray-400">No recent activity recorded.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-gray-900 mb-8">Quick Actions</h3>
+                  <div className="space-y-4">
+                    <button 
+                      onClick={() => setIsAddingProduct(true)}
+                      className="w-full p-4 rounded-2xl bg-blue-50 text-blue-600 font-bold text-sm flex items-center gap-3 hover:bg-blue-100 transition-all"
+                    >
+                      <Plus className="h-5 w-5" />
+                      Add New Product
+                    </button>
+                    <button 
+                      onClick={() => setIsAddingCategory(true)}
+                      className="w-full p-4 rounded-2xl bg-purple-50 text-purple-600 font-bold text-sm flex items-center gap-3 hover:bg-purple-100 transition-all"
+                    >
+                      <LayoutGrid className="h-5 w-5" />
+                      Manage Categories
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('orders')}
+                      className="w-full p-4 rounded-2xl bg-green-50 text-green-600 font-bold text-sm flex items-center gap-3 hover:bg-green-100 transition-all"
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      Process Orders
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('analytics')}
+                      className="w-full p-4 rounded-2xl bg-indigo-50 text-indigo-600 font-bold text-sm flex items-center gap-3 hover:bg-indigo-100 transition-all"
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      View Analytics
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'products' && (
+            <motion.div
+              key="products"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full sm:w-96">
+                  <Search className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input 
+                    type="text"
+                    placeholder="Search products by name or ID..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <select className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="all">All Categories</option>
+                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                  <button 
+                    onClick={exportInventoryPDF}
+                    className="flex-1 sm:flex-none px-4 py-3 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100 text-sm font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Inventory PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                  <tr>
+                    <th className="px-8 py-6">Product</th>
+                    <th className="px-8 py-6">Category</th>
+                    <th className="px-8 py-6">Price</th>
+                    <th className="px-8 py-6">Stock</th>
+                    <th className="px-8 py-6">Status</th>
+                    <th className="px-8 py-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredProducts.map(product => (
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center space-x-4">
+                          <img src={product.images[0]} alt={product.title} className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                          <span className="font-bold text-gray-900">{product.title}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-sm text-gray-600">{product.category}</td>
+                      <td className="px-8 py-6 font-bold text-blue-900">{formatPrice(product.price)}</td>
+                      <td className="px-8 py-6 text-sm text-gray-600">{product.stock}</td>
+                      <td className="px-8 py-6">
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-1 rounded-full uppercase",
+                          product.stock > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                        )}>
+                          {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex justify-end space-x-2">
+                          <button 
+                            onClick={() => setEditingProduct(product)}
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                          >
+                            <Edit className="h-5 w-5" />
+                          </button>
+                          <button 
+                            onClick={() => deleteProduct(product.id)}
+                            className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+
+          {activeTab === 'orders' && (
+            <motion.div
+              key="orders"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full sm:w-96">
+                  <Search className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input 
+                    type="text"
+                    placeholder="Search orders by ID, customer name or phone..."
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <select className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
+                  <button 
+                    onClick={exportSalesReportPDF}
+                    className="flex-1 sm:flex-none px-4 py-3 bg-green-50 text-green-600 rounded-2xl border border-green-100 text-sm font-bold hover:bg-green-100 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Sales PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                  <tr>
+                    <th className="px-8 py-6">Order ID</th>
+                    <th className="px-8 py-6">Customer</th>
+                    <th className="px-8 py-6">Payment</th>
+                    <th className="px-8 py-6">Total</th>
+                    <th className="px-8 py-6">Status</th>
+                    <th className="px-8 py-6 text-right">Update Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredOrders.map(order => (
+                    <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-8 py-6 font-bold text-blue-600">
+                        <div className="flex flex-col">
+                          <span>{order.id}</span>
+                          <span className="text-[10px] text-gray-400 font-normal">{new Date(order.createdAt).toLocaleString()}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900">{order.customerName}</span>
+                          <span className="text-xs text-gray-500">{order.phone}</span>
+                          <span className="text-[10px] text-gray-400 line-clamp-1">{order.address}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-xs font-bold uppercase text-gray-700">{order.paymentMethod.replace('_', ' ')}</span>
+                          <span className={cn(
+                            "text-[10px] font-bold px-2 py-0.5 rounded-full w-fit",
+                            order.paymentStatus === 'Paid' ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                          )}>
+                            {order.paymentStatus}
+                          </span>
+                          {order.transactionId && (
+                            <span className="text-[10px] text-blue-500 font-mono">ID: {order.transactionId}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 font-bold text-blue-900">{formatPrice(order.total)}</td>
+                      <td className="px-8 py-6">
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-1 rounded-full uppercase flex items-center w-fit space-x-1",
+                          order.status === 'pending' && "bg-orange-100 text-orange-600",
+                          order.status === 'confirmed' && "bg-blue-100 text-blue-600",
+                          order.status === 'shipped' && "bg-purple-100 text-purple-600",
+                          order.status === 'delivered' && "bg-green-100 text-green-600"
+                        )}>
+                          {order.status === 'pending' && <Clock className="h-3 w-3" />}
+                          {order.status === 'confirmed' && <CheckCircle className="h-3 w-3" />}
+                          {order.status === 'shipped' && <Truck className="h-3 w-3" />}
+                          {order.status === 'delivered' && <PackageCheck className="h-3 w-3" />}
+                          <span>{order.status}</span>
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex flex-col gap-2 items-end">
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any, order.paymentStatus)}
+                              className="text-xs font-bold p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                            </select>
+                            <button 
+                              onClick={() => setEditingOrder(order)}
+                              className="p-2 text-gray-400 hover:text-blue-600 transition-colors bg-gray-50 rounded-lg"
+                              title="Edit Order"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => setDeletingOrder(order.id)}
+                              className="flex items-center space-x-1 p-2 text-gray-400 hover:text-red-600 transition-colors bg-gray-50 rounded-lg"
+                              title="Remove Order"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="text-xs font-bold">Remove</span>
+                            </button>
+                          </div>
+                          <select
+                            value={order.paymentStatus}
+                            onChange={(e) => updateOrderStatus(order.id, order.status, e.target.value as any)}
+                            className="text-[10px] font-bold p-1 border border-gray-200 rounded-lg focus:outline-none"
+                          >
+                            <option value="Pending">Payment Pending</option>
+                            <option value="Paid">Payment Paid</option>
+                            <option value="Pending - Cash on Delivery">COD Pending</option>
+                            <option value="Waiting for Bank Transfer">Bank Waiting</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredOrders.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-8 py-20 text-center text-gray-400">
+                        No orders found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+          {activeTab === 'messages' && (
+            <motion.div
+              key="messages"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-8 border-b bg-gray-50/50">
+                  <h2 className="text-xl font-bold text-gray-900">Customer Messages</h2>
+                  <p className="text-sm text-gray-500">Inquiries and feedback from your customers</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {messages.length > 0 ? (
+                    messages.map(msg => (
+                      <div 
+                        key={msg.id} 
+                        className={cn(
+                          "p-8 hover:bg-gray-50 transition-colors cursor-pointer",
+                          !msg.read ? "bg-blue-50/30" : ""
+                        )}
+                        onClick={() => markMessageAsRead(msg.id)}
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                              {msg.name?.charAt(0) || '?'}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-gray-900">{msg.name}</h3>
+                              <p className="text-sm text-gray-500">{msg.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleString()}</span>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              {!msg.read && (
+                                <button 
+                                  onClick={() => {
+                                    markMessageAsRead(msg.id);
+                                    toast.success('Message marked as read');
+                                  }}
+                                  className="p-2 text-gray-400 hover:text-blue-600 transition-colors bg-gray-50 rounded-lg"
+                                  title="Mark as Read"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </button>
+                              )}
+                              <button 
+                                onClick={() => setDeletingMessage(msg.id)}
+                                className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-gray-50 rounded-lg"
+                                title="Delete Message"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ml-16">
+                          <p className="font-bold text-gray-800 mb-2">{msg.subject}</p>
+                          <p className="text-gray-600 leading-relaxed mb-4">{msg.message}</p>
+                          
+                          {msg.reply ? (
+                            <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                              <p className="text-xs font-bold text-blue-600 mb-1 flex items-center gap-2">
+                                <CheckCircle className="h-3 w-3" />
+                                Replied on {new Date(msg.repliedAt!).toLocaleString()}
+                              </p>
+                              <p className="text-sm text-blue-900 italic">"{msg.reply}"</p>
+                              <div className="mt-4 pt-4 border-t border-blue-100 flex gap-4">
+                                <a 
+                                  href={`mailto:${msg.email}?subject=Re: ${msg.subject}&body=${encodeURIComponent(msg.reply)}`}
+                                  className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                  Resend via Email Client
+                                </a>
+                              </div>
+                            </div>
+                          ) : replyingTo === msg.id ? (
+                            <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                              <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Type your reply here..."
+                                className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px]"
+                              />
+                              <div className="flex gap-2">
+                                <button 
+                                  onClick={() => {
+                                    if (replyText.trim()) {
+                                      replyToMessage(msg.id, replyText);
+                                      // Also open the mail client
+                                      window.location.href = `mailto:${msg.email}?subject=Re: ${msg.subject}&body=${encodeURIComponent(replyText)}`;
+                                      setReplyingTo(null);
+                                      setReplyText('');
+                                      toast.success('Reply saved and email client opened');
+                                    }
+                                  }}
+                                  className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                                >
+                                  <Send className="h-4 w-4" />
+                                  Send & Open Email Client
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    if (replyText.trim()) {
+                                      replyToMessage(msg.id, replyText);
+                                      setReplyingTo(null);
+                                      setReplyText('');
+                                      toast.success('Reply saved internally');
+                                    }
+                                  }}
+                                  className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+                                >
+                                  Save Internally Only
+                                </button>
+                                <button 
+                                  onClick={() => setReplyingTo(null)}
+                                  className="bg-gray-50 text-gray-400 px-6 py-2 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReplyingTo(msg.id);
+                              }}
+                              className="text-blue-600 font-bold text-sm flex items-center gap-2 hover:underline"
+                            >
+                              <Mail className="h-4 w-4" />
+                              Reply to Customer
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-20 text-center text-gray-400">
+                      <Mail className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                      <p>No messages yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'settings' && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                  {/* Profile Settings */}
+                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-3 mb-8">
+                      <User className="h-6 w-6 text-blue-600" />
+                      <h2 className="text-xl font-bold text-gray-900">Profile Settings</h2>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div className="relative group">
+                          <img 
+                            src={adminPhoto} 
+                            alt="Admin Profile" 
+                            className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+                          />
+                          <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                            <Plus className="h-6 w-6 text-white" />
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setAdminPhoto(reader.result as string);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        <div className="flex-1 space-y-4 w-full">
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-400 uppercase">Admin Name</label>
+                            <input 
+                              type="text" 
+                              value={adminName}
+                              onChange={(e) => setAdminName(e.target.value)}
+                              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none font-bold"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-400 uppercase">Admin Photo URL (Optional)</label>
+                            <input 
+                              type="text" 
+                              value={adminPhoto}
+                              onChange={(e) => setAdminPhoto(e.target.value)}
+                              placeholder="Paste image URL here..."
+                              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end pt-4">
+                        <button 
+                          onClick={() => {
+                            localStorage.setItem('adminName', adminName);
+                            localStorage.setItem('adminPhoto', adminPhoto);
+                            toast.success('Profile updated successfully');
+                          }}
+                          className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm"
+                        >
+                          Save Profile Changes
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Category Management */}
+                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-3 mb-8">
+                      <LayoutGrid className="h-6 w-6 text-purple-600" />
+                      <h2 className="text-xl font-bold text-gray-900">Category Management</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-gray-400 uppercase">Add New Category</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="text"
+                              value={newCategory}
+                              onChange={(e) => setNewCategory(e.target.value)}
+                              placeholder="Enter category name..."
+                              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+                            />
+                            <button 
+                              onClick={() => {
+                                if (newCategory.trim()) {
+                                  addCategory(newCategory.trim());
+                                  setNewCategory('');
+                                  toast.success(`Category "${newCategory}" added successfully`);
+                                }
+                              }}
+                              className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-700 transition-all shadow-sm"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="p-6 bg-purple-50 rounded-2xl border border-purple-100">
+                          <div className="flex items-start space-x-3">
+                            <AlertCircle className="h-5 w-5 text-purple-600 mt-0.5" />
+                            <div>
+                              <p className="text-sm font-bold text-purple-900">Pro Tip</p>
+                              <p className="text-xs text-purple-700 leading-relaxed">
+                                Deleting a category will automatically reassign all its products to the "Uncategorized" category.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-xs font-bold text-gray-400 uppercase">Existing Categories</label>
+                        <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                          {categories.map(cat => (
+                            <div key={cat} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl group hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-purple-100">
+                              <span className="font-medium text-gray-700">{cat}</span>
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  onClick={() => setEditingCategory({ oldName: cat, newName: cat })}
+                                  className="p-2 text-gray-400 hover:text-blue-600 transition-colors bg-white rounded-lg shadow-sm"
+                                  title="Rename Category"
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </button>
+                                <button 
+                                  onClick={() => setDeletingCategory(cat)}
+                                  className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white rounded-lg shadow-sm"
+                                  title="Delete Category"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Security Settings */}
+                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-3 mb-8">
+                      <Shield className="h-6 w-6 text-blue-600" />
+                      <h2 className="text-xl font-bold text-gray-900">Security Settings</h2>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {[
+                        { label: 'Two-Factor Authentication', desc: 'Add an extra layer of security to your account', enabled: true },
+                        { label: 'Login Notifications', desc: 'Get notified when someone logs into your account', enabled: true },
+                        { label: 'Session Timeout', desc: 'Automatically log out after 30 minutes of inactivity', enabled: false },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                          <div>
+                            <p className="font-bold text-gray-900">{item.label}</p>
+                            <p className="text-xs text-gray-500">{item.desc}</p>
+                          </div>
+                          <button className={cn(
+                            "w-12 h-6 rounded-full transition-all relative",
+                            item.enabled ? "bg-blue-600" : "bg-gray-300"
+                          )}>
+                            <div className={cn(
+                              "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
+                              item.enabled ? "right-1" : "left-1"
+                            )} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-8 pt-8 border-t flex gap-4">
+                      <button 
+                        onClick={() => setIsSecurityModalOpen(true)}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all"
+                      >
+                        Update Security Features
+                      </button>
+                      <button 
+                        onClick={() => setIsAuditLogOpen(true)}
+                        className="border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                      >
+                        Security Audit Log
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* System Maintenance */}
+                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-3 mb-8">
+                      <RefreshCw className="h-6 w-6 text-orange-600" />
+                      <h2 className="text-xl font-bold text-gray-900">System Maintenance</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button 
+                        onClick={() => toast.info("Optimizing database...")}
+                        className="p-6 bg-gray-50 rounded-2xl border border-gray-100 text-left hover:border-orange-200 transition-all group"
+                      >
+                        <Database className="h-6 w-6 text-orange-600 mb-4 group-hover:scale-110 transition-transform" />
+                        <p className="font-bold text-gray-900">Optimize Database</p>
+                        <p className="text-xs text-gray-500">Clean up temporary data and logs</p>
+                      </button>
+                      <button 
+                        onClick={() => toast.info("Checking for updates...")}
+                        className="p-6 bg-gray-50 rounded-2xl border border-gray-100 text-left hover:border-blue-200 transition-all group"
+                      >
+                        <Terminal className="h-6 w-6 text-blue-600 mb-4 group-hover:scale-110 transition-transform" />
+                        <p className="font-bold text-gray-900">System Update</p>
+                        <p className="text-xs text-gray-500">Check for latest software version</p>
+                      </button>
+                    </div>
+
+                    <div className="mt-8 pt-8 border-t">
+                      <button 
+                        onClick={() => setIsMaintenanceModalOpen(true)}
+                        className="w-full bg-orange-600 text-white py-4 rounded-xl font-bold hover:bg-orange-700 transition-all flex items-center justify-center space-x-2"
+                      >
+                        <ShieldCheck className="h-5 w-5" />
+                        <span>Run Full System Maintenance</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  {/* Current Session */}
+                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-3 mb-6">
+                      <History className="h-5 w-5 text-green-600" />
+                      <h3 className="font-bold text-gray-900">Current Session</h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-green-50 rounded-2xl">
+                        <p className="text-xs text-green-600 font-bold uppercase mb-1">Status</p>
+                        <p className="text-sm font-bold text-green-700">Active & Secure</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-400 uppercase font-bold">Details</p>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">IP Address</span>
+                          <span className="font-bold">192.168.1.1</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Location</span>
+                          <span className="font-bold">Kigali, Rwanda</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Device</span>
+                          <span className="font-bold">MacBook Pro</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="bg-blue-900 p-8 rounded-3xl shadow-xl text-white">
+                    <h3 className="font-bold mb-6">Admin Support</h3>
+                    <p className="text-sm text-blue-200 mb-8 leading-relaxed">
+                      Need help with security or maintenance? Contact our technical support team.
+                    </p>
+                    <button className="w-full bg-white text-blue-900 py-3 rounded-xl font-bold hover:bg-blue-50 transition-all">
+                      Contact Support
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Category Modal */}
+      <AnimatePresence>
+        {isAddingCategory && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddingCategory(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+                <h2 className="text-xl font-bold text-gray-900">Manage Categories</h2>
+                <button onClick={() => setIsAddingCategory(false)} className="p-2 hover:bg-gray-200 rounded-full">
+                  <LucideX className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="flex gap-2">
+                  <input 
+                    type="text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="New category name..."
+                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      if (newCategory) {
+                        addCategory(newCategory);
+                        setNewCategory('');
+                        toast.success(`Category "${newCategory}" added successfully`);
+                      }
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-gray-400 uppercase">Current Categories</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {categories.map(cat => (
+                      <div key={cat} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl group hover:bg-gray-100 transition-all">
+                        <span className="text-sm font-medium text-gray-700">{cat}</span>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <button 
+                            onClick={() => setEditingCategory({ oldName: cat, newName: cat })}
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Rename Category"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => setDeletingCategory(cat)}
+                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Delete Category"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Security Features Modal */}
+      <AnimatePresence>
+        {isSecurityModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSecurityModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 border-b flex justify-between items-center bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Shield className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">Update Security Features</h2>
+                </div>
+                <button 
+                  onClick={() => setIsSecurityModalOpen(false)}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <LucideX className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-4">
+                  <AlertCircle className="h-6 w-6 text-blue-600 mt-1" />
+                  <div>
+                    <p className="font-bold text-blue-900">Security Update Available</p>
+                    <p className="text-sm text-blue-700">A new security patch (v2.4.1) is available for the authentication system. This update fixes several vulnerabilities and improves session handling.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold text-gray-900">Pending Updates</h3>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Auth Module Patch', version: 'v2.4.1', priority: 'High' },
+                      { name: 'Database Encryption Update', version: 'v1.8.0', priority: 'Medium' },
+                      { name: 'SSL Certificate Renewal', version: 'N/A', priority: 'Critical' }
+                    ].map((update, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div>
+                          <p className="font-bold text-gray-900">{update.name}</p>
+                          <p className="text-xs text-gray-500">Version: {update.version}</p>
+                        </div>
+                        <span className={cn(
+                          "px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                          update.priority === 'Critical' ? "bg-red-100 text-red-600" :
+                          update.priority === 'High' ? "bg-orange-100 text-orange-600" :
+                          "bg-blue-100 text-blue-600"
+                        )}>
+                          {update.priority}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    toast.promise(new Promise(resolve => setTimeout(resolve, 2000)), {
+                      loading: 'Updating security features...',
+                      success: 'Security features updated successfully!',
+                      error: 'Failed to update security features.'
+                    });
+                    setIsSecurityModalOpen(false);
+                  }}
+                  className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                  Apply All Security Updates
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Category Modal */}
+      <AnimatePresence>
+        {editingCategory && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingCategory(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+                <h2 className="text-xl font-bold text-gray-900">Rename Category</h2>
+                <button onClick={() => setEditingCategory(null)} className="p-2 hover:bg-gray-200 rounded-full">
+                  <LucideX className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Category Name</label>
+                  <input 
+                    type="text"
+                    value={editingCategory.newName}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, newName: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => {
+                      if (editingCategory.newName.trim() && editingCategory.newName.trim() !== editingCategory.oldName) {
+                        updateCategory(editingCategory.oldName, editingCategory.newName.trim());
+                        toast.success(`Category renamed to "${editingCategory.newName}"`);
+                      }
+                      setEditingCategory(null);
+                    }}
+                    className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-all"
+                  >
+                    Save Changes
+                  </button>
+                  <button 
+                    onClick={() => setEditingCategory(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Category Confirmation Modal */}
+      <AnimatePresence>
+        {deletingCategory && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeletingCategory(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Trash2 className="h-10 w-10 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Delete Category?</h2>
+                <p className="text-gray-500 mb-8 leading-relaxed">
+                  Are you sure you want to delete <span className="font-bold text-gray-900">"{deletingCategory}"</span>? 
+                  All products in this category will be moved to <span className="font-bold text-gray-900">"Uncategorized"</span>.
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => {
+                      deleteCategory(deletingCategory);
+                      toast.success(`Category "${deletingCategory}" deleted`);
+                      setDeletingCategory(null);
+                    }}
+                    className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
+                  >
+                    Yes, Delete
+                  </button>
+                  <button 
+                    onClick={() => setDeletingCategory(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Order Confirmation Modal */}
+      <AnimatePresence>
+        {deletingOrder && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeletingOrder(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="h-10 w-10 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Remove Order?</h2>
+                <p className="text-gray-500 mb-8 leading-relaxed">
+                  Are you sure you want to remove order <span className="font-bold text-gray-900">#{deletingOrder}</span>? 
+                  This action cannot be undone.
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => {
+                      deleteOrder(deletingOrder);
+                      toast.success('Order deleted successfully');
+                      setDeletingOrder(null);
+                    }}
+                    className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
+                  >
+                    Yes, Remove
+                  </button>
+                  <button 
+                    onClick={() => setDeletingOrder(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Message Confirmation Modal */}
+      <AnimatePresence>
+        {deletingMessage && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeletingMessage(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Mail className="h-10 w-10 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Delete Message?</h2>
+                <p className="text-gray-500 mb-8 leading-relaxed">
+                  Are you sure you want to delete this message? 
+                  This action cannot be undone.
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => {
+                      deleteMessage(deletingMessage);
+                      toast.success('Message deleted successfully');
+                      setDeletingMessage(null);
+                    }}
+                    className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
+                  >
+                    Yes, Delete
+                  </button>
+                  <button 
+                    onClick={() => setDeletingMessage(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Security Audit Log Modal */}
+      <AnimatePresence>
+        {isAuditLogOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAuditLogOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            >
+              <div className="p-8 border-b flex justify-between items-center bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <History className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">Security Audit Log</h2>
+                </div>
+                <button 
+                  onClick={() => setIsAuditLogOpen(false)}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <LucideX className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8">
+                <div className="mb-6 flex justify-between items-center">
+                  <p className="text-sm text-gray-500">Showing last 50 activity events</p>
+                  <button 
+                    onClick={() => setIsAddingLog(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Insert Log Entry</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {activityLog.map((log, i) => (
+                    <div key={log.id} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "p-2 rounded-lg",
+                          log.type === 'system' ? "bg-blue-100 text-blue-600" :
+                          log.type === 'order' ? "bg-green-100 text-green-600" :
+                          log.type === 'product' ? "bg-purple-100 text-purple-600" :
+                          "bg-orange-100 text-orange-600"
+                        )}>
+                          {log.type === 'system' ? <Shield className="h-5 w-5" /> :
+                           log.type === 'order' ? <ShoppingBag className="h-5 w-5" /> :
+                           log.type === 'product' ? <Package className="h-5 w-5" /> :
+                           <User className="h-5 w-5" />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">{log.action}</p>
+                          <p className="text-xs text-gray-500">Admin: {log.adminName || 'System'} • Type: {log.type}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{new Date(log.timestamp).toLocaleString()}</p>
+                        <p className="text-[10px] font-bold uppercase text-blue-600">Success</p>
+                      </div>
+                    </div>
+                  ))}
+                  {activityLog.length === 0 && (
+                    <div className="text-center py-20 text-gray-400 italic">
+                      No activity logs found.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-8 border-t bg-gray-50 flex justify-between items-center">
+                <p className="text-sm text-gray-500">Showing last 50 security events</p>
+                <button className="text-blue-600 font-bold text-sm hover:underline flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Export Full Log (CSV)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Insert Log Modal */}
+      <AnimatePresence>
+        {isAddingLog && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddingLog(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+                <h2 className="text-xl font-bold text-gray-900">Insert Log Entry</h2>
+                <button onClick={() => setIsAddingLog(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                  <LucideX className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700">Action Description</label>
+                  <textarea 
+                    value={newLogAction}
+                    onChange={e => setNewLogAction(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="Describe the activity..."
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700">Log Type</label>
+                  <select 
+                    value={newLogType}
+                    onChange={e => setNewLogType(e.target.value as any)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  >
+                    <option value="system">System</option>
+                    <option value="product">Product</option>
+                    <option value="order">Order</option>
+                    <option value="user">User</option>
+                  </select>
+                </div>
+                <button 
+                  onClick={() => {
+                    if (!newLogAction.trim()) {
+                      toast.error('Please enter an action description');
+                      return;
+                    }
+                    addActivity(newLogAction, newLogType, adminName);
+                    setNewLogAction('');
+                    setIsAddingLog(false);
+                    toast.success('Log entry inserted successfully');
+                  }}
+                  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+                >
+                  Insert Log
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* System Maintenance Modal */}
+      <AnimatePresence>
+        {isMaintenanceModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isMaintenanceRunning && setIsMaintenanceModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 border-b flex justify-between items-center bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-6 w-6 text-orange-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">System Maintenance</h2>
+                </div>
+                {!isMaintenanceRunning && (
+                  <button 
+                    onClick={() => setIsMaintenanceModalOpen(false)}
+                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                  >
+                    <LucideX className="h-6 w-6" />
+                  </button>
+                )}
+              </div>
+
+              <div className="p-8 space-y-8 text-center">
+                {!isMaintenanceRunning ? (
+                  <>
+                    <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <RefreshCw className="h-10 w-10 text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Run Full Maintenance</h3>
+                      <p className="text-gray-500">This will optimize your database, clear cache, and perform a security scan. This process may take a few minutes.</p>
+                    </div>
+                    <div className="space-y-3 text-left bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-2">Tasks to be performed:</p>
+                      {[
+                        'Database Index Optimization',
+                        'Clear Temporary Cache Files',
+                        'Security Vulnerability Scan',
+                        'System Log Rotation',
+                        'Dependency Integrity Check'
+                      ].map((task, i) => (
+                        <div key={i} className="flex items-center gap-3 text-sm text-gray-700">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          {task}
+                        </div>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setIsMaintenanceRunning(true);
+                        let progress = 0;
+                        const interval = setInterval(() => {
+                          progress += 5;
+                          setMaintenanceProgress(progress);
+                          if (progress >= 100) {
+                            clearInterval(interval);
+                            setIsMaintenanceRunning(false);
+                            setMaintenanceProgress(0);
+                            toast.success('System maintenance completed successfully!');
+                            setIsMaintenanceModalOpen(false);
+                          }
+                        }, 100);
+                      }}
+                      className="w-full bg-orange-600 text-white py-4 rounded-xl font-bold hover:bg-orange-700 transition-all shadow-lg"
+                    >
+                      Start Maintenance Now
+                    </button>
+                  </>
+                ) : (
+                  <div className="py-10 space-y-6">
+                    <div className="relative w-32 h-32 mx-auto">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="60"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="transparent"
+                          className="text-gray-100"
+                        />
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="60"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="transparent"
+                          strokeDasharray={377}
+                          strokeDashoffset={377 - (377 * maintenanceProgress) / 100}
+                          className="text-orange-600 transition-all duration-300"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-900">{maintenanceProgress}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Maintenance in Progress</h3>
+                      <p className="text-gray-500 animate-pulse">Please do not close this window...</p>
+                    </div>
+                    <div className="text-sm text-gray-400 italic">
+                      {maintenanceProgress < 20 && "Optimizing database indexes..."}
+                      {maintenanceProgress >= 20 && maintenanceProgress < 40 && "Clearing temporary cache files..."}
+                      {maintenanceProgress >= 40 && maintenanceProgress < 70 && "Running security vulnerability scan..."}
+                      {maintenanceProgress >= 70 && maintenanceProgress < 90 && "Rotating system logs..."}
+                      {maintenanceProgress >= 90 && "Finalizing maintenance tasks..."}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {(isAddingProduct || editingProduct) && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setIsAddingProduct(false); setEditingProduct(null); }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            >
+              <div className="p-8 border-b flex justify-between items-center bg-gray-50">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {editingProduct ? 'Edit Product' : 'Add New Product'}
+                </h2>
+                <button 
+                  onClick={() => { setIsAddingProduct(false); setEditingProduct(null); }}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <LucideX className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8">
+                <ProductForm 
+                  initialData={editingProduct || undefined}
+                  onSave={(data) => {
+                    if (editingProduct) {
+                      updateProduct({ ...editingProduct, ...data });
+                    } else {
+                      addProduct({ ...data, id: Math.random().toString(36).substr(2, 9), rating: 5, isFeatured: false });
+                    }
+                    setIsAddingProduct(false);
+                    setEditingProduct(null);
+                  }}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Order Modal */}
+      <AnimatePresence>
+        {editingOrder && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingOrder(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            >
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900">Edit Order #{editingOrder.id}</h2>
+                  <p className="text-sm text-gray-500">Modify customer details or order items</p>
+                </div>
+                <button 
+                  onClick={() => setEditingOrder(null)}
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  <LucideX className="h-6 w-6 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                <OrderForm 
+                  initialData={editingOrder} 
+                  onSave={(updatedData) => {
+                    updateOrder({ ...editingOrder, ...updatedData });
+                    setEditingOrder(null);
+                    toast.success('Order updated successfully');
+                  }} 
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const SiteContentManager = () => {
+  const { siteSettings, updateSiteSettings, uploadImage } = useShop();
+  const [localSettings, setLocalSettings] = useState(siteSettings);
+  const heroFileRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const teamFileRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const testimonialFileRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const logoFileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLocalSettings(siteSettings);
+  }, [siteSettings]);
+
+  const slides = localSettings.heroSlides || [];
+  const team = localSettings.teamMembers || [];
+
+  const handleSave = () => {
+    updateSiteSettings(localSettings);
+    toast.success('Site content updated successfully');
+  };
+
+  const handleHeroImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadImage(file);
+      const newSlides = [...localSettings.heroSlides];
+      newSlides[index] = { ...newSlides[index], image: url };
+      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+      toast.success('Hero image uploaded');
+    } catch (error) {
+      toast.error('Failed to upload hero image');
+    }
+  };
+
+  const handleTeamImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadImage(file);
+      const newTeam = [...localSettings.teamMembers];
+      newTeam[index] = { ...newTeam[index], image: url };
+      setLocalSettings({ ...localSettings, teamMembers: newTeam });
+      toast.success('Team member photo uploaded');
+    } catch (error) {
+      toast.error('Failed to upload team photo');
+    }
+  };
+
+  const handleTestimonialImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadImage(file);
+      const newTestimonials = [...localSettings.testimonials];
+      newTestimonials[index] = { ...newTestimonials[index], image: url };
+      setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+      toast.success('Testimonial photo uploaded');
+    } catch (error) {
+      toast.error('Failed to upload testimonial photo');
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadImage(file);
+      setLocalSettings({ ...localSettings, logoUrl: url });
+      toast.success('Company logo uploaded');
+    } catch (error) {
+      toast.error('Failed to upload logo');
+    }
+  };
+
+  return (
+    <div className="space-y-12">
+      {/* General Settings */}
+      <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">General Settings</h2>
+            <p className="text-gray-500">Manage your company branding</p>
+          </div>
+          <button 
+            onClick={handleSave}
+            className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all"
+          >
+            Save Changes
+          </button>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="space-y-4">
+            <label className="text-sm font-bold text-gray-700">Company Logo</label>
+            <div className="relative w-48 h-48 rounded-2xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 group">
+              {localSettings.logoUrl ? (
+                <img src={localSettings.logoUrl} alt="Company Logo" className="w-full h-full object-contain p-4" />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                  <Globe className="h-8 w-8 mb-2" />
+                  <span className="text-xs font-medium">No logo uploaded</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => logoFileRef.current?.click()}
+                  className="bg-white text-gray-900 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                  title="Upload Logo"
+                >
+                  <Upload className="h-5 w-5" />
+                </button>
+                {localSettings.logoUrl && (
+                  <button 
+                    onClick={() => setLocalSettings({ ...localSettings, logoUrl: '' })}
+                    className="bg-white text-red-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                    title="Remove Logo"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+              <input 
+                type="file" 
+                ref={logoFileRef}
+                className="hidden" 
+                accept="image/*"
+                onChange={handleLogoUpload}
+              />
+            </div>
+            <p className="text-xs text-gray-400 italic">Recommended: Transparent PNG or SVG</p>
+          </div>
+
+          <div className="flex-1 space-y-4 w-full">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700">Logo URL (Alternative)</label>
+              <input 
+                type="text" 
+                value={localSettings.logoUrl || ''}
+                onChange={(e) => setLocalSettings({ ...localSettings, logoUrl: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                placeholder="https://example.com/logo.png"
+              />
+              <p className="text-[10px] text-gray-400">You can either upload an image or paste a direct URL.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Hero Section */}
+      <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Hero Section</h2>
+            <p className="text-gray-500">Manage the slides on your home page</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                const newSlides = [...(localSettings.heroSlides || [])];
+                newSlides.push({
+                  image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1920",
+                  title: { en: "New Slide", fr: "Nouvelle Diapo", rw: "Iyindi Diapo" },
+                  subtitle: { en: "Add a catchy subtitle here", fr: "Ajoutez un sous-titre ici", rw: "Shyiraho akandi jambo" },
+                  cta: { en: "Learn More", fr: "En Savoir Plus", rw: "Menya byinshi" }
+                });
+                setLocalSettings({ ...localSettings, heroSlides: newSlides });
+              }}
+              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all flex items-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Add Slide</span>
+            </button>
+            <button 
+              onClick={handleSave}
+              className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {(localSettings.heroSlides || []).map((slide, idx) => (
+            <div key={idx} className="relative border border-gray-100 rounded-2xl p-4 space-y-4">
+              <button 
+                onClick={() => {
+                  const newSlides = localSettings.heroSlides.filter((_, i) => i !== idx);
+                  setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                }}
+                className="absolute -top-2 -right-2 p-2 bg-red-100 text-red-600 rounded-full shadow-lg hover:bg-red-600 hover:text-white transition-all z-10"
+              >
+                <LucideX className="h-4 w-4" />
+              </button>
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 group">
+                <img src={slide?.image} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button 
+                    onClick={() => heroFileRefs.current[idx]?.click()}
+                    className="bg-white text-gray-900 p-2 rounded-full shadow-lg"
+                  >
+                    <Upload className="h-5 w-5" />
+                  </button>
+                </div>
+                <input 
+                  type="file" 
+                  ref={el => heroFileRefs.current[idx] = el}
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={(e) => handleHeroImageUpload(idx, e)}
+                />
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Title (EN)</label>
+                  <input 
+                    type="text" 
+                    value={slide.title.en}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], title: { ...newSlides[idx].title, en: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Title (FR)</label>
+                  <input 
+                    type="text" 
+                    value={slide.title.fr}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], title: { ...newSlides[idx].title, fr: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Title (RW)</label>
+                  <input 
+                    type="text" 
+                    value={slide.title.rw}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], title: { ...newSlides[idx].title, rw: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Subtitle (EN)</label>
+                  <input 
+                    type="text" 
+                    value={slide.subtitle.en}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], subtitle: { ...newSlides[idx].subtitle, en: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Subtitle (FR)</label>
+                  <input 
+                    type="text" 
+                    value={slide.subtitle.fr}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], subtitle: { ...newSlides[idx].subtitle, fr: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Subtitle (RW)</label>
+                  <input 
+                    type="text" 
+                    value={slide.subtitle.rw}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], subtitle: { ...newSlides[idx].subtitle, rw: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">CTA (EN)</label>
+                  <input 
+                    type="text" 
+                    value={slide.cta.en}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], cta: { ...newSlides[idx].cta, en: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">CTA (FR)</label>
+                  <input 
+                    type="text" 
+                    value={slide.cta.fr}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], cta: { ...newSlides[idx].cta, fr: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">CTA (RW)</label>
+                  <input 
+                    type="text" 
+                    value={slide.cta.rw}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], cta: { ...newSlides[idx].cta, rw: e.target.value } };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Meet Our Team</h2>
+            <p className="text-gray-500">Update team member details and roles</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                const newTeam = [...(localSettings.teamMembers || [])];
+                newTeam.push({
+                  name: "New Member",
+                  role: { en: "Position", fr: "Poste", rw: "Umwanya" },
+                  slogan: { en: "Slogan here", fr: "Slogan ici", rw: "Intero" },
+                  image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
+                  phone: "+250",
+                  socials: { facebook: "#", instagram: "#", tiktok: "#" }
+                });
+                setLocalSettings({ ...localSettings, teamMembers: newTeam });
+              }}
+              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all flex items-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Add Member</span>
+            </button>
+            <button 
+              onClick={handleSave}
+              className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {(localSettings.teamMembers || []).map((member, idx) => (
+            <div key={idx} className="relative border border-gray-100 rounded-2xl p-6 space-y-4">
+              <button 
+                onClick={() => {
+                  const newTeam = localSettings.teamMembers.filter((_, i) => i !== idx);
+                  setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                }}
+                className="absolute -top-2 -right-2 p-2 bg-red-100 text-red-600 rounded-full shadow-lg hover:bg-red-600 hover:text-white transition-all z-10"
+              >
+                <LucideX className="h-4 w-4" />
+              </button>
+              <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100 group">
+                <img src={member?.image} alt={member?.name} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button 
+                    onClick={() => teamFileRefs.current[idx]?.click()}
+                    className="bg-white text-gray-900 p-2 rounded-full shadow-lg"
+                  >
+                    <Upload className="h-5 w-5" />
+                  </button>
+                </div>
+                <input 
+                  type="file" 
+                  ref={el => teamFileRefs.current[idx] = el}
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={(e) => handleTeamImageUpload(idx, e)}
+                />
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Name</label>
+                  <input 
+                    type="text" 
+                    value={member.name}
+                    onChange={(e) => {
+                      const newTeam = [...localSettings.teamMembers];
+                      newTeam[idx] = { ...newTeam[idx], name: e.target.value };
+                      setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Role (EN)</label>
+                    <input 
+                      type="text" 
+                      value={member.role.en}
+                      onChange={(e) => {
+                        const newTeam = [...localSettings.teamMembers];
+                        newTeam[idx] = { ...newTeam[idx], role: { ...newTeam[idx].role, en: e.target.value } };
+                        setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Role (FR)</label>
+                    <input 
+                      type="text" 
+                      value={member.role.fr}
+                      onChange={(e) => {
+                        const newTeam = [...localSettings.teamMembers];
+                        newTeam[idx] = { ...newTeam[idx], role: { ...newTeam[idx].role, fr: e.target.value } };
+                        setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Role (RW)</label>
+                    <input 
+                      type="text" 
+                      value={member.role.rw}
+                      onChange={(e) => {
+                        const newTeam = [...localSettings.teamMembers];
+                        newTeam[idx] = { ...newTeam[idx], role: { ...newTeam[idx].role, rw: e.target.value } };
+                        setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Slogan (EN)</label>
+                    <input 
+                      type="text" 
+                      value={member.slogan.en}
+                      onChange={(e) => {
+                        const newTeam = [...localSettings.teamMembers];
+                        newTeam[idx] = { ...newTeam[idx], slogan: { ...newTeam[idx].slogan, en: e.target.value } };
+                        setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm italic"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Slogan (FR)</label>
+                    <input 
+                      type="text" 
+                      value={member.slogan.fr}
+                      onChange={(e) => {
+                        const newTeam = [...localSettings.teamMembers];
+                        newTeam[idx] = { ...newTeam[idx], slogan: { ...newTeam[idx].slogan, fr: e.target.value } };
+                        setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm italic"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Slogan (RW)</label>
+                    <input 
+                      type="text" 
+                      value={member.slogan.rw}
+                      onChange={(e) => {
+                        const newTeam = [...localSettings.teamMembers];
+                        newTeam[idx] = { ...newTeam[idx], slogan: { ...newTeam[idx].slogan, rw: e.target.value } };
+                        setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm italic"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Phone</label>
+                  <input 
+                    type="text" 
+                    value={member.phone}
+                    onChange={(e) => {
+                      const newTeam = [...localSettings.teamMembers];
+                      newTeam[idx] = { ...newTeam[idx], phone: e.target.value };
+                      setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Customer Testimonials Section */}
+      <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mt-12">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Customer Testimonials</h2>
+            <p className="text-gray-500">Manage customer reviews and feedback</p>
+          </div>
+          <button 
+            onClick={() => {
+              const newTestimonial: Testimonial = {
+                id: Math.random().toString(36).substr(2, 9),
+                name: '',
+                location: '',
+                message: '',
+                rating: 5,
+                image: ''
+              };
+              setLocalSettings({ ...localSettings, testimonials: [...(localSettings.testimonials || []), newTestimonial] });
+            }}
+            className="flex items-center space-x-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Testimonial</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {(localSettings.testimonials || []).map((testimonial, idx) => (
+            <div key={testimonial.id} className="relative border border-gray-100 rounded-2xl p-6 space-y-4 text-left">
+              <button 
+                onClick={() => {
+                  const newTestimonials = localSettings.testimonials.filter((_, i) => i !== idx);
+                  setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                }}
+                className="absolute -top-2 -right-2 p-2 bg-red-100 text-red-600 rounded-full shadow-lg hover:bg-red-600 hover:text-white transition-all z-10"
+              >
+                <LucideX className="h-4 w-4" />
+              </button>
+              
+              <div className="flex items-start gap-4">
+                <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 group flex-shrink-0">
+                  <img src={testimonial.image || `https://ui-avatars.com/api/?name=${testimonial.name}`} alt={testimonial.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button 
+                      onClick={() => testimonialFileRefs.current[idx]?.click()}
+                      className="bg-white text-gray-900 p-1.5 rounded-full shadow-lg"
+                    >
+                      <Upload className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <input 
+                    type="file" 
+                    ref={el => testimonialFileRefs.current[idx] = el}
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => handleTestimonialImageUpload(idx, e)}
+                  />
+                </div>
+
+                <div className="flex-1 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Customer Name</label>
+                      <input 
+                        type="text" 
+                        value={testimonial.name}
+                        onChange={(e) => {
+                          const newTestimonials = [...localSettings.testimonials];
+                          newTestimonials[idx] = { ...newTestimonials[idx], name: e.target.value };
+                          setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                        }}
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Rating (1-5)</label>
+                      <select 
+                        value={testimonial.rating}
+                        onChange={(e) => {
+                          const newTestimonials = [...localSettings.testimonials];
+                          newTestimonials[idx] = { ...newTestimonials[idx], rating: Number(e.target.value) };
+                          setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                        }}
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold"
+                      >
+                        {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>{num} Stars</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Location (Optional)</label>
+                    <input 
+                      type="text" 
+                      value={testimonial.location || ''}
+                      onChange={(e) => {
+                        const newTestimonials = [...localSettings.testimonials];
+                        newTestimonials[idx] = { ...newTestimonials[idx], location: e.target.value };
+                        setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                      placeholder="e.g. Kigali, Rwanda"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Message/Review</label>
+                    <textarea 
+                      value={testimonial.message}
+                      onChange={(e) => {
+                        const newTestimonials = [...localSettings.testimonials];
+                        newTestimonials[idx] = { ...newTestimonials[idx], message: e.target.value };
+                        setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[100px]"
+                      placeholder="Write the customer's review here..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="pt-8 flex justify-end">
+        <button
+          onClick={handleSave}
+          className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200"
+        >
+          Save All Site Content
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ProductFormProps {
+  initialData?: Partial<Product>;
+  onSave: (data: any) => void;
+}
+
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
+  const { categories, uploadImage } = useShop();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState({
+    title: initialData?.title || '',
+    price: initialData?.price || 0,
+    oldPrice: initialData?.oldPrice || 0,
+    category: initialData?.category || categories[0],
+    description: initialData?.description || '',
+    stock: initialData?.stock || 0,
+    images: initialData?.images || [''],
+    variations: initialData?.variations || [] as Variation[],
+  });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      toast.loading(`Uploading ${files.length} image(s)...`, { id: 'uploading' });
+      const uploadPromises = files.map(file => uploadImage(file));
+      const urls = await Promise.all(uploadPromises);
+      
+      const currentImages = formData.images.filter(img => img !== '');
+      setFormData({ ...formData, images: [...currentImages, ...urls] });
+      toast.success('Images uploaded successfully', { id: 'uploading' });
+    } catch (error) {
+      toast.error('Failed to upload images', { id: 'uploading' });
+    }
+    
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const addVariation = () => {
+    const newVariation: Variation = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: '',
+      value: '',
+      stock: 0,
+      priceModifier: 0
+    };
+    setFormData({ ...formData, variations: [...formData.variations, newVariation] });
+  };
+
+  const removeVariation = (id: string) => {
+    setFormData({ ...formData, variations: formData.variations.filter(v => v.id !== id) });
+  };
+
+  const updateVariation = (id: string, field: keyof Variation, value: any) => {
+    setFormData({
+      ...formData,
+      variations: formData.variations.map(v => v.id === id ? { ...v, [field]: value } : v)
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Product Title</label>
+          <input
+            required
+            type="text"
+            value={formData.title}
+            onChange={e => setFormData({ ...formData, title: e.target.value })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            placeholder="e.g. Smart LED TV"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-700">Current Price (RWF)</label>
+            <input
+              required
+              type="number"
+              value={formData.price}
+              onChange={e => setFormData({ ...formData, price: parseInt(e.target.value) })}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-700">Old Price (Optional)</label>
+            <input
+              type="number"
+              value={formData.oldPrice}
+              onChange={e => setFormData({ ...formData, oldPrice: parseInt(e.target.value) })}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Category</label>
+          <select
+            value={formData.category}
+            onChange={e => setFormData({ ...formData, category: e.target.value })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          >
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Stock Quantity</label>
+          <input
+            required
+            type="number"
+            value={formData.stock}
+            onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Description</label>
+          <textarea
+            required
+            rows={4}
+            value={formData.description}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            placeholder="Detailed product description..."
+          />
+        </div>
+
+        <div className="space-y-4 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-gray-700">Product Variations</label>
+            <div className="flex gap-2">
+              <button 
+                type="button"
+                onClick={() => {
+                  const sizes = ['38', '39', '40', '41', '42', '43', '44'];
+                  const newVariations = sizes.map(s => ({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: 'Size',
+                    value: s,
+                    stock: 10,
+                    priceModifier: 0
+                  }));
+                  setFormData({ ...formData, variations: [...formData.variations, ...newVariations] });
+                }}
+                className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-600 hover:text-white transition-all uppercase tracking-tighter"
+              >
+                + Size Preset
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  const colors = ['Black', 'White', 'Red', 'Blue', 'Brown'];
+                  const newVariations = colors.map(c => ({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: 'Color',
+                    value: c,
+                    stock: 10,
+                    priceModifier: 0
+                  }));
+                  setFormData({ ...formData, variations: [...formData.variations, ...newVariations] });
+                }}
+                className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded hover:bg-orange-600 hover:text-white transition-all uppercase tracking-tighter"
+              >
+                + Color Preset
+              </button>
+              <button 
+                type="button"
+                onClick={addVariation}
+                className="text-[10px] font-black text-gray-600 bg-gray-50 px-2 py-1 rounded hover:bg-gray-600 hover:text-white transition-all uppercase tracking-tighter"
+              >
+                + Custom
+              </button>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {formData.variations.map((v) => (
+              <div key={v.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3 relative group">
+                <button 
+                  type="button"
+                  onClick={() => removeVariation(v.id)}
+                  className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                >
+                  <LucideX className="h-4 w-4" />
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Type (e.g. Size)</label>
+                    <input 
+                      type="text"
+                      value={v.name}
+                      onChange={e => updateVariation(v.id, 'name', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Size"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Value (e.g. XL)</label>
+                    <input 
+                      type="text"
+                      value={v.value}
+                      onChange={e => updateVariation(v.id, 'value', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="XL"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Stock</label>
+                    <input 
+                      type="number"
+                      value={v.stock}
+                      onChange={e => updateVariation(v.id, 'stock', parseInt(e.target.value))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Price Mod (+/-)</label>
+                    <input 
+                      type="number"
+                      value={v.priceModifier}
+                      onChange={e => updateVariation(v.id, 'priceModifier', parseInt(e.target.value))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            {formData.variations.length === 0 && (
+              <p className="text-xs text-gray-400 italic text-center py-4 border-2 border-dashed border-gray-100 rounded-xl">
+                No variations added. Using main stock.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <label className="text-sm font-bold text-gray-700 flex items-center justify-between">
+            <span>Product Gallery</span>
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider">{formData.images.filter(img => img).length} Images Added</span>
+          </label>
+          
+          <div className="grid grid-cols-3 gap-4">
+            {formData.images.map((img, i) => (
+              img && (
+                <div key={i} className="group relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm">
+                  <img src={img} alt="Product" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-2 px-2">
+                    <span className="text-[10px] text-white font-black uppercase tracking-widest bg-blue-600 px-2 py-1 rounded">Image {i + 1}</span>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const newImages = formData.images.filter((_, idx) => idx !== i);
+                        setFormData({ ...formData, images: newImages.length ? newImages : [''] });
+                      }}
+                      className="p-2 bg-red-600 text-white rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )
+            ))}
+            
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-600 group"
+            >
+              <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors mb-2">
+                <Plus className="h-6 w-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider">Add Photo</span>
+            </button>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Or Add via URL</p>
+             <div className="flex gap-2">
+               <input
+                 type="text"
+                 placeholder="Paste image URL here..."
+                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm"
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter') {
+                     e.preventDefault();
+                     const val = (e.currentTarget as HTMLInputElement).value;
+                     if (val) {
+                        const newImages = [...formData.images.filter(img => img), val];
+                        setFormData({ ...formData, images: newImages });
+                        (e.currentTarget as HTMLInputElement).value = '';
+                     }
+                   }
+                 }}
+               />
+               <button 
+                 type="button"
+                 onClick={(e) => {
+                   const input = (e.currentTarget.previousSibling as HTMLInputElement);
+                   if (input.value) {
+                      const newImages = [...formData.images.filter(img => img), input.value];
+                      setFormData({ ...formData, images: newImages });
+                      input.value = '';
+                   }
+                 }}
+                 className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all text-sm"
+               >
+                 Add
+               </button>
+             </div>
+          </div>
+
+          <input 
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            className="hidden"
+            accept="image/*"
+            multiple
+          />
+        </div>
+
+        <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold text-gray-500 uppercase">Gallery Preview</p>
+            <p className="text-[10px] text-gray-400 italic">Images will appear in a carousel on the store</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {formData.images.map((img, i) => img ? (
+              <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm group relative">
+                <img src={img} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="text-[10px] text-white font-bold px-2 py-1 bg-black/50 rounded-full">#{i + 1}</span>
+                </div>
+              </div>
+            ) : (
+              <div key={i} className="aspect-square rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-white/50">
+                <Package className="h-6 w-6 text-gray-200" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pt-8 flex gap-4">
+          <button
+            type="button"
+            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-4 rounded-xl font-bold transition-all"
+          >
+            Save as Draft
+          </button>
+          <button
+            type="submit"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-200"
+          >
+            Publish Product
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+interface OrderFormProps {
+  initialData: Order;
+  onSave: (data: any) => void;
+}
+
+const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave }) => {
+  const { formatPrice } = useCurrency();
+  const [formData, setFormData] = useState({
+    customerName: initialData.customerName,
+    phone: initialData.phone,
+    address: initialData.address,
+    items: [...initialData.items],
+    status: initialData.status,
+    paymentStatus: initialData.paymentStatus,
+    total: initialData.total
+  });
+
+  const updateItemQuantity = (index: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    const newItems = [...formData.items];
+    newItems[index] = { ...newItems[index], quantity: newQuantity };
+    
+    // Recalculate total
+    const newTotal = newItems.reduce((sum, item) => {
+      const price = item.price + (item.selectedVariation?.priceModifier || 0);
+      return sum + price * item.quantity;
+    }, 0);
+
+    setFormData({ ...formData, items: newItems, total: newTotal });
+  };
+
+  const removeItem = (index: number) => {
+    const newItems = formData.items.filter((_, i) => i !== index);
+    const newTotal = newItems.reduce((sum, item) => {
+      const price = item.price + (item.selectedVariation?.priceModifier || 0);
+      return sum + price * item.quantity;
+    }, 0);
+    setFormData({ ...formData, items: newItems, total: newTotal });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-gray-900 border-b pb-2">Customer Information</h3>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700">Customer Name</label>
+              <input
+                required
+                type="text"
+                value={formData.customerName}
+                onChange={e => setFormData({ ...formData, customerName: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700">Phone Number</label>
+              <input
+                required
+                type="text"
+                value={formData.phone}
+                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700">Delivery Address</label>
+              <textarea
+                required
+                rows={3}
+                value={formData.address}
+                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-gray-900 border-b pb-2">Order Status</h3>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700">Order Status</label>
+              <select
+                value={formData.status}
+                onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700">Payment Status</label>
+              <select
+                value={formData.paymentStatus}
+                onChange={e => setFormData({ ...formData, paymentStatus: e.target.value as any })}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+                <option value="Waiting Confirmation">Waiting Confirmation</option>
+                <option value="Pending - Cash on Delivery">Pending - Cash on Delivery</option>
+                <option value="Waiting for Bank Transfer">Waiting for Bank Transfer</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-bold text-gray-900 border-b pb-2">Order Items</h3>
+        <div className="space-y-3">
+          {formData.items.map((item, index) => (
+            <div key={`${item.id}-${index}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+              <img src={item.images[0]} alt={item.title} className="w-16 h-16 object-cover rounded-lg" referrerPolicy="no-referrer" />
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-900">{item.title}</h4>
+                {item.selectedVariation && (
+                  <p className="text-xs text-gray-500">
+                    {item.selectedVariation.name}: {item.selectedVariation.value}
+                  </p>
+                )}
+                <p className="text-sm font-bold text-blue-600">
+                  {formatPrice(item.price + (item.selectedVariation?.priceModifier || 0))}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center border border-gray-200 rounded-lg bg-white overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => updateItemQuantity(index, item.quantity - 1)}
+                    className="px-3 py-1 hover:bg-gray-50 text-gray-600"
+                  >
+                    -
+                  </button>
+                  <span className="px-3 py-1 font-bold text-sm border-x border-gray-200">
+                    {item.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => updateItemQuantity(index, item.quantity + 1)}
+                    className="px-3 py-1 hover:bg-gray-50 text-gray-600"
+                  >
+                    +
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeItem(index)}
+                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          ))}
+          {formData.items.length === 0 && (
+            <div className="text-center py-8 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+              <p className="text-gray-500">No items in this order.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="pt-6 border-t flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-500">Total Amount</p>
+          <p className="text-2xl font-black text-gray-900">{formatPrice(formData.total)}</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+const CloseIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+export default AdminDashboard;

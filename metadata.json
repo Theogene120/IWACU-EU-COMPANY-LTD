@@ -1,0 +1,7 @@
+{
+  "name": "IWACU EU COMPANY LTD",
+  "description": "A professional, multilingual e-commerce platform for IWACU EU COMPANY LTD, featuring a modern landing page, WhatsApp ordering, and a full admin dashboard. We know the value for your money.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
