@@ -2961,28 +2961,28 @@
     }
   ],
   "analytics": {
-    "totalVisitors": 220,
+    "totalVisitors": 228,
     "dailyTraffic": [],
     "pageViews": [
       {
         "path": "/",
-        "count": 37
+        "count": 38
       },
       {
         "path": "/shop",
-        "count": 57
+        "count": 58
       },
       {
         "path": "/about",
-        "count": 22
+        "count": 23
       },
       {
         "path": "/contact",
-        "count": 12
+        "count": 13
       },
       {
         "path": "/delivery",
-        "count": 8
+        "count": 9
       },
       {
         "path": "/order-tracking",
@@ -2994,11 +2994,11 @@
       },
       {
         "path": "/admin/login",
-        "count": 20
+        "count": 21
       },
       {
         "path": "/admin",
-        "count": 13
+        "count": 14
       },
       {
         "path": "/product/f1",
@@ -3006,7 +3006,7 @@
       },
       {
         "path": "/cart",
-        "count": 12
+        "count": 13
       },
       {
         "path": "/checkout",
