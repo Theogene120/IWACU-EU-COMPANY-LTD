@@ -4,11 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "vite",
+    "dev:be": "npm --prefix backend run dev",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "backend:install": "npm --prefix backend install",
+    "backend:seed": "npm --prefix backend run seed",
+    "backend:migrate": "npm --prefix backend run migrate"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
