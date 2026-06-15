@@ -4,6 +4,9 @@ import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMembe
 export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial };
 import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
 
+// API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 interface Analytics {
   totalVisitors: number;
   dailyTraffic: { date: string; count: number }[];
@@ -107,52 +110,77 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initial fetch from backend
+  // ── Initial data load (parallel fetches to each endpoint) ───────────────
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/db');
-        if (!response.ok) throw new Error('Failed to fetch data');
-        const data = await response.json();
-        
-        // If the database has fewer products than our new expanded demo catalog, 
-        // we prioritize the new demo products to ensure part catalog expansion is visible.
-        if (data.products?.length >= DEMO_PRODUCTS.length) {
-          setProducts(data.products);
-        } else {
-          setProducts(DEMO_PRODUCTS);
+        const [
+          productsRes, categoriesRes, ordersRes, notificationsRes,
+          messagesRes, analyticsRes, activityLogRes, siteSettingsRes,
+        ] = await Promise.allSettled([
+          fetch(`${API_BASE}/api/products`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/categories`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/orders`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/notifications`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/messages`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/analytics`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/activity-log`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/site-settings`).then(r => r.ok ? r.json() : null),
+        ]);
+
+        if (productsRes.status === 'fulfilled' && productsRes.value) {
+          const data: Product[] = productsRes.value;
+          setProducts(data.length >= DEMO_PRODUCTS.length ? data : DEMO_PRODUCTS);
         }
-        if (data.categories?.length) setCategories(data.categories);
-        if (data.orders?.length) setOrders(data.orders);
-        if (data.notifications?.length) setNotifications(data.notifications);
-        if (data.messages?.length) setMessages(data.messages);
-        if (data.analytics) {
+
+        if (categoriesRes.status === 'fulfilled' && categoriesRes.value?.length) {
+          setCategories(categoriesRes.value);
+        }
+
+        if (ordersRes.status === 'fulfilled' && ordersRes.value?.length) {
+          setOrders(ordersRes.value);
+        }
+
+        if (notificationsRes.status === 'fulfilled' && notificationsRes.value?.length) {
+          setNotifications(notificationsRes.value);
+        }
+
+        if (messagesRes.status === 'fulfilled' && messagesRes.value?.length) {
+          setMessages(messagesRes.value);
+        }
+
+        if (analyticsRes.status === 'fulfilled' && analyticsRes.value) {
+          const a = analyticsRes.value;
           setAnalytics({
-            totalVisitors: data.analytics.totalVisitors || 0,
-            dailyTraffic: data.analytics.dailyTraffic || [],
-            pageViews: data.analytics.pageViews || [],
-            activeUsers: data.analytics.activeUsers || 0
+            totalVisitors: a.totalVisitors || 0,
+            dailyTraffic: a.dailyTraffic || [],
+            pageViews: a.pageViews || [],
+            activeUsers: a.activeUsers || 0,
           });
         }
-        if (data.activityLog?.length) setActivityLog(data.activityLog);
-        if (data.siteSettings) {
-           // Migration check for siteSettings as before
-           const migratedSettings = {
-             ...data.siteSettings,
-             heroSlides: ((data.siteSettings.heroSlides && data.siteSettings.heroSlides.length > 0) ? data.siteSettings.heroSlides : HERO_SLIDES).map((s: any) => ({
-               ...s,
-               title: typeof s.title === 'string' ? { en: s.title, fr: s.title, rw: s.title } : s.title,
-               subtitle: typeof s.subtitle === 'string' ? { en: s.subtitle, fr: s.subtitle, rw: s.subtitle } : s.subtitle,
-               cta: typeof s.cta === 'string' ? { en: s.cta, fr: s.cta, rw: s.cta } : s.cta
-             })),
-             teamMembers: ((data.siteSettings.teamMembers && data.siteSettings.teamMembers.length > 0) ? data.siteSettings.teamMembers : TEAM_MEMBERS).map((m: any) => ({
-               ...m,
-               role: typeof m.role === 'string' ? { en: m.role, fr: m.role, rw: m.role } : m.role,
-               slogan: typeof m.slogan === 'string' ? { en: m.slogan, fr: m.slogan, rw: m.slogan } : m.slogan
-             })),
-             testimonials: (data.siteSettings.testimonials && data.siteSettings.testimonials.length > 0) ? data.siteSettings.testimonials : DEMO_TESTIMONIALS
-           };
-           setSiteSettings(migratedSettings);
+
+        if (activityLogRes.status === 'fulfilled' && activityLogRes.value?.length) {
+          setActivityLog(activityLogRes.value);
+        }
+
+        if (siteSettingsRes.status === 'fulfilled' && siteSettingsRes.value) {
+          const ss = siteSettingsRes.value;
+          const migratedSettings = {
+            ...ss,
+            heroSlides: ((ss.heroSlides && ss.heroSlides.length > 0) ? ss.heroSlides : HERO_SLIDES).map((s: any) => ({
+              ...s,
+              title: typeof s.title === 'string' ? { en: s.title, fr: s.title, rw: s.title } : s.title,
+              subtitle: typeof s.subtitle === 'string' ? { en: s.subtitle, fr: s.subtitle, rw: s.subtitle } : s.subtitle,
+              cta: typeof s.cta === 'string' ? { en: s.cta, fr: s.cta, rw: s.cta } : s.cta,
+            })),
+            teamMembers: ((ss.teamMembers && ss.teamMembers.length > 0) ? ss.teamMembers : TEAM_MEMBERS).map((m: any) => ({
+              ...m,
+              role: typeof m.role === 'string' ? { en: m.role, fr: m.role, rw: m.role } : m.role,
+              slogan: typeof m.slogan === 'string' ? { en: m.slogan, fr: m.slogan, rw: m.slogan } : m.slogan,
+            })),
+            testimonials: (ss.testimonials && ss.testimonials.length > 0) ? ss.testimonials : DEMO_TESTIMONIALS,
+          };
+          setSiteSettings(migratedSettings);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -164,54 +192,117 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchData();
   }, []);
 
-  // Sync to backend whenever relevant state changes
+  // ── Debounced per-entity syncs ───────────────────────────────────────────
+  // Each entity is saved independently so a cart stock change only touches /api/products,
+  // a new order only touches /api/orders, etc.
+
   useEffect(() => {
     if (isLoading) return;
-    
-    const syncData = async () => {
-      try {
-        const response = await fetch('/api/db', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            products,
-            categories,
-            orders,
-            notifications,
-            messages,
-            analytics,
-            activityLog,
-            siteSettings
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('Sync failed with status:', response.status, errorData);
-        }
-      } catch (error) {
-        console.error('Error syncing data:', error);
-      }
-    };
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/products`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(products),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [products, isLoading]);
 
-    const timeout = setTimeout(syncData, 1000); // Debounce sync
-    return () => clearTimeout(timeout);
-  }, [products, categories, orders, notifications, messages, analytics, activityLog, siteSettings, isLoading]);
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/categories`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(categories),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [categories, isLoading]);
 
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/orders`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orders),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [orders, isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/messages`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messages),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/notifications`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notifications),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [notifications, isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/analytics`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(analytics),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [analytics, isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/activity-log`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activityLog),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [activityLog, isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const t = setTimeout(() => {
+      fetch(`${API_BASE}/api/site-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(siteSettings),
+      }).catch(console.error);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [siteSettings, isLoading]);
+
+  // ── Image upload ─────────────────────────────────────────────────────────
   const uploadImage = useCallback(async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('image', file);
-    
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    
+    const response = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: formData });
     if (!response.ok) throw new Error('Upload failed');
     const data = await response.json();
     return data.url;
   }, []);
 
+  // ── Activity helper ───────────────────────────────────────────────────────
   const addActivity = useCallback((action: string, type: ActivityLog['type'], adminName?: string) => {
     const newLog: ActivityLog = {
       id: Math.random().toString(36).substr(2, 9),
@@ -220,9 +311,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       type,
       adminName: adminName || 'System'
     };
-    setActivityLog(prev => [newLog, ...prev.slice(0, 49)]); // Keep last 50 logs
+    setActivityLog(prev => [newLog, ...prev.slice(0, 49)]);
   }, []);
 
+  // ── Analytics ─────────────────────────────────────────────────────────────
   const trackPageView = useCallback((path: string) => {
     setAnalytics(prev => {
       const pageViews = prev.pageViews || [];
@@ -230,15 +322,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newPageViews = existing
         ? pageViews.map(p => p.path === path ? { ...p, count: (p.count || 0) + 1 } : p)
         : [...pageViews, { path, count: 1 }];
-      
-      return { 
-        ...prev, 
+      return {
+        ...prev,
         totalVisitors: (prev.totalVisitors || 0) + 1,
-        pageViews: newPageViews 
+        pageViews: newPageViews
       };
     });
   }, []);
 
+  // ── Products ──────────────────────────────────────────────────────────────
   const addProduct = useCallback((product: Product) => {
     setProducts(prev => [...prev, product]);
     addActivity(`New product added: ${product.title}`, 'product');
@@ -257,6 +349,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [addActivity]);
 
+  // ── Categories ────────────────────────────────────────────────────────────
   const addCategory = useCallback((category: string) => {
     setCategories(prev => {
       if (!prev.includes(category)) {
@@ -270,18 +363,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteCategory = useCallback((category: string) => {
     setCategories(prev => {
       const filtered = prev.filter(c => c !== category);
-      // Ensure "Uncategorized" exists if we're moving products to it
-      if (!filtered.includes("Uncategorized")) {
-        return [...filtered, "Uncategorized"];
-      }
-      return filtered;
+      return filtered.includes('Uncategorized') ? filtered : [...filtered, 'Uncategorized'];
     });
-    
-    // Reassign products to "Uncategorized"
-    setProducts(prev => prev.map(p => 
-      p.category === category ? { ...p, category: "Uncategorized" } : p
-    ));
-    
+    setProducts(prev => prev.map(p => p.category === category ? { ...p, category: 'Uncategorized' } : p));
     addActivity(`Category deleted: ${category}`, 'system');
   }, [addActivity]);
 
@@ -292,14 +376,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return prev.map(c => c === oldCategory ? newCategory : c);
     });
-    
-    setProducts(prev => prev.map(p => 
-      p.category === oldCategory ? { ...p, category: newCategory } : p
-    ));
-    
+    setProducts(prev => prev.map(p => p.category === oldCategory ? { ...p, category: newCategory } : p));
     addActivity(`Category updated: ${oldCategory} to ${newCategory}`, 'system');
   }, [addActivity]);
 
+  // ── Notifications ─────────────────────────────────────────────────────────
   const addNotification = useCallback((notif: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
     const newNotif: Notification = {
       ...notif,
@@ -314,6 +395,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   }, []);
 
+  // ── Messages ──────────────────────────────────────────────────────────────
   const addMessage = useCallback((msg: Omit<Message, 'id' | 'createdAt' | 'read'>) => {
     const newMessage: Message = {
       ...msg,
@@ -340,95 +422,86 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [addActivity]);
 
   const replyToMessage = useCallback((id: string, reply: string) => {
-    setMessages(prev => prev.map(m => m.id === id ? { 
-      ...m, 
-      reply, 
+    setMessages(prev => prev.map(m => m.id === id ? {
+      ...m,
+      reply,
       repliedAt: new Date().toISOString(),
-      read: true 
+      read: true
     } : m));
     addActivity(`Replied to message from ${id}`, 'system');
   }, [addActivity]);
 
+  // ── Cart (stock management — exact same logic as before) ──────────────────
   const addToCart = useCallback((product: Product, quantity: number = 1, variations?: Variation[]) => {
     setProducts(prevProducts => {
       const currentProduct = prevProducts.find(p => p.id === product.id);
       if (!currentProduct) return prevProducts;
 
       if (variations && variations.length > 0) {
-        // Check if all variations have enough stock
         const hasStock = variations.every(v => {
           const currentV = currentProduct.variations?.find(cv => cv.id === v.id);
           return currentV && currentV.stock >= quantity;
         });
-
         if (!hasStock) {
-          toast.error("Not enough stock available for some selected variations");
+          toast.error('Not enough stock available for some selected variations');
           return prevProducts;
         }
-
-        // Reduce stock in all selected variations
-        return prevProducts.map(p => 
-          p.id === product.id ? { 
-            ...p, 
-            variations: p.variations?.map(v => 
+        return prevProducts.map(p =>
+          p.id === product.id ? {
+            ...p,
+            variations: p.variations?.map(v =>
               variations.some(sv => sv.id === v.id) ? { ...v, stock: v.stock - quantity } : v
             )
           } : p
         );
       } else {
         if (currentProduct.stock < quantity) {
-          toast.error("Not enough stock available");
+          toast.error('Not enough stock available');
           return prevProducts;
         }
-        // Reduce main stock
-        return prevProducts.map(p => 
+        return prevProducts.map(p =>
           p.id === product.id ? { ...p, stock: p.stock - quantity } : p
         );
       }
     });
 
-    // Add to cart
     setCart(prev => {
       const variationIds = (variations || []).map(v => v.id).sort().join(',');
       const existing = prev.find(item => {
         const itemVarIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
         return item.id === product.id && itemVarIds === variationIds;
       });
-
       if (existing) {
         return prev.map(item => {
           const itemVarIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
           return (item.id === product.id && itemVarIds === variationIds)
-            ? { ...item, quantity: item.quantity + quantity } 
+            ? { ...item, quantity: item.quantity + quantity }
             : item;
         });
       }
-      return [...prev, { 
-        ...product, 
-        quantity, 
+      return [...prev, {
+        ...product,
+        quantity,
         selectedVariations: variations,
-        selectedVariation: variations?.[0] // for compatibility
+        selectedVariation: variations?.[0]
       }];
     });
   }, []);
 
   const removeFromCart = useCallback((productId: string, variationIds?: string[]) => {
     const vIdString = (variationIds || []).sort().join(',');
-    
     setCart(prevCart => {
       const cartItem = prevCart.find(item => {
         const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
         return item.id === productId && itemVIds === vIdString;
       });
-      
       if (cartItem) {
-        // Restore stock
         setProducts(prevProducts => prevProducts.map(p => {
           if (p.id !== productId) return p;
           if (variationIds && variationIds.length > 0) {
             return {
               ...p,
-              variations: p.variations?.map(v => 
+              variations: p.variations?.map(v =>
                 variationIds.includes(v.id) ? { ...v, stock: v.stock + cartItem.quantity } : v
               )
             };
@@ -436,7 +509,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { ...p, stock: p.stock + cartItem.quantity };
         }));
       }
-      
       return prevCart.filter(item => {
         const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
         return !(item.id === productId && itemVIds === vIdString);
@@ -447,19 +519,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateQuantity = useCallback((productId: string, quantity: number, variationIds?: string[]) => {
     if (quantity < 1) return;
     const vIdString = (variationIds || []).sort().join(',');
-
     setCart(prevCart => {
       const cartItem = prevCart.find(item => {
         const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
         return item.id === productId && itemVIds === vIdString;
       });
-      
       if (!cartItem) return prevCart;
 
       const diff = quantity - cartItem.quantity;
       if (diff === 0) return prevCart;
 
-      // Check stock and update it
       setProducts(prevProducts => {
         const product = prevProducts.find(p => p.id === productId);
         if (!product) return prevProducts;
@@ -469,37 +538,33 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const v = product.variations?.find(v => v.id === id);
             return v && (diff < 0 || v.stock >= diff);
           });
-
           if (!hasStock) {
-            toast.error("Not enough stock available for some selected variations");
+            toast.error('Not enough stock available for some selected variations');
             return prevProducts;
           }
-          // Update variation stock
-          return prevProducts.map(p => 
-            p.id === productId ? { 
-              ...p, 
-              variations: p.variations?.map(v => 
+          return prevProducts.map(p =>
+            p.id === productId ? {
+              ...p,
+              variations: p.variations?.map(v =>
                 variationIds.includes(v.id) ? { ...v, stock: v.stock - diff } : v
               )
             } : p
           );
         } else {
           if (diff > 0 && product.stock < diff) {
-            toast.error("Not enough stock available");
+            toast.error('Not enough stock available');
             return prevProducts;
           }
-          // Update main stock
-          return prevProducts.map(p => 
+          return prevProducts.map(p =>
             p.id === productId ? { ...p, stock: p.stock - diff } : p
           );
         }
       });
 
-      // Update cart quantity
       return prevCart.map(item => {
         const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
-        return (item.id === productId && itemVIds === vIdString) 
-          ? { ...item, quantity } 
+        return (item.id === productId && itemVIds === vIdString)
+          ? { ...item, quantity }
           : item;
       });
     });
@@ -507,6 +572,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = useCallback(() => setCart([]), []);
 
+  // ── Orders ────────────────────────────────────────────────────────────────
   const addOrder = useCallback((order: Order) => {
     setOrders(prev => [order, ...prev]);
     addNotification({
@@ -518,10 +584,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [addNotification, addActivity]);
 
   const updateOrderStatus = useCallback((orderId: string, status: Order['status'], paymentStatus?: Order['paymentStatus']) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { 
-      ...o, 
-      status, 
-      paymentStatus: paymentStatus || o.paymentStatus 
+    setOrders(prev => prev.map(o => o.id === orderId ? {
+      ...o,
+      status,
+      paymentStatus: paymentStatus || o.paymentStatus
     } : o));
     addActivity(`Order ${orderId} status updated to ${status}`, 'order');
   }, [addActivity]);
@@ -536,19 +602,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     addActivity(`Order ${id} deleted`, 'order');
   }, [addActivity]);
 
+  // ── Site settings ─────────────────────────────────────────────────────────
   const updateSiteSettings = useCallback((settings: SiteSettings) => {
     setSiteSettings(settings);
     addActivity('Site settings updated', 'system');
   }, [addActivity]);
 
+  // ── Derived cart values ───────────────────────────────────────────────────
   const cartTotal = cart.reduce((sum, item) => {
     const price = item.price + (item.selectedVariation?.priceModifier || 0);
     return sum + price * item.quantity;
   }, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const value = useMemo(() => ({ 
-    products, addProduct, updateProduct, deleteProduct, 
+  const value = useMemo(() => ({
+    products, addProduct, updateProduct, deleteProduct,
     categories, addCategory, updateCategory, deleteCategory,
     notifications, addNotification, markNotificationAsRead,
     orders, addOrder, updateOrderStatus, updateOrder, deleteOrder,
@@ -557,7 +625,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     analytics, activityLog, trackPageView,
     siteSettings, updateSiteSettings, addActivity, isLoading, uploadImage
   }), [
-    products, addProduct, updateProduct, deleteProduct, 
+    products, addProduct, updateProduct, deleteProduct,
     categories, addCategory, updateCategory, deleteCategory,
     notifications, addNotification, markNotificationAsRead,
     orders, addOrder, updateOrderStatus, updateOrder, deleteOrder,
@@ -580,6 +648,5 @@ export const useShop = () => {
   return context;
 };
 
-// For backward compatibility during migration
 export const useProducts = useShop;
 export const useCart = useShop;
