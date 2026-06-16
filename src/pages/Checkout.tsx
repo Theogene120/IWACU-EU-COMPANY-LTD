@@ -165,6 +165,7 @@ const Checkout: React.FC = () => {
       address: fullAddress,
       items: [...cart],
       total,
+      deliveryFee,
       status: 'pending',
       paymentMethod,
       paymentStatus,

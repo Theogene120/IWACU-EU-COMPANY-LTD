@@ -9,6 +9,8 @@ export interface Variation {
   priceModifier?: number; // Optional price change for this variation
 }
 
+export type SalesType = 'online' | 'offline';
+
 export interface Product {
   id: string;
   title: string;
@@ -22,6 +24,13 @@ export interface Product {
   isFeatured: boolean;
   specifications?: string[];
   variations?: Variation[];
+  // ── Admin-only fields — NEVER returned by public/storefront API responses ──
+  cost?: number; // what the admin paid for the item
+  salesType?: SalesType; // 'online' (published to website) | 'offline' (sold outside the site, bookkeeping only)
+  published?: boolean; // false for offline sales — never shown on the storefront
+  salePrice?: number; // offline sale only: the actual price the item sold for
+  saleDate?: string; // offline sale only: ISO date the sale happened
+  offlineDeliveryFee?: number; // offline sale only: manually entered delivery fee (default 0)
 }
 
 export interface CartItem extends Product {
@@ -40,6 +49,7 @@ export interface Order {
   address: string;
   items: CartItem[];
   total: number;
+  deliveryFee?: number; // location-based fee computed at checkout, persisted on the order (missing on old orders = treat as 0)
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;

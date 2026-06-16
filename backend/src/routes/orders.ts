@@ -16,6 +16,7 @@ function rowToOrder(row: any) {
     address: row.address,
     items: row.items,
     total: parseFloat(row.total),
+    deliveryFee: row.delivery_fee != null ? parseFloat(row.delivery_fee) : 0,
     status: row.status,
     paymentMethod: row.payment_method,
     paymentStatus: row.payment_status,
@@ -35,7 +36,7 @@ function orderParams(o: any) {
     o.paymentMethod, o.paymentStatus,
     o.paymentMessage ?? null, o.transactionId ?? null,
     o.payerPhone ?? null, o.receiverPhone ?? null,
-    o.paymentDate ?? null, o.createdAt ?? new Date().toISOString(),
+    o.paymentDate ?? null, o.deliveryFee ?? 0, o.createdAt ?? new Date().toISOString(),
   ];
 }
 
@@ -57,12 +58,12 @@ router.post('/', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO orders
          (id,customer_name,phone,address,items,total,status,payment_method,payment_status,
-          payment_message,transaction_id,payer_phone,receiver_phone,payment_date,created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+          payment_message,transaction_id,payer_phone,receiver_phone,payment_date,delivery_fee,created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        ON CONFLICT (id) DO UPDATE SET
          customer_name=$2,phone=$3,address=$4,items=$5,total=$6,status=$7,
          payment_method=$8,payment_status=$9,payment_message=$10,transaction_id=$11,
-         payer_phone=$12,receiver_phone=$13,payment_date=$14
+         payer_phone=$12,receiver_phone=$13,payment_date=$14,delivery_fee=$15
        RETURNING *`,
       orderParams(o)
     );
@@ -84,12 +85,12 @@ router.put('/', async (req, res) => {
       await client.query(
         `INSERT INTO orders
            (id,customer_name,phone,address,items,total,status,payment_method,payment_status,
-            payment_message,transaction_id,payer_phone,receiver_phone,payment_date,created_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+            payment_message,transaction_id,payer_phone,receiver_phone,payment_date,delivery_fee,created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
          ON CONFLICT (id) DO UPDATE SET
            customer_name=$2,phone=$3,address=$4,items=$5,total=$6,status=$7,
            payment_method=$8,payment_status=$9,payment_message=$10,transaction_id=$11,
-           payer_phone=$12,receiver_phone=$13,payment_date=$14`,
+           payer_phone=$12,receiver_phone=$13,payment_date=$14,delivery_fee=$15`,
         orderParams(o)
       );
     }
@@ -115,9 +116,9 @@ router.put('/:id', async (req, res) => {
       `UPDATE orders SET
          customer_name=$2,phone=$3,address=$4,items=$5,total=$6,status=$7,
          payment_method=$8,payment_status=$9,payment_message=$10,transaction_id=$11,
-         payer_phone=$12,receiver_phone=$13,payment_date=$14
+         payer_phone=$12,receiver_phone=$13,payment_date=$14,delivery_fee=$15
        WHERE id=$1 RETURNING *`,
-      orderParams(o).slice(0, 14) // exclude created_at for update
+      orderParams(o).slice(0, 15) // exclude created_at for update
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rowToOrder(result.rows[0]));

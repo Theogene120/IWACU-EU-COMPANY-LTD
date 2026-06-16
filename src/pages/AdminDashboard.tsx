@@ -28,7 +28,10 @@ const AdminDashboard = () => {
     messages, markMessageAsRead, deleteMessage, replyToMessage, analytics, activityLog, trackPageView,
     siteSettings, updateSiteSettings, addActivity
   } = useShop();
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'messages' | 'settings' | 'analytics' | 'site-content'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'messages' | 'settings' | 'analytics' | 'site-content' | 'profit'>('overview');
+  const [profitTypeFilter, setProfitTypeFilter] = useState<'all' | 'online' | 'offline'>('all');
+  const [profitDateFrom, setProfitDateFrom] = useState('');
+  const [profitDateTo, setProfitDateTo] = useState('');
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{ oldName: string, newName: string } | null>(null);
@@ -48,7 +51,11 @@ const AdminDashboard = () => {
   const [newLogAction, setNewLogAction] = useState('');
   const [newLogType, setNewLogType] = useState<ActivityLog['type']>('system');
   const [productSearch, setProductSearch] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState('all');
+  const [productSalesTypeFilter, setProductSalesTypeFilter] = useState<'all' | 'online' | 'offline'>('all');
   const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | Order['status']>('all');
+  const [deletingProduct, setDeletingProduct] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
 
@@ -159,6 +166,45 @@ const AdminDashboard = () => {
     toast.success("Payment Report PDF exported successfully");
   };
 
+  const exportProfitReportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text("Profit Report", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableRows = profitRows.map((row, i) => [
+      i + 1,
+      row.itemName,
+      row.date ? new Date(row.date).toLocaleDateString() : '—',
+      formatPrice(row.cost),
+      formatPrice(row.deliveryFee),
+      formatPrice(row.revenue),
+      formatPrice(row.profit)
+    ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['#', 'Item Name', 'Date', 'Cost', 'Delivery Fee', 'Revenue', 'Profit']],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [22, 163, 74] },
+      styles: { fontSize: 9 }
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Total Revenue: ${formatPrice(profitTotals.revenue)}`, 14, finalY);
+    doc.text(`Total Cost: ${formatPrice(profitTotals.cost)}`, 14, finalY + 8);
+    doc.text(`Total Delivery Fees: ${formatPrice(profitTotals.deliveryFee)}`, 14, finalY + 16);
+    doc.text(`Total Profit: ${formatPrice(profitTotals.profit)}`, 14, finalY + 24);
+
+    doc.save(`Profit_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success("Profit PDF exported successfully");
+  };
+
   useEffect(() => {
     localStorage.setItem('adminPhoto', adminPhoto);
   }, [adminPhoto]);
@@ -175,16 +221,89 @@ const AdminDashboard = () => {
   const totalProducts = products.length;
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
 
-  const filteredProducts = products.filter(p => 
-    p.title.toLowerCase().includes(productSearch.toLowerCase()) || 
-    p.id.toLowerCase().includes(productSearch.toLowerCase())
+  const filteredProducts = products.filter(p =>
+    (p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
+    p.id.toLowerCase().includes(productSearch.toLowerCase())) &&
+    (productCategoryFilter === 'all' || p.category === productCategoryFilter) &&
+    (productSalesTypeFilter === 'all' || (p.salesType || 'online') === productSalesTypeFilter)
   );
 
-  const filteredOrders = orders.filter(o => 
-    o.id.toLowerCase().includes(orderSearch.toLowerCase()) || 
+  const filteredOrders = orders.filter(o =>
+    (o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
     o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) ||
-    o.phone.includes(orderSearch)
+    o.phone.includes(orderSearch)) &&
+    (orderStatusFilter === 'all' || o.status === orderStatusFilter)
   );
+
+  // ── Unified Profit table ────────────────────────────────────────────────
+  // One row per item sold, combining website order line items with offline sales.
+  // Website rows: revenue/cost cover the full line item (unit price/cost × quantity).
+  // An order's delivery fee is attributed to ONLY the first line item of that order so
+  // the totals footer never double-counts it across multiple items in the same order.
+  type ProfitRow = {
+    key: string;
+    itemName: string;
+    date: string;
+    cost: number;
+    deliveryFee: number;
+    revenue: number;
+    profit: number;
+    type: 'online' | 'offline';
+  };
+
+  const allProfitRows: ProfitRow[] = [];
+
+  // Only confirmed website orders count toward profit — pending orders aren't sold yet.
+  orders.filter(order => order.status !== 'pending').forEach(order => {
+    const orderDeliveryFee = order.deliveryFee || 0;
+    order.items.forEach((item, idx) => {
+      const product = products.find(p => p.id === item.id);
+      const unitCost = product?.cost || 0;
+      const unitRevenue = item.price + (item.selectedVariation?.priceModifier || 0);
+      const revenue = unitRevenue * item.quantity;
+      const cost = unitCost * item.quantity;
+      const deliveryFee = idx === 0 ? orderDeliveryFee : 0;
+      allProfitRows.push({
+        key: `online-${order.id}-${idx}`,
+        itemName: item.title,
+        date: order.createdAt,
+        cost,
+        deliveryFee,
+        revenue,
+        profit: revenue - cost - deliveryFee,
+        type: 'online',
+      });
+    });
+  });
+
+  products.filter(p => p.salesType === 'offline').forEach(p => {
+    const revenue = p.salePrice || 0;
+    const cost = p.cost || 0;
+    const deliveryFee = p.offlineDeliveryFee || 0;
+    allProfitRows.push({
+      key: `offline-${p.id}`,
+      itemName: p.title,
+      date: p.saleDate || '',
+      cost,
+      deliveryFee,
+      revenue,
+      profit: revenue - cost - deliveryFee,
+      type: 'offline',
+    });
+  });
+
+  const profitRows = allProfitRows
+    .filter(r => profitTypeFilter === 'all' || r.type === profitTypeFilter)
+    .filter(r => !profitDateFrom || (r.date && r.date.slice(0, 10) >= profitDateFrom))
+    .filter(r => !profitDateTo || (r.date && r.date.slice(0, 10) <= profitDateTo))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const profitTotals = profitRows.reduce((acc, r) => ({
+    revenue: acc.revenue + r.revenue,
+    cost: acc.cost + r.cost,
+    deliveryFee: acc.deliveryFee + r.deliveryFee,
+    profit: acc.profit + r.profit,
+  }), { revenue: 0, cost: 0, deliveryFee: 0, profit: 0 });
 
   const chartData = [
     { name: 'Mon', sales: 4000 },
@@ -212,6 +331,7 @@ const AdminDashboard = () => {
             { id: 'overview', icon: <LayoutDashboard className="h-5 w-5" />, label: 'Overview' },
             { id: 'products', icon: <Package className="h-5 w-5" />, label: 'Products' },
             { id: 'orders', icon: <ShoppingBag className="h-5 w-5" />, label: 'Orders' },
+            { id: 'profit', icon: <DollarSign className="h-5 w-5" />, label: 'Profit' },
             { id: 'analytics', icon: <BarChart3 className="h-5 w-5" />, label: 'Analytics' },
             { id: 'site-content', icon: <Globe className="h-5 w-5" />, label: 'Site Content' },
             { id: 'messages', icon: <Mail className="h-5 w-5" />, label: 'Messages' },
@@ -628,11 +748,24 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div className="flex items-center gap-4 w-full sm:w-auto">
-                  <select className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                  <select
+                    value={productCategoryFilter}
+                    onChange={(e) => setProductCategoryFilter(e.target.value)}
+                    className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
                     <option value="all">All Categories</option>
                     {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
-                  <button 
+                  <select
+                    value={productSalesTypeFilter}
+                    onChange={(e) => setProductSalesTypeFilter(e.target.value as any)}
+                    className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="all">All Sales Types</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                  <button
                     onClick={exportInventoryPDF}
                     className="flex-1 sm:flex-none px-4 py-3 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100 text-sm font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
                   >
@@ -643,11 +776,13 @@ const AdminDashboard = () => {
               </div>
 
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
                 <table className="w-full text-left">
                 <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
                   <tr>
                     <th className="px-8 py-6">Product</th>
                     <th className="px-8 py-6">Category</th>
+                    <th className="px-8 py-6">Type</th>
                     <th className="px-8 py-6">Price</th>
                     <th className="px-8 py-6">Stock</th>
                     <th className="px-8 py-6">Status</th>
@@ -664,26 +799,40 @@ const AdminDashboard = () => {
                         </div>
                       </td>
                       <td className="px-8 py-6 text-sm text-gray-600">{product.category}</td>
-                      <td className="px-8 py-6 font-bold text-blue-900">{formatPrice(product.price)}</td>
-                      <td className="px-8 py-6 text-sm text-gray-600">{product.stock}</td>
                       <td className="px-8 py-6">
                         <span className={cn(
                           "text-[10px] font-bold px-2 py-1 rounded-full uppercase",
-                          product.stock > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                          product.salesType === 'offline' ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"
                         )}>
-                          {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                          {product.salesType === 'offline' ? 'Offline' : 'Online'}
                         </span>
+                      </td>
+                      <td className="px-8 py-6 font-bold text-blue-900">{formatPrice(product.price)}</td>
+                      <td className="px-8 py-6 text-sm text-gray-600">{product.stock}</td>
+                      <td className="px-8 py-6">
+                        {product.salesType === 'offline' ? (
+                          <span className="text-[10px] font-bold px-2 py-1 rounded-full uppercase bg-gray-200 text-gray-700">
+                            Sold
+                          </span>
+                        ) : (
+                          <span className={cn(
+                            "text-[10px] font-bold px-2 py-1 rounded-full uppercase",
+                            product.stock > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                          )}>
+                            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-8 py-6 text-right">
                         <div className="flex justify-end space-x-2">
-                          <button 
+                          <button
                             onClick={() => setEditingProduct(product)}
                             className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
                           >
                             <Edit className="h-5 w-5" />
                           </button>
-                          <button 
-                            onClick={() => deleteProduct(product.id)}
+                          <button
+                            onClick={() => setDeletingProduct(product.id)}
                             className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                           >
                             <Trash2 className="h-5 w-5" />
@@ -692,11 +841,147 @@ const AdminDashboard = () => {
                       </td>
                     </tr>
                   ))}
+                  {filteredProducts.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-8 py-20 text-center text-gray-400">
+                        No products found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+              </div>
             </div>
           </motion.div>
         )}
+
+          {activeTab === 'profit' && (
+            <motion.div
+              key="profit"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[
+                  { label: 'Total Revenue', value: formatPrice(profitTotals.revenue), color: 'bg-blue-500' },
+                  { label: 'Total Cost', value: formatPrice(profitTotals.cost), color: 'bg-gray-700' },
+                  { label: 'Total Delivery Fees', value: formatPrice(profitTotals.deliveryFee), color: 'bg-purple-500' },
+                  { label: 'Total Profit', value: formatPrice(profitTotals.profit), color: 'bg-green-500' },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4", stat.color)}>
+                      <DollarSign className="h-5 w-5" />
+                    </div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <h3 className="text-xl font-bold text-gray-900">{stat.value}</h3>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <select
+                    value={profitTypeFilter}
+                    onChange={e => setProfitTypeFilter(e.target.value as any)}
+                    className="px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="all">All Sales</option>
+                    <option value="online">Online Only</option>
+                    <option value="offline">Offline Only</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <input
+                    type="date"
+                    value={profitDateFrom}
+                    onChange={e => setProfitDateFrom(e.target.value)}
+                    className="px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  <span className="text-gray-400 text-sm">to</span>
+                  <input
+                    type="date"
+                    value={profitDateTo}
+                    onChange={e => setProfitDateTo(e.target.value)}
+                    className="px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  {(profitTypeFilter !== 'all' || profitDateFrom || profitDateTo) && (
+                    <button
+                      onClick={() => { setProfitTypeFilter('all'); setProfitDateFrom(''); setProfitDateTo(''); }}
+                      className="px-4 py-3 bg-gray-50 text-gray-500 rounded-2xl border border-gray-100 text-sm font-bold hover:bg-gray-100 transition-all"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    onClick={exportProfitReportPDF}
+                    className="px-4 py-3 bg-green-50 text-green-600 rounded-2xl border border-green-100 text-sm font-bold hover:bg-green-100 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                  >
+                    <Download className="h-4 w-4" />
+                    Profit PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                    <tr>
+                      <th className="px-6 py-6">#</th>
+                      <th className="px-6 py-6">Item Name</th>
+                      <th className="px-6 py-6">Date</th>
+                      <th className="px-6 py-6">Cost</th>
+                      <th className="px-6 py-6">Delivery Fee</th>
+                      <th className="px-6 py-6">Revenue</th>
+                      <th className="px-6 py-6">Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {profitRows.map((row, i) => (
+                      <tr key={row.key} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-5 text-sm text-gray-500">{i + 1}</td>
+                        <td className="px-6 py-5">
+                          <span className="font-bold text-gray-900">{row.itemName}</span>
+                          <span className={cn(
+                            "ml-2 text-[9px] font-black px-2 py-0.5 rounded-full uppercase",
+                            row.type === 'offline' ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"
+                          )}>
+                            {row.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 text-sm text-gray-600">{row.date ? new Date(row.date).toLocaleDateString() : '—'}</td>
+                        <td className="px-6 py-5 text-sm text-gray-600">{formatPrice(row.cost)}</td>
+                        <td className="px-6 py-5 text-sm text-gray-600">{formatPrice(row.deliveryFee)}</td>
+                        <td className="px-6 py-5 text-sm font-bold text-blue-900">{formatPrice(row.revenue)}</td>
+                        <td className={cn("px-6 py-5 text-sm font-bold", row.profit >= 0 ? "text-green-600" : "text-red-600")}>
+                          {formatPrice(row.profit)}
+                        </td>
+                      </tr>
+                    ))}
+                    {profitRows.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No sales recorded yet.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                  {profitRows.length > 0 && (
+                    <tfoot className="bg-gray-50 font-bold text-gray-900">
+                      <tr>
+                        <td className="px-6 py-5" colSpan={3}>Totals</td>
+                        <td className="px-6 py-5">{formatPrice(profitTotals.cost)}</td>
+                        <td className="px-6 py-5">{formatPrice(profitTotals.deliveryFee)}</td>
+                        <td className="px-6 py-5 text-blue-900">{formatPrice(profitTotals.revenue)}</td>
+                        <td className={cn("px-6 py-5", profitTotals.profit >= 0 ? "text-green-600" : "text-red-600")}>
+                          {formatPrice(profitTotals.profit)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </motion.div>
+          )}
 
           {activeTab === 'orders' && (
             <motion.div
@@ -718,14 +1003,18 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div className="flex items-center gap-4 w-full sm:w-auto">
-                  <select className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                  <select
+                    value={orderStatusFilter}
+                    onChange={(e) => setOrderStatusFilter(e.target.value as any)}
+                    className="flex-1 sm:flex-none px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="shipped">Shipped</option>
                     <option value="delivered">Delivered</option>
                   </select>
-                  <button 
+                  <button
                     onClick={exportSalesReportPDF}
                     className="flex-1 sm:flex-none px-4 py-3 bg-green-50 text-green-600 rounded-2xl border border-green-100 text-sm font-bold hover:bg-green-100 transition-all flex items-center justify-center gap-2"
                   >
@@ -736,12 +1025,12 @@ const AdminDashboard = () => {
               </div>
 
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
                 <table className="w-full text-left">
                 <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
                   <tr>
                     <th className="px-8 py-6">Order ID</th>
                     <th className="px-8 py-6">Customer</th>
-                    <th className="px-8 py-6">Payment</th>
                     <th className="px-8 py-6">Total</th>
                     <th className="px-8 py-6">Status</th>
                     <th className="px-8 py-6 text-right">Update Status</th>
@@ -761,20 +1050,6 @@ const AdminDashboard = () => {
                           <span className="font-bold text-gray-900">{order.customerName}</span>
                           <span className="text-xs text-gray-500">{order.phone}</span>
                           <span className="text-[10px] text-gray-400 line-clamp-1">{order.address}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col space-y-1">
-                          <span className="text-xs font-bold uppercase text-gray-700">{order.paymentMethod.replace('_', ' ')}</span>
-                          <span className={cn(
-                            "text-[10px] font-bold px-2 py-0.5 rounded-full w-fit",
-                            order.paymentStatus === 'Paid' ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                          )}>
-                            {order.paymentStatus}
-                          </span>
-                          {order.transactionId && (
-                            <span className="text-[10px] text-blue-500 font-mono">ID: {order.transactionId}</span>
-                          )}
                         </div>
                       </td>
                       <td className="px-8 py-6 font-bold text-blue-900">{formatPrice(order.total)}</td>
@@ -822,29 +1097,20 @@ const AdminDashboard = () => {
                               <span className="text-xs font-bold">Remove</span>
                             </button>
                           </div>
-                          <select
-                            value={order.paymentStatus}
-                            onChange={(e) => updateOrderStatus(order.id, order.status, e.target.value as any)}
-                            className="text-[10px] font-bold p-1 border border-gray-200 rounded-lg focus:outline-none"
-                          >
-                            <option value="Pending">Payment Pending</option>
-                            <option value="Paid">Payment Paid</option>
-                            <option value="Pending - Cash on Delivery">COD Pending</option>
-                            <option value="Waiting for Bank Transfer">Bank Waiting</option>
-                          </select>
                         </div>
                       </td>
                     </tr>
                   ))}
                   {filteredOrders.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-8 py-20 text-center text-gray-400">
+                      <td colSpan={5} className="px-8 py-20 text-center text-gray-400">
                         No orders found
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </motion.div>
         )}
@@ -1600,6 +1866,56 @@ const AdminDashboard = () => {
                   </button>
                   <button 
                     onClick={() => setDeletingOrder(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Product Confirmation Modal */}
+      <AnimatePresence>
+        {deletingProduct && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeletingProduct(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="h-10 w-10 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Delete Product?</h2>
+                <p className="text-gray-500 mb-8 leading-relaxed">
+                  Are you sure you want to delete this product? It will be removed from the website too.
+                  This action cannot be undone.
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      deleteProduct(deletingProduct);
+                      toast.success('Product deleted successfully');
+                      setDeletingProduct(null);
+                    }}
+                    className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
+                  >
+                    Yes, Delete
+                  </button>
+                  <button
+                    onClick={() => setDeletingProduct(null)}
                     className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
                   >
                     Cancel
@@ -2716,6 +3032,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
     stock: initialData?.stock || 0,
     images: initialData?.images || [''],
     variations: initialData?.variations || [] as Variation[],
+    cost: initialData?.cost || 0,
+    salesType: initialData?.salesType || 'online' as 'online' | 'offline',
+    salePrice: initialData?.salePrice || 0,
+    saleDate: initialData?.saleDate ? initialData.saleDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
+    offlineDeliveryFee: initialData?.offlineDeliveryFee || 0,
   });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2761,7 +3082,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+
+    if (formData.salesType === 'offline') {
+      if (!formData.salePrice || formData.salePrice <= 0) {
+        toast.error('Enter a valid sale price for this offline sale');
+        return;
+      }
+      if (!formData.saleDate) {
+        toast.error('Select a sale date for this offline sale');
+        return;
+      }
+    }
+
+    onSave({
+      ...formData,
+      published: formData.salesType === 'online',
+      // Offline-only fields are meaningless for an online product — keep them zeroed out.
+      ...(formData.salesType === 'online'
+        ? { salePrice: 0, saleDate: undefined, offlineDeliveryFee: 0 }
+        : { saleDate: new Date(formData.saleDate).toISOString() }),
+    });
   };
 
   return (
@@ -2799,6 +3139,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+            Cost Price (RWF)
+            <span className="text-[9px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Admin Only — never public</span>
+          </label>
+          <input
+            required
+            type="number"
+            value={formData.cost}
+            onChange={e => setFormData({ ...formData, cost: parseInt(e.target.value) || 0 })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            placeholder="What you paid for this item"
+          />
         </div>
 
         <div className="space-y-2">
@@ -3056,18 +3411,77 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
           </div>
         </div>
 
-        <div className="pt-8 flex gap-4">
-          <button
-            type="button"
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-4 rounded-xl font-bold transition-all"
-          >
-            Save as Draft
-          </button>
+        <div className="pt-8 space-y-4 border-t border-gray-100">
+          <label className="text-sm font-bold text-gray-700">How was this sold?</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, salesType: 'online' })}
+              className={cn(
+                "p-4 rounded-2xl border-2 text-left transition-all",
+                formData.salesType === 'online' ? "border-blue-600 bg-blue-50" : "border-gray-100 hover:border-blue-200"
+              )}
+            >
+              <p className={cn("font-bold text-sm", formData.salesType === 'online' ? "text-blue-600" : "text-gray-700")}>Publish to website</p>
+              <p className="text-[11px] text-gray-500">Goes live in the catalog, sellable as usual.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, salesType: 'offline' })}
+              className={cn(
+                "p-4 rounded-2xl border-2 text-left transition-all",
+                formData.salesType === 'offline' ? "border-orange-600 bg-orange-50" : "border-gray-100 hover:border-orange-200"
+              )}
+            >
+              <p className={cn("font-bold text-sm", formData.salesType === 'offline' ? "text-orange-600" : "text-gray-700")}>Save as offline sale</p>
+              <p className="text-[11px] text-gray-500">Already sold outside the website — bookkeeping only, never shown publicly.</p>
+            </button>
+          </div>
+
+          {formData.salesType === 'offline' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-orange-50/50 rounded-2xl border border-orange-100">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-700">Sale Price (RWF)</label>
+                <input
+                  required
+                  type="number"
+                  value={formData.salePrice}
+                  onChange={e => setFormData({ ...formData, salePrice: parseInt(e.target.value) || 0 })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="Actual selling price"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-700">Sale Date</label>
+                <input
+                  required
+                  type="date"
+                  value={formData.saleDate}
+                  onChange={e => setFormData({ ...formData, saleDate: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-700">Delivery Fee (RWF)</label>
+                <input
+                  type="number"
+                  value={formData.offlineDeliveryFee}
+                  onChange={e => setFormData({ ...formData, offlineDeliveryFee: parseInt(e.target.value) || 0 })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="0 (no website location, entered manually)"
+                />
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-200"
+            className={cn(
+              "w-full py-4 rounded-xl font-bold text-white transition-all shadow-lg",
+              formData.salesType === 'online' ? "bg-blue-600 hover:bg-blue-700 shadow-blue-200" : "bg-orange-600 hover:bg-orange-700 shadow-orange-200"
+            )}
           >
-            Publish Product
+            {formData.salesType === 'online' ? 'Publish to Website' : 'Save as Offline Sale'}
           </button>
         </div>
       </div>

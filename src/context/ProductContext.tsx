@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial } from '../types';
 export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial };
 import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
+import { useAuth } from './AuthContext';
 
 // API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
@@ -84,6 +85,7 @@ export interface Notification {
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAdmin } = useAuth();
   const [products, setProducts] = useState<Product[]>(DEMO_PRODUCTS);
   const [categories, setCategories] = useState<string[]>(CATEGORIES);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -111,14 +113,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Initial data load (parallel fetches to each endpoint) ───────────────
+  // Products endpoint depends on role: admins get the full list (cost, offline sales
+  // included); everyone else gets the public list (cost stripped, online+published only).
+  // Re-runs on login/logout so the right dataset loads immediately.
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const productsUrl = isAdmin ? `${API_BASE}/api/products/admin` : `${API_BASE}/api/products`;
         const [
           productsRes, categoriesRes, ordersRes, notificationsRes,
           messagesRes, analyticsRes, activityLogRes, siteSettingsRes,
         ] = await Promise.allSettled([
-          fetch(`${API_BASE}/api/products`).then(r => r.ok ? r.json() : null),
+          fetch(productsUrl).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/categories`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/orders`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/notifications`).then(r => r.ok ? r.json() : null),
@@ -190,7 +196,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     fetchData();
-  }, []);
+  }, [isAdmin]);
 
   // ── Debounced per-entity syncs ───────────────────────────────────────────
   // Each entity is saved independently so a cart stock change only touches /api/products,
@@ -347,6 +353,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (product) addActivity(`Product deleted: ${product.title}`, 'product');
       return prev.filter(p => p.id !== id);
     });
+    // Explicit delete call — the bulk PUT sync below is upsert-only (it never deletes),
+    // so removal must be requested directly.
+    fetch(`${API_BASE}/api/products/${id}`, { method: 'DELETE' }).catch(console.error);
   }, [addActivity]);
 
   // ── Categories ────────────────────────────────────────────────────────────

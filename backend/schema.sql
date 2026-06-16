@@ -90,3 +90,20 @@ CREATE TABLE IF NOT EXISTS site_settings (
 );
 
 INSERT INTO site_settings (id) VALUES (1) ON CONFLICT DO NOTHING;
+
+-- Profit tracking migration (adds columns only — never drops/alters existing data).
+-- products: admin-only cost field + online/offline sales tracking.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS cost NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS sales_type TEXT NOT NULL DEFAULT 'online';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS published BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS sale_price NUMERIC(12,2);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS sale_date TIMESTAMPTZ;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS offline_delivery_fee NUMERIC(12,2) NOT NULL DEFAULT 0;
+
+-- Backfill safety net: any pre-existing row explicitly becomes a published online product
+-- (matches current catalog behavior exactly — nothing changes for existing data).
+UPDATE products SET sales_type = 'online' WHERE sales_type IS NULL;
+UPDATE products SET published = true WHERE published IS NULL;
+
+-- orders: persist the location-based delivery fee computed at checkout.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC(12,2) NOT NULL DEFAULT 0;
