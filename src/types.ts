@@ -1,5 +1,5 @@
 export type Language = 'en' | 'fr' | 'rw';
-export type Currency = 'RWF' | 'USD' | 'EUR';
+export type Currency = 'RWF' | 'USD' | 'EUR' | 'KES';
 
 export interface Variation {
   id: string;
