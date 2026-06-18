@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial } from '../types';
-export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial };
+import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment } from '../types';
+export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment };
 import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
 import { useAuth } from './AuthContext';
 
@@ -57,6 +57,11 @@ interface ShopContextType {
   trackPageView: (path: string) => void;
   siteSettings: SiteSettings;
   updateSiteSettings: (settings: SiteSettings) => void;
+  employees: Employee[];
+  addEmployee: (employee: Employee) => Promise<void>;
+  updateEmployee: (employee: Employee) => Promise<void>;
+  deleteEmployee: (id: string) => Promise<void>;
+  addActivity: (action: string, type: ActivityLog['type'], adminName?: string) => void;
   isLoading: boolean;
   uploadImage: (file: File) => Promise<string>;
 }
@@ -110,6 +115,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     testimonials: DEMO_TESTIMONIALS
   });
 
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Initial data load (parallel fetches to each endpoint) ───────────────
@@ -122,7 +128,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const productsUrl = isAdmin ? `${API_BASE}/api/products/admin` : `${API_BASE}/api/products`;
         const [
           productsRes, categoriesRes, ordersRes, notificationsRes,
-          messagesRes, analyticsRes, activityLogRes, siteSettingsRes,
+          messagesRes, analyticsRes, activityLogRes, siteSettingsRes, employeesRes,
         ] = await Promise.allSettled([
           fetch(productsUrl).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/categories`).then(r => r.ok ? r.json() : null),
@@ -132,6 +138,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           fetch(`${API_BASE}/api/analytics`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/activity-log`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/site-settings`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/employees`).then(r => r.ok ? r.json() : null),
         ]);
 
         if (productsRes.status === 'fulfilled' && productsRes.value) {
@@ -181,12 +188,26 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             })),
             teamMembers: ((ss.teamMembers && ss.teamMembers.length > 0) ? ss.teamMembers : TEAM_MEMBERS).map((m: any) => ({
               ...m,
-              role: typeof m.role === 'string' ? { en: m.role, fr: m.role, rw: m.role } : m.role,
-              slogan: typeof m.slogan === 'string' ? { en: m.slogan, fr: m.slogan, rw: m.slogan } : m.slogan,
+              role: (m.role && typeof m.role === 'object')
+                ? m.role
+                : typeof m.role === 'string'
+                  ? { en: m.role, fr: m.role, rw: m.role }
+                  : { en: '', fr: '', rw: '' },
+              slogan: (m.slogan && typeof m.slogan === 'object')
+                ? m.slogan
+                : typeof m.slogan === 'string'
+                  ? { en: m.slogan, fr: m.slogan, rw: m.slogan }
+                  : { en: '', fr: '', rw: '' },
+              phone: m.phone ?? '',
+              socials: m.socials ?? {},
             })),
             testimonials: (ss.testimonials && ss.testimonials.length > 0) ? ss.testimonials : DEMO_TESTIMONIALS,
           };
           setSiteSettings(migratedSettings);
+        }
+
+        if (employeesRes.status === 'fulfilled' && Array.isArray(employeesRes.value)) {
+          setEmployees(employeesRes.value);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -617,6 +638,35 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     addActivity('Site settings updated', 'system');
   }, [addActivity]);
 
+  // ── Employees ─────────────────────────────────────────────────────────────
+  const addEmployee = useCallback(async (employee: Employee) => {
+    const res = await fetch(`${API_BASE}/api/employees`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(employee),
+    });
+    if (!res.ok) throw new Error('Failed to add employee');
+    const created: Employee = await res.json();
+    setEmployees(prev => [created, ...prev]);
+  }, []);
+
+  const updateEmployee = useCallback(async (employee: Employee) => {
+    const res = await fetch(`${API_BASE}/api/employees/${employee.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(employee),
+    });
+    if (!res.ok) throw new Error('Failed to update employee');
+    const updated: Employee = await res.json();
+    setEmployees(prev => prev.map(e => e.id === updated.id ? updated : e));
+  }, []);
+
+  const deleteEmployee = useCallback(async (id: string) => {
+    const res = await fetch(`${API_BASE}/api/employees/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete employee');
+    setEmployees(prev => prev.filter(e => e.id !== id));
+  }, []);
+
   // ── Derived cart values ───────────────────────────────────────────────────
   const cartTotal = cart.reduce((sum, item) => {
     const price = item.price + (item.selectedVariation?.priceModifier || 0);
@@ -632,7 +682,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount,
     messages, addMessage, markMessageAsRead, deleteMessage, replyToMessage,
     analytics, activityLog, trackPageView,
-    siteSettings, updateSiteSettings, addActivity, isLoading, uploadImage
+    siteSettings, updateSiteSettings,
+    employees, addEmployee, updateEmployee, deleteEmployee,
+    addActivity, isLoading, uploadImage
   }), [
     products, addProduct, updateProduct, deleteProduct,
     categories, addCategory, updateCategory, deleteCategory,
@@ -641,7 +693,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount,
     messages, addMessage, markMessageAsRead, deleteMessage, replyToMessage,
     analytics, activityLog, trackPageView,
-    siteSettings, updateSiteSettings, addActivity, isLoading, uploadImage
+    siteSettings, updateSiteSettings,
+    employees, addEmployee, updateEmployee, deleteEmployee,
+    addActivity, isLoading, uploadImage
   ]);
 
   return (

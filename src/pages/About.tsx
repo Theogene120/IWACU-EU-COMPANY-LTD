@@ -24,9 +24,9 @@ const About: React.FC = () => {
               Welcome to <span className="text-blue-600">{BUSINESS_NAME}</span>
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-             IWACU EU COMPANY LTD is a dynamic and customer-focused enterprise based in Kigali, Rwanda, dedicated to providing high-quality products and services that meet modern lifestyle and business needs. The company operates across multiple sectors, with a strong emphasis on retail, general supply, and distribution of essential goods including home appliances, kitchen equipment, and lifestyle products.
-Driven by a commitment to quality, affordability, and customer satisfaction, IWACU EU COMPANY LTD sources reliable products—often inspired by international standards—to ensure durability, efficiency, and value for money. The company aims to simplify everyday living by offering practical solutions that enhance comfort and convenience for households and businesses alike.
-With a growing reputation in the markt.
+              IWACU EU COMPANY LTD is a dynamic and customer-focused enterprise based in Kigali, Rwanda, dedicated to providing high-quality products and services that meet modern lifestyle and business needs. The company operates across multiple sectors, with a strong emphasis on retail, general supply, and distribution of essential goods including home appliances, kitchen equipment, and lifestyle products.
+              Driven by a commitment to quality, affordability, and customer satisfaction, IWACU EU COMPANY LTD sources reliable products—often inspired by international standards—to ensure durability, efficiency, and value for money. The company aims to simplify everyday living by offering practical solutions that enhance comfort and convenience for households and businesses alike.
+              With a growing reputation in the markt.
             </p>
             <div className="space-y-4">
               {[
@@ -49,7 +49,7 @@ With a growing reputation in the markt.
           >
             <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
               <img
-                src="https://ugandarwandagorillatours.com/wp-content/uploads/2019/09/Areial-View-Of-Kigali-1.jpg"
+                src="city.jpg"
                 alt="About Us"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
@@ -101,9 +101,9 @@ With a growing reputation in the markt.
               >
                 <div className="aspect-square overflow-hidden relative">
                   <img 
-                    src={member.image} 
+                    src={member.image}
                     alt={member.name} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover object-[0%_30%] group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                   />
                 </div>

@@ -15,6 +15,7 @@ import activityLogRouter from './routes/activityLog.js';
 import siteSettingsRouter from './routes/siteSettings.js';
 import uploadRouter from './routes/upload.js';
 import payRouter from './routes/pay.js';
+import employeesRouter from './routes/employees.js';
 
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use('/api/activity-log', activityLogRouter);
 app.use('/api/site-settings', siteSettingsRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/pay', payRouter);
+app.use('/api/employees', employeesRouter);
 
 // Serve the built frontend in production
 if (process.env.NODE_ENV === 'production') {
