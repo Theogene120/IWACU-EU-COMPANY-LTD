@@ -3,18 +3,19 @@ import { useShop, ActivityLog } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Navigate, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Plus, 
-  Search, Edit, Trash2, CheckCircle, Clock, Truck, PackageCheck, 
+import {
+  LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Plus,
+  Search, Edit, Trash2, CheckCircle, Clock, Truck, PackageCheck,
   TrendingUp, DollarSign, ShoppingCart as CartIcon, ArrowUpRight,
   Bell, X as LucideX, Tag, Shield, Settings, Mail, Activity,
   Lock, Key, ShieldCheck, History, Terminal, Database, RefreshCw,
-  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send
+  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send,
+  ChevronDown, ChevronRight
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Product, Variation, Order, Testimonial } from '../types';
+import { Product, Variation, Order, Testimonial, Employee, SalaryPayment } from '../types';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -22,13 +23,14 @@ import autoTable from 'jspdf-autotable';
 const AdminDashboard = () => {
   const { isAdmin } = useAuth();
   const { formatPrice } = useCurrency();
-  const { 
+  const {
     products, orders, updateOrderStatus, updateOrder, deleteOrder, deleteProduct, addProduct, updateProduct,
     categories, addCategory, updateCategory, deleteCategory, notifications, markNotificationAsRead,
     messages, markMessageAsRead, deleteMessage, replyToMessage, analytics, activityLog, trackPageView,
-    siteSettings, updateSiteSettings, addActivity
+    siteSettings, updateSiteSettings, addActivity,
+    employees, addEmployee, updateEmployee, deleteEmployee,
   } = useShop();
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'messages' | 'settings' | 'analytics' | 'site-content' | 'profit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'messages' | 'settings' | 'analytics' | 'site-content' | 'profit' | 'employees'>('overview');
   const [profitTypeFilter, setProfitTypeFilter] = useState<'all' | 'online' | 'offline'>('all');
   const [profitDateFrom, setProfitDateFrom] = useState('');
   const [profitDateTo, setProfitDateTo] = useState('');
@@ -332,6 +334,7 @@ const AdminDashboard = () => {
             { id: 'products', icon: <Package className="h-5 w-5" />, label: 'Products' },
             { id: 'orders', icon: <ShoppingBag className="h-5 w-5" />, label: 'Orders' },
             { id: 'profit', icon: <DollarSign className="h-5 w-5" />, label: 'Profit' },
+            { id: 'employees', icon: <Users className="h-5 w-5" />, label: 'Employees' },
             { id: 'analytics', icon: <BarChart3 className="h-5 w-5" />, label: 'Analytics' },
             { id: 'site-content', icon: <Globe className="h-5 w-5" />, label: 'Site Content' },
             { id: 'messages', icon: <Mail className="h-5 w-5" />, label: 'Messages' },
@@ -1552,6 +1555,24 @@ const AdminDashboard = () => {
               </div>
             </motion.div>
           )}
+
+          {activeTab === 'employees' && (
+            <motion.div
+              key="employees"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <EmployeesTab
+                employees={employees}
+                addEmployee={addEmployee}
+                updateEmployee={updateEmployee}
+                deleteEmployee={deleteEmployee}
+                addActivity={addActivity}
+                formatPrice={formatPrice}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
@@ -2353,9 +2374,12 @@ const AdminDashboard = () => {
   );
 };
 
+const API_BASE_SC = import.meta.env.VITE_API_URL ?? '';
+
 const SiteContentManager = () => {
   const { siteSettings, updateSiteSettings, uploadImage } = useShop();
   const [localSettings, setLocalSettings] = useState(siteSettings);
+  const [isSaving, setIsSaving] = useState(false);
   const heroFileRefs = useRef<(HTMLInputElement | null)[]>([]);
   const teamFileRefs = useRef<(HTMLInputElement | null)[]>([]);
   const testimonialFileRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -2368,9 +2392,22 @@ const SiteContentManager = () => {
   const slides = localSettings.heroSlides || [];
   const team = localSettings.teamMembers || [];
 
-  const handleSave = () => {
-    updateSiteSettings(localSettings);
-    toast.success('Site content updated successfully');
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`${API_BASE_SC}/api/site-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(localSettings),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      updateSiteSettings(localSettings);
+      toast.success('Site content saved successfully');
+    } catch {
+      toast.error('Failed to save changes — please try again');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleHeroImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2440,11 +2477,12 @@ const SiteContentManager = () => {
             <h2 className="text-2xl font-bold text-gray-900">General Settings</h2>
             <p className="text-gray-500">Manage your company branding</p>
           </div>
-          <button 
+          <button
             onClick={handleSave}
-            className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all"
+            disabled={isSaving}
+            className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Save Changes
+            {isSaving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
 
@@ -2746,7 +2784,7 @@ const SiteContentManager = () => {
                 <LucideX className="h-4 w-4" />
               </button>
               <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100 group">
-                <img src={member?.image} alt={member?.name} className="w-full h-full object-cover" />
+                <img src={member?.image} alt={member?.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button 
                     onClick={() => teamFileRefs.current[idx]?.click()}
@@ -2780,12 +2818,12 @@ const SiteContentManager = () => {
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Role (EN)</label>
-                    <input 
-                      type="text" 
-                      value={member.role.en}
+                    <input
+                      type="text"
+                      value={member.role?.en ?? ''}
                       onChange={(e) => {
                         const newTeam = [...localSettings.teamMembers];
-                        newTeam[idx] = { ...newTeam[idx], role: { ...newTeam[idx].role, en: e.target.value } };
+                        newTeam[idx] = { ...newTeam[idx], role: { ...(newTeam[idx].role || {}), en: e.target.value } };
                         setLocalSettings({ ...localSettings, teamMembers: newTeam });
                       }}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
@@ -2793,12 +2831,12 @@ const SiteContentManager = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Role (FR)</label>
-                    <input 
-                      type="text" 
-                      value={member.role.fr}
+                    <input
+                      type="text"
+                      value={member.role?.fr ?? ''}
                       onChange={(e) => {
                         const newTeam = [...localSettings.teamMembers];
-                        newTeam[idx] = { ...newTeam[idx], role: { ...newTeam[idx].role, fr: e.target.value } };
+                        newTeam[idx] = { ...newTeam[idx], role: { ...(newTeam[idx].role || {}), fr: e.target.value } };
                         setLocalSettings({ ...localSettings, teamMembers: newTeam });
                       }}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
@@ -2806,12 +2844,12 @@ const SiteContentManager = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Role (RW)</label>
-                    <input 
-                      type="text" 
-                      value={member.role.rw}
+                    <input
+                      type="text"
+                      value={member.role?.rw ?? ''}
                       onChange={(e) => {
                         const newTeam = [...localSettings.teamMembers];
-                        newTeam[idx] = { ...newTeam[idx], role: { ...newTeam[idx].role, rw: e.target.value } };
+                        newTeam[idx] = { ...newTeam[idx], role: { ...(newTeam[idx].role || {}), rw: e.target.value } };
                         setLocalSettings({ ...localSettings, teamMembers: newTeam });
                       }}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
@@ -2821,12 +2859,12 @@ const SiteContentManager = () => {
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Slogan (EN)</label>
-                    <input 
-                      type="text" 
-                      value={member.slogan.en}
+                    <input
+                      type="text"
+                      value={member.slogan?.en ?? ''}
                       onChange={(e) => {
                         const newTeam = [...localSettings.teamMembers];
-                        newTeam[idx] = { ...newTeam[idx], slogan: { ...newTeam[idx].slogan, en: e.target.value } };
+                        newTeam[idx] = { ...newTeam[idx], slogan: { ...(newTeam[idx].slogan || {}), en: e.target.value } };
                         setLocalSettings({ ...localSettings, teamMembers: newTeam });
                       }}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm italic"
@@ -2834,12 +2872,12 @@ const SiteContentManager = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Slogan (FR)</label>
-                    <input 
-                      type="text" 
-                      value={member.slogan.fr}
+                    <input
+                      type="text"
+                      value={member.slogan?.fr ?? ''}
                       onChange={(e) => {
                         const newTeam = [...localSettings.teamMembers];
-                        newTeam[idx] = { ...newTeam[idx], slogan: { ...newTeam[idx].slogan, fr: e.target.value } };
+                        newTeam[idx] = { ...newTeam[idx], slogan: { ...(newTeam[idx].slogan || {}), fr: e.target.value } };
                         setLocalSettings({ ...localSettings, teamMembers: newTeam });
                       }}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm italic"
@@ -2847,12 +2885,12 @@ const SiteContentManager = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Slogan (RW)</label>
-                    <input 
-                      type="text" 
-                      value={member.slogan.rw}
+                    <input
+                      type="text"
+                      value={member.slogan?.rw ?? ''}
                       onChange={(e) => {
                         const newTeam = [...localSettings.teamMembers];
-                        newTeam[idx] = { ...newTeam[idx], slogan: { ...newTeam[idx].slogan, rw: e.target.value } };
+                        newTeam[idx] = { ...newTeam[idx], slogan: { ...(newTeam[idx].slogan || {}), rw: e.target.value } };
                         setLocalSettings({ ...localSettings, teamMembers: newTeam });
                       }}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm italic"
@@ -2861,15 +2899,16 @@ const SiteContentManager = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-400 uppercase">Phone</label>
-                  <input 
-                    type="text" 
-                    value={member.phone}
+                  <input
+                    type="text"
+                    value={member.phone ?? ''}
                     onChange={(e) => {
                       const newTeam = [...localSettings.teamMembers];
                       newTeam[idx] = { ...newTeam[idx], phone: e.target.value };
                       setLocalSettings({ ...localSettings, teamMembers: newTeam });
                     }}
                     className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    placeholder="+250..."
                   />
                 </div>
               </div>
@@ -3006,9 +3045,10 @@ const SiteContentManager = () => {
       <div className="pt-8 flex justify-end">
         <button
           onClick={handleSave}
-          className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200"
+          disabled={isSaving}
+          className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Save All Site Content
+          {isSaving ? 'Saving…' : 'Save All Site Content'}
         </button>
       </div>
     </div>
@@ -3685,5 +3725,415 @@ const CloseIcon = ({ className }: { className?: string }) => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
+
+interface EmployeesTabProps {
+  employees: Employee[];
+  addEmployee: (e: Employee) => Promise<void>;
+  updateEmployee: (e: Employee) => Promise<void>;
+  deleteEmployee: (id: string) => Promise<void>;
+  addActivity: (action: string, type: 'order' | 'product' | 'user' | 'system', adminName?: string) => void;
+  formatPrice: (n: number) => string;
+}
+
+const EmployeesTab: React.FC<EmployeesTabProps> = ({
+  employees, addEmployee, updateEmployee, deleteEmployee, addActivity, formatPrice,
+}) => {
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [editForm, setEditForm] = useState<{ name: string; salary: string; startDate: string } | null>(null);
+  const [paymentEmployeeId, setPaymentEmployeeId] = useState<string | null>(null);
+  const [paymentForm, setPaymentForm] = useState({ amount: '', status: 'pending' as 'confirmed' | 'pending', date: new Date().toISOString().split('T')[0] });
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [newEmpForm, setNewEmpForm] = useState({ name: '', salary: '', startDate: '' });
+
+  const toggleExpand = (id: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleAddEmployee = async () => {
+    if (!newEmpForm.name.trim()) { toast.error('Name is required'); return; }
+    const employee: Employee = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: newEmpForm.name.trim(),
+      salary: parseFloat(newEmpForm.salary) || 0,
+      startDate: newEmpForm.startDate || undefined,
+      payments: [],
+    };
+    try {
+      await addEmployee(employee);
+      addActivity(`Employee added: ${employee.name}`, 'system');
+      toast.success('Employee added');
+      setShowAddModal(false);
+      setNewEmpForm({ name: '', salary: '', startDate: '' });
+    } catch {
+      toast.error('Failed to add employee');
+    }
+  };
+
+  const openEdit = (emp: Employee) => {
+    setEditingEmployee(emp);
+    setEditForm({ name: emp.name, salary: String(emp.salary), startDate: emp.startDate || '' });
+  };
+
+  const handleUpdateEmployee = async () => {
+    if (!editingEmployee || !editForm) return;
+    if (!editForm.name.trim()) { toast.error('Name is required'); return; }
+    try {
+      await updateEmployee({
+        ...editingEmployee,
+        name: editForm.name.trim(),
+        salary: parseFloat(editForm.salary) || 0,
+        startDate: editForm.startDate || undefined,
+      });
+      addActivity(`Employee updated: ${editForm.name}`, 'system');
+      toast.success('Employee updated');
+      setEditingEmployee(null);
+      setEditForm(null);
+    } catch {
+      toast.error('Failed to update employee');
+    }
+  };
+
+  const handleAddPayment = async () => {
+    const amount = parseFloat(paymentForm.amount);
+    if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
+    const emp = employees.find(e => e.id === paymentEmployeeId);
+    if (!emp) return;
+    const newPayment: SalaryPayment = {
+      id: Math.random().toString(36).substr(2, 9),
+      amount,
+      status: paymentForm.status,
+      date: paymentForm.date,
+    };
+    const payments = [newPayment, ...emp.payments]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
+    try {
+      await updateEmployee({ ...emp, payments });
+      addActivity(`Payment recorded for ${emp.name}: ${formatPrice(amount)}`, 'system');
+      toast.success('Payment added');
+      setPaymentEmployeeId(null);
+      setPaymentForm({ amount: '', status: 'pending', date: new Date().toISOString().split('T')[0] });
+    } catch {
+      toast.error('Failed to add payment');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
+    const emp = employees.find(e => e.id === confirmDeleteId);
+    try {
+      await deleteEmployee(confirmDeleteId);
+      if (emp) addActivity(`Employee deleted: ${emp.name}`, 'system');
+      toast.success('Employee deleted');
+      setConfirmDeleteId(null);
+    } catch {
+      toast.error('Failed to delete employee');
+    }
+  };
+
+  const totalPayroll = employees.reduce((s, e) => s + e.salary, 0);
+  const pendingCount = employees.filter(e => e.payments[0]?.status === 'pending').length;
+
+  return (
+    <div className="space-y-6">
+      {/* Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Total Employees', value: employees.length, color: 'bg-blue-500', icon: <Users className="h-5 w-5" /> },
+          { label: 'Monthly Payroll', value: formatPrice(totalPayroll), color: 'bg-green-500', icon: <DollarSign className="h-5 w-5" /> },
+          { label: 'Pending Latest Payments', value: pendingCount, color: 'bg-orange-500', icon: <Clock className="h-5 w-5" /> },
+        ].map((s, i) => (
+          <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4', s.color)}>
+              {s.icon}
+            </div>
+            <p className="text-xs font-medium text-gray-500 mb-1">{s.label}</p>
+            <h3 className="text-xl font-bold text-gray-900">{s.value}</h3>
+          </div>
+        ))}
+      </div>
+
+      {/* Header bar */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900">Employee List</h2>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-sm"
+        >
+          <Plus className="h-4 w-4" />
+          Add Employee
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+              <tr>
+                <th className="px-4 py-5 w-8" />
+                <th className="px-6 py-5">ID</th>
+                <th className="px-6 py-5">Name</th>
+                <th className="px-6 py-5">Monthly Salary</th>
+                <th className="px-6 py-5">Start Date</th>
+                <th className="px-6 py-5">Latest Payment</th>
+                <th className="px-6 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {employees.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400 text-sm">
+                    No employees yet. Click "Add Employee" to get started.
+                  </td>
+                </tr>
+              )}
+              {employees.map(emp => {
+                const latest = emp.payments[0];
+                const expanded = expandedRows.has(emp.id);
+                return (
+                  <React.Fragment key={emp.id}>
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-5">
+                        <button onClick={() => toggleExpand(emp.id)} className="text-gray-400 hover:text-blue-600 transition-colors">
+                          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </button>
+                      </td>
+                      <td className="px-6 py-5 text-[11px] text-gray-400 font-mono">{emp.id}</td>
+                      <td className="px-6 py-5 font-bold text-gray-900">{emp.name}</td>
+                      <td className="px-6 py-5 font-bold text-blue-700">{formatPrice(emp.salary)}</td>
+                      <td className="px-6 py-5 text-sm text-gray-600">
+                        {emp.startDate
+                          ? new Date(emp.startDate.slice(0, 10) + 'T12:00:00').toLocaleDateString()
+                          : '—'}
+                      </td>
+                      <td className="px-6 py-5">
+                        {latest ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className={cn(
+                              'text-[10px] font-bold px-2 py-1 rounded-full uppercase w-fit flex items-center gap-1',
+                              latest.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-600'
+                            )}>
+                              {latest.status === 'confirmed'
+                                ? <CheckCircle className="h-3 w-3" />
+                                : <Clock className="h-3 w-3" />}
+                              {latest.status}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {formatPrice(latest.amount)} · {new Date(latest.date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">No payments yet</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            title="Add Payment"
+                            onClick={() => {
+                              setPaymentEmployeeId(emp.id);
+                              setPaymentForm({ amount: '', status: 'pending', date: new Date().toISOString().split('T')[0] });
+                            }}
+                            className="p-2 bg-green-50 text-green-600 rounded-xl hover:bg-green-100 transition-all"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                          <button
+                            title="Edit Employee"
+                            onClick={() => openEdit(emp)}
+                            className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            title="Delete Employee"
+                            onClick={() => setConfirmDeleteId(emp.id)}
+                            className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-all"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expanded && (
+                      <tr className="bg-blue-50/40">
+                        <td colSpan={7} className="px-10 py-4">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                            Payment History (latest 3)
+                          </p>
+                          {emp.payments.length === 0 ? (
+                            <p className="text-xs text-gray-400">No payment records yet.</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-3">
+                              {emp.payments.map((p, i) => (
+                                <div key={p.id || i} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex flex-col gap-2 min-w-[170px]">
+                                  <span className={cn(
+                                    'text-[10px] font-bold uppercase',
+                                    p.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'
+                                  )}>{p.status}</span>
+                                  <span className="text-sm font-bold text-gray-900">{formatPrice(p.amount)}</span>
+                                  <span className="text-xs text-gray-400">{new Date(p.date).toLocaleDateString()}</span>
+                                  {p.status === 'pending' && (
+                                    <button
+                                      onClick={async () => {
+                                        const updated = emp.payments.map((pay, j) =>
+                                          j === i ? { ...pay, status: 'confirmed' as const } : pay
+                                        );
+                                        try {
+                                          await updateEmployee({ ...emp, payments: updated });
+                                          addActivity(`Payment confirmed for ${emp.name}`, 'system');
+                                          toast.success('Payment confirmed');
+                                        } catch {
+                                          toast.error('Failed to confirm payment');
+                                        }
+                                      }}
+                                      className="mt-1 text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-all flex items-center gap-1 w-fit"
+                                    >
+                                      <CheckCircle className="h-3 w-3" />
+                                      Confirm
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add Employee Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => setShowAddModal(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md z-10" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Add Employee</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Full Name *</label>
+                  <input type="text" value={newEmpForm.name} onChange={e => setNewEmpForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="e.g. Jean Bosco" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Monthly Salary</label>
+                  <input type="number" min="0" value={newEmpForm.salary} onChange={e => setNewEmpForm(f => ({ ...f, salary: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="0" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Start Date</label>
+                  <input type="date" value={newEmpForm.startDate} onChange={e => setNewEmpForm(f => ({ ...f, startDate: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => setShowAddModal(false)} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleAddEmployee} className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all">Add Employee</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Employee Modal */}
+      <AnimatePresence>
+        {editingEmployee && editForm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => { setEditingEmployee(null); setEditForm(null); }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md z-10" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Employee</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Full Name *</label>
+                  <input type="text" value={editForm.name} onChange={e => setEditForm(f => f ? { ...f, name: e.target.value } : f)} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Monthly Salary</label>
+                  <input type="number" min="0" value={editForm.salary} onChange={e => setEditForm(f => f ? { ...f, salary: e.target.value } : f)} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Start Date</label>
+                  <input type="date" value={editForm.startDate} onChange={e => setEditForm(f => f ? { ...f, startDate: e.target.value } : f)} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => { setEditingEmployee(null); setEditForm(null); }} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleUpdateEmployee} className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all">Save Changes</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Payment Modal */}
+      <AnimatePresence>
+        {paymentEmployeeId && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => setPaymentEmployeeId(null)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md z-10" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">Add Payment</h2>
+              <p className="text-sm text-gray-500 mb-6">
+                Only the 3 most recent payments are kept per employee.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Amount *</label>
+                  <input type="number" min="0" value={paymentForm.amount} onChange={e => setPaymentForm(f => ({ ...f, amount: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="0" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Status</label>
+                  <select value={paymentForm.status} onChange={e => setPaymentForm(f => ({ ...f, status: e.target.value as 'confirmed' | 'pending' }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Payment Date</label>
+                  <input type="date" value={paymentForm.date} onChange={e => setPaymentForm(f => ({ ...f, date: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => setPaymentEmployeeId(null)} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleAddPayment} className="flex-1 px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all">Add Payment</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDeleteId(null)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm z-10 text-center" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="h-8 w-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Employee?</h3>
+              <p className="text-sm text-gray-500 mb-8">
+                {employees.find(e => e.id === confirmDeleteId)?.name} and all their payment history will be permanently removed.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmDeleteId(null)} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleDelete} className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all">Delete</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default AdminDashboard;

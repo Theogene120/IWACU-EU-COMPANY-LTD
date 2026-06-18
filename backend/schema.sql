@@ -107,3 +107,32 @@ UPDATE products SET published = true WHERE published IS NULL;
 
 -- orders: persist the location-based delivery fee computed at checkout.
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC(12,2) NOT NULL DEFAULT 0;
+
+-- Update team member photos to use local images (safe to re-run — matches by name).
+UPDATE site_settings
+SET team_members = (
+  SELECT jsonb_agg(
+    CASE
+      WHEN m->>'name' = 'MANIRAKIZA Emmanuel'
+        THEN jsonb_set(m, '{image}', '"/Emmanuel.jpeg"'::jsonb)
+      WHEN m->>'name' = 'UJENEZA Annonciata'
+        THEN jsonb_set(m, '{image}', '"/Annonciata.jpeg"'::jsonb)
+      ELSE m
+    END
+  )
+  FROM jsonb_array_elements(team_members) m
+)
+WHERE id = 1
+  AND team_members IS NOT NULL
+  AND jsonb_typeof(team_members) = 'array';
+
+-- Employee salary tracking migration (add-only, safe to re-run).
+CREATE TABLE IF NOT EXISTS employees (
+  id            TEXT PRIMARY KEY,
+  name          TEXT NOT NULL,
+  salary        NUMERIC(12,2) NOT NULL DEFAULT 0,
+  start_date    DATE,
+  payments      JSONB NOT NULL DEFAULT '[]',
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ DEFAULT NOW()
+);

@@ -1655,7 +1655,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: { en: "CHief Executive Officer (CEO)", fr: "PDG", rw: "Umuyobozi Mukuru" },
     slogan: { en: "Drive innovation and lead all operations to deliver a better shopping experience, ensuring customer needs are met and satisfaction is achieved.", fr: "Stimuler l'innovation et piloter l'ensemble des opérations afin d'offrir une expérience d'achat optimale, en veillant à ce que les besoins des clients soient satisfaits et que leur satisfaction soit atteinte.", rw: "Guteza imbere udushya no kuyobora ibikorwa byose kugira ngo utange uburambe bwiza bwo guhaha, urebe neza ko ibyo abakiriya bakeneye byujujwe kandi ko banyuzwe." },
     phone: "+250780707472",
-    image: "https://scontent.fkgl2-2.fna.fbcdn.net/v/t39.30808-6/687667743_1801776307448397_1130785344557065975_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=2a1932&_nc_eui2=AeElL4rHS_es8HcX2bWsjuwKinrjCtU7bKGKeuMK1TtsofpA4KWfLi48UHos-S_l6ViqB9IOKT4j2C_g98b3Alj2&_nc_ohc=whi10k1TNnMQ7kNvwHCKuC0&_nc_oc=AdpSVKYR-YSHjau5eJ1JTMVxrHIms6Hv-WfzI4QL871TEZcqObuYbe1uPnTMW1cPQfk&_nc_zt=23&_nc_ht=scontent.fkgl2-2.fna&_nc_gid=eP8GvCfI1KOlb4DNrlIRIQ&_nc_ss=7b2a8&oh=00_Af6UnT5PDb6K0exSL9B5FhwoZueNjdjRTxoNSK602EVrXg&oe=69FE91F5",
+    image: "/Emmanuel.jpeg",
     socials: { 
       facebook: "https://web.facebook.com/profile.php?id=61582762229491", 
       instagram: "https://www.instagram.com/iwacu_eu_company_ltd?igsh=MXY5dzA1MGU0bm54Nw==",
@@ -1667,7 +1667,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: { en: "Operations Manager", fr: "Responsable des Opérations", rw: "Umuyobozi w'Imirimo" },
     slogan: { en: "Ensuring that all company operations run smoothly on a daily basis.", fr: "Veiller au bon déroulement de toutes les opérations de l'entreprise au quotidien.", rw: "Gukora ku buryo ibikorwa byose by'ikigo bigenda neza buri munsi." },
     phone: "+250791318444",
-    image: "https://scontent.fkgl2-1.fna.fbcdn.net/v/t39.30808-6/687711175_1801678717458156_7949658238116255371_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=b895b5&_nc_eui2=AeG2Si1vG7Wr5NhkSp_zZcnmiavVpijAKsuJq9WmKMAqy-d3had9vCOYAZ2VIgBY7SK2je5NwwiC0u2rPm_rXaz2&_nc_ohc=qKe1AJ-mk40Q7kNvwHNddVp&_nc_oc=AdqqPihZqL4RmV6MQf-rWCtniHKRjrGpTX2LADDdbshXtXWJNF91S7yK56rVlBmoroY&_nc_zt=23&_nc_ht=scontent.fkgl2-1.fna&_nc_gid=wcKsqr7Z9dzFDT7-MWvmyw&_nc_ss=7b2a8&oh=00_Af540P0dZBOb58BwFX2ve5NgWYtuVV44e9pqQTJzGJQU3w&oe=69FE6F49",
+    image: "/Annonciata.jpeg",
     socials: { 
       facebook: "https://web.facebook.com/profile.php?id=61582762229491", 
       instagram: "https://www.instagram.com/iwacu_eu_company_ltd?igsh=MXY5dzA1MGU0bm54Nw==",
