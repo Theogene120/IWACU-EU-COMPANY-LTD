@@ -170,9 +170,9 @@ const Home = () => {
 
       {/* Newsletter */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-orange-500 rounded-3xl p-12 text-center text-white space-y-6">
+        <div className="bg-gray-200 rounded-3xl p-12 text-center text-black space-y-6">
           <h2 className="text-3xl font-bold">{t('newsletter')}</h2>
-          <p className="text-orange-50 max-w-2xl mx-auto">
+          <p className="text-black max-w-2xl mx-auto">
             Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
           </p>
           <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-4">
