@@ -14,14 +14,12 @@ const CONVERSION_RATES: Record<Currency, number> = {
   RWF: 1,
   USD: 1 / 1460,
   EUR: 1 / 1712,
-  KES: 1 / 11,
 };
 
 const CURRENCY_SYMBOLS: Record<Currency, string> = {
   RWF: 'RWF',
   USD: '$',
   EUR: '€',
-  KES: 'KSh',
 };
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

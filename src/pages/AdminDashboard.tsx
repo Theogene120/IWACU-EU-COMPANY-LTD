@@ -2,16 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useShop, ActivityLog } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Plus,
   Search, Edit, Trash2, CheckCircle, Clock, Truck, PackageCheck,
-  TrendingUp, DollarSign, ArrowUpRight,
+  TrendingUp, DollarSign, ShoppingCart as CartIcon, ArrowUpRight,
   Bell, X as LucideX, Tag, Shield, Settings, Mail, Activity,
   Lock, Key, ShieldCheck, History, Terminal, Database, RefreshCw,
-  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send, LogOut
+  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send,
+  ChevronDown, ChevronRight
 } from 'lucide-react';
-import AdminNavbar, { AdminTab } from '../components/AdminNavbar';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -21,8 +21,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const AdminDashboard = () => {
-  const { isAdmin, logout } = useAuth();
-  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const { formatPrice } = useCurrency();
   const {
     products, orders, updateOrderStatus, updateOrder, deleteOrder, deleteProduct, addProduct, updateProduct,
@@ -31,7 +30,7 @@ const AdminDashboard = () => {
     siteSettings, updateSiteSettings, addActivity,
     employees, addEmployee, updateEmployee, deleteEmployee,
   } = useShop();
-  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'messages' | 'settings' | 'analytics' | 'site-content' | 'profit' | 'employees'>('overview');
   const [profitTypeFilter, setProfitTypeFilter] = useState<'all' | 'online' | 'offline'>('all');
   const [profitDateFrom, setProfitDateFrom] = useState('');
   const [profitDateTo, setProfitDateTo] = useState('');
@@ -216,13 +215,7 @@ const AdminDashboard = () => {
     localStorage.setItem('adminName', adminName);
   }, [adminName]);
 
-  // Use effect so navigate('/') in logout fires first and unmounts this
-  // component before the redirect here can override it.
-  useEffect(() => {
-    if (!isAdmin) navigate('/', { replace: true });
-  }, [isAdmin, navigate]);
-
-  if (!isAdmin) return null;
+  if (!isAdmin) return <Navigate to="/admin/login" />;
 
   // Stats
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
@@ -325,15 +318,12 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
-      <AdminNavbar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      <div className="flex flex-1 min-h-0">
-      {/* Sidebar — fixed, does not scroll with content */}
-      <aside className="w-64 bg-blue-900 text-white hidden lg:flex flex-col flex-shrink-0 overflow-y-auto">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-blue-900 text-white hidden lg:flex flex-col sticky top-0 h-screen">
         <div className="p-8">
           <Link to="/" className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-orange-400" />
+            <CartIcon className="h-8 w-8 text-orange-400" />
             <span className="text-xl font-bold tracking-tight">SMART ADMIN</span>
           </Link>
         </div>
@@ -375,20 +365,36 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content — only this area scrolls */}
-      <main className="flex-1 min-h-0 p-8 lg:p-12 overflow-y-auto">
-        {/* Contextual sub-header: title + notifications + tab-specific actions */}
-        <div className="flex justify-between items-center mb-12 gap-4">
-          <div className="min-w-0">
-            <h1 className="text-3xl font-bold text-gray-900 capitalize truncate">
-              {activeTab === 'site-content' ? 'Site Content' : activeTab}
-            </h1>
-            <p className="text-gray-500 whitespace-nowrap">Manage your business operations</p>
+      {/* Main Content */}
+      <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 capitalize">{activeTab}</h1>
+            <p className="text-gray-500">Manage your business operations</p>
           </div>
-          <div className="flex items-center space-x-3 flex-shrink-0">
-            {/* Bell notifications */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 mr-4 border-r pr-4 border-gray-200">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-gray-900">{adminName}</p>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Super Admin</p>
+              </div>
+              <img src={adminPhoto} alt="Admin" className="w-10 h-10 rounded-full border border-gray-200 shadow-sm object-cover" />
+            </div>
             <div className="relative">
-              <button
+              <button 
+                onClick={() => setActiveTab('messages')}
+                className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-600 hover:text-blue-600 transition-all relative"
+              >
+                <Mail className="h-6 w-6" />
+                {messages.filter(m => !m.read).length > 0 && (
+                  <span className="absolute top-2 right-2 w-3 h-3 bg-blue-500 border-2 border-white rounded-full" />
+                )}
+              </button>
+            </div>
+
+            <div className="relative">
+              <button 
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-600 hover:text-blue-600 transition-all relative"
               >
@@ -415,8 +421,8 @@ const AdminDashboard = () => {
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length > 0 ? (
                           notifications.map(notif => (
-                            <div
-                              key={notif.id}
+                            <div 
+                              key={notif.id} 
                               onClick={() => markNotificationAsRead(notif.id)}
                               className={cn(
                                 "p-4 border-b last:border-0 cursor-pointer hover:bg-gray-50 transition-colors",
@@ -431,7 +437,9 @@ const AdminDashboard = () => {
                             </div>
                           ))
                         ) : (
-                          <div className="p-8 text-center text-gray-400 text-sm">No notifications</div>
+                          <div className="p-8 text-center text-gray-400 text-sm">
+                            No notifications
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -440,27 +448,26 @@ const AdminDashboard = () => {
               </AnimatePresence>
             </div>
 
-            {/* Products-tab action buttons */}
             {activeTab === 'products' && (
-              <div className="flex items-center space-x-2 flex-shrink-0">
-                <button
+              <div className="flex items-center space-x-2">
+                <button 
                   onClick={() => setIsAddingCategory(true)}
-                  className="bg-white border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold flex items-center space-x-2 hover:bg-gray-50 transition-all whitespace-nowrap"
+                  className="bg-white border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold flex items-center space-x-2 hover:bg-gray-50 transition-all"
                 >
-                  <Tag className="h-5 w-5 flex-shrink-0" />
+                  <Tag className="h-5 w-5" />
                   <span>Categories</span>
                 </button>
-                <button
+                <button 
                   onClick={() => setIsAddingProduct(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 transition-all shadow-lg shadow-blue-200 whitespace-nowrap"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 transition-all shadow-lg shadow-blue-200"
                 >
-                  <Plus className="h-5 w-5 flex-shrink-0" />
+                  <Plus className="h-5 w-5" />
                   <span>Add Product</span>
                 </button>
               </div>
             )}
           </div>
-        </div>
+        </header>
 
         {/* Tabs Content */}
         <AnimatePresence mode="wait">
@@ -1568,7 +1575,6 @@ const AdminDashboard = () => {
           )}
         </AnimatePresence>
       </main>
-      </div>{/* end flex flex-1 */}
 
       {/* Category Modal */}
       <AnimatePresence>
