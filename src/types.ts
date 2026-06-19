@@ -104,3 +104,18 @@ export interface SiteSettings {
   teamMembers: TeamMember[];
   testimonials: Testimonial[];
 }
+
+export interface SalaryPayment {
+  id: string;
+  amount: number;
+  status: 'confirmed' | 'pending';
+  date: string;
+}
+
+export interface Employee {
+  id: string;
+  name: string;
+  salary: number;
+  startDate?: string;
+  payments: SalaryPayment[];
+}
