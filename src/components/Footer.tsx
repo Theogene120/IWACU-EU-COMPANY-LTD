@@ -103,6 +103,9 @@ const Footer = () => {
                 <Mail className="h-5 w-5 text-orange-400 shrink-0" />
                 <span>{BUSINESS_EMAIL}</span>
               </li>
+              <li className="pt-2 border-t border-blue-800">
+                <Link to="/admin/login" className="hover:text-orange-400 transition-colors text-[12px]">Login as Admin</Link>
+              </li>
             </ul>
           </div>
         </div>
