@@ -1607,6 +1607,59 @@ export const RWANDA_LOCATIONS = {
   "Western Province": ["Rubavu", "Karongi", "Rusizi", "Ngororero", "Nyabihu", "Nyamasheke", "Rutsiro"]
 };
 
+// Approximate road distances from Kigali City centre (km). Freely editable to tune fees.
+export const DISTRICT_DISTANCES_KM: Record<string, number> = {
+  // Kigali City — 0 km (free delivery)
+  "Nyarugenge": 0,
+  "Gasabo":     0,
+  "Kicukiro":   0,
+  // Southern Province
+  "Kamonyi":    40,
+  "Muhanga":    55,
+  "Ruhango":    80,
+  "Nyanza":     95,
+  "Huye":      130,
+  "Gisagara":  150,
+  "Nyamagabe": 155,
+  "Nyaruguru": 175,
+  // Northern Province
+  "Rulindo":    45,
+  "Gakenke":   100,
+  "Musanze":    95,
+  "Burera":    140,
+  "Gicumbi":    70,
+  // Eastern Province
+  "Bugesera":   55,
+  "Rwamagana":  50,
+  "Kayonza":   100,
+  "Ngoma":     115,
+  "Kirehe":    150,
+  "Gatsibo":   130,
+  "Nyagatare": 150,
+  // Western Province
+  "Nyabihu":   130,
+  "Rubavu":    155,
+  "Ngororero":  90,
+  "Karongi":   115,
+  "Rutsiro":   130,
+  "Nyamasheke":175,
+  "Rusizi":    220,
+};
+
+const _KIGALI_DISTRICTS = new Set(["Nyarugenge", "Gasabo", "Kicukiro"]);
+
+/**
+ * Returns domestic delivery fee in Rwf.
+ * Kigali districts → 0. Others: 60 Rwf/km (≤3 items) or 40 Rwf/km (>3 items), capped at 2000 Rwf.
+ */
+export function calcDeliveryFee(district: string, totalQuantity: number): number {
+  if (!district || _KIGALI_DISTRICTS.has(district)) return 0;
+  const distKm = DISTRICT_DISTANCES_KM[district] ?? 0;
+  if (distKm === 0) return 0;
+  const ratePerKm = totalQuantity > 3 ? 40 : 60;
+  return Math.min(distKm * ratePerKm, 2000);
+}
+
 export const DISTRICT_DELIVERY_FEES: Record<string, { price: number; time: string }> = {
   // Kigali City (All districts 0 Frw)
   "Nyarugenge": { price: 0, time: "2-4 Hours" },

@@ -207,7 +207,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (employeesRes.status === 'fulfilled' && Array.isArray(employeesRes.value)) {
-          setEmployees(employeesRes.value);
+          setEmployees(employeesRes.value.map((e: any) => ({
+            ...e,
+            payments: Array.isArray(e.payments) ? e.payments : [],
+          })));
         }
       } catch (error) {
         console.error('Error fetching data:', error);

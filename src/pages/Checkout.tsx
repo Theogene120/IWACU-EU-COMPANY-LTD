@@ -4,7 +4,7 @@ import { useShop } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Order, PaymentMethod, PaymentStatus } from '../types';
-import { BANK_DETAILS, BUSINESS_PHONE, RWANDA_LOCATIONS, DISTRICT_DELIVERY_FEES, MOMO_DETAILS, AIRTEL_DETAILS } from '../constants';
+import { BANK_DETAILS, BUSINESS_PHONE, RWANDA_LOCATIONS, DISTRICT_DELIVERY_FEES, MOMO_DETAILS, AIRTEL_DETAILS, calcDeliveryFee } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   CreditCard, 
@@ -59,17 +59,18 @@ const Checkout: React.FC = () => {
     }
   }, [cart, navigate, isSuccess]);
 
-  // Delivery calculation logic
+  // Delivery calculation logic — distance-based for Rwanda, flat 25000 international
   useEffect(() => {
     setIsCalculating(true);
     const timer = setTimeout(() => {
       if (formData.country === 'Rwanda') {
         if (formData.district && DISTRICT_DELIVERY_FEES[formData.district]) {
-          const zoneData = DISTRICT_DELIVERY_FEES[formData.district];
+          const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+          const price = calcDeliveryFee(formData.district, totalQuantity);
           setSelectedZone({
             zone: formData.district,
-            price: zoneData.price,
-            time: zoneData.time
+            price,
+            time: DISTRICT_DELIVERY_FEES[formData.district].time,
           });
         } else {
           setSelectedZone(null);
@@ -83,7 +84,7 @@ const Checkout: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [formData.country, formData.province, formData.district]);
+  }, [formData.country, formData.province, formData.district, cart]);
 
   const deliveryFee = selectedZone?.price || 0;
   const total = subtotal + deliveryFee;

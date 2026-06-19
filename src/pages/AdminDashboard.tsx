@@ -9,7 +9,8 @@ import {
   TrendingUp, DollarSign, ArrowUpRight,
   Bell, X as LucideX, Tag, Shield, Settings, Mail, Activity,
   Lock, Key, ShieldCheck, History, Terminal, Database, RefreshCw,
-  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send, LogOut
+  User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send, LogOut,
+  ChevronDown, ChevronRight
 } from 'lucide-react';
 import AdminNavbar, { AdminTab } from '../components/AdminNavbar';
 import { cn } from '../lib/utils';
@@ -3804,7 +3805,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
       status: paymentForm.status,
       date: paymentForm.date,
     };
-    const payments = [newPayment, ...emp.payments]
+    const payments = [newPayment, ...(emp.payments ?? [])]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
     try {
@@ -3832,7 +3833,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
   };
 
   const totalPayroll = employees.reduce((s, e) => s + e.salary, 0);
-  const pendingCount = employees.filter(e => e.payments[0]?.status === 'pending').length;
+  const pendingCount = employees.filter(e => (e.payments ?? [])[0]?.status === 'pending').length;
 
   return (
     <div className="space-y-6">
@@ -3889,7 +3890,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
                 </tr>
               )}
               {employees.map(emp => {
-                const latest = emp.payments[0];
+                const latest = (emp.payments ?? [])[0];
                 const expanded = expandedRows.has(emp.id);
                 return (
                   <React.Fragment key={emp.id}>
@@ -3962,11 +3963,11 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
                           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                             Payment History (latest 3)
                           </p>
-                          {emp.payments.length === 0 ? (
+                          {(emp.payments ?? []).length === 0 ? (
                             <p className="text-xs text-gray-400">No payment records yet.</p>
                           ) : (
                             <div className="flex flex-wrap gap-3">
-                              {emp.payments.map((p, i) => (
+                              {(emp.payments ?? []).map((p, i) => (
                                 <div key={p.id || i} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex flex-col gap-2 min-w-[170px]">
                                   <span className={cn(
                                     'text-[10px] font-bold uppercase',
@@ -3977,7 +3978,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
                                   {p.status === 'pending' && (
                                     <button
                                       onClick={async () => {
-                                        const updated = emp.payments.map((pay, j) =>
+                                        const updated = (emp.payments ?? []).map((pay, j) =>
                                           j === i ? { ...pay, status: 'confirmed' as const } : pay
                                         );
                                         try {
