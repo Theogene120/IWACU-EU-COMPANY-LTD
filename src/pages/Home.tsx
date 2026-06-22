@@ -179,7 +179,7 @@ const Home = () => {
             <input
               type="email"
               placeholder="Your email address"
-              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black"
               required
             />
             <button className="bg-blue-900 hover:bg-blue-950 text-white px-8 py-3 rounded-full font-bold transition-colors">
