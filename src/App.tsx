@@ -6,6 +6,7 @@ import { ShopProvider } from './context/ProductContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { Toaster } from 'sonner';
 import PageTracker from './components/PageTracker';
+import ScrollToTop from './components/ScrollToTop';
 
 // Layouts
 import UserLayout from './components/UserLayout';
@@ -36,6 +37,7 @@ export default function App() {
           <ShopProvider>
             <Router>
               <PageTracker />
+              <ScrollToTop />
               <Toaster position="top-right" richColors />
               <Routes>
 
