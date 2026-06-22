@@ -2906,6 +2906,48 @@ const SiteContentManager = () => {
                     placeholder="+250..."
                   />
                 </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Facebook</label>
+                  <input
+                    type="text"
+                    value={member.socials?.facebook ?? ''}
+                    onChange={(e) => {
+                      const newTeam = [...localSettings.teamMembers];
+                      newTeam[idx] = { ...newTeam[idx], socials: { ...(newTeam[idx].socials || {}), facebook: e.target.value } };
+                      setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    placeholder="https://facebook.com/..."
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Instagram</label>
+                  <input
+                    type="text"
+                    value={member.socials?.instagram ?? ''}
+                    onChange={(e) => {
+                      const newTeam = [...localSettings.teamMembers];
+                      newTeam[idx] = { ...newTeam[idx], socials: { ...(newTeam[idx].socials || {}), instagram: e.target.value } };
+                      setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    placeholder="https://instagram.com/..."
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">TikTok</label>
+                  <input
+                    type="text"
+                    value={member.socials?.tiktok ?? ''}
+                    onChange={(e) => {
+                      const newTeam = [...localSettings.teamMembers];
+                      newTeam[idx] = { ...newTeam[idx], socials: { ...(newTeam[idx].socials || {}), tiktok: e.target.value } };
+                      setLocalSettings({ ...localSettings, teamMembers: newTeam });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                    placeholder="https://tiktok.com/@..."
+                  />
+                </div>
               </div>
             </div>
           ))}
