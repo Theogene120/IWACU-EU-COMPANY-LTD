@@ -4,12 +4,13 @@ import { useShop } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Variation } from '../types';
-import { ShoppingCart, MessageCircle, Star, ShieldCheck, Truck, RotateCcw, ChevronLeft, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Star, ShieldCheck, Truck, RotateCcw, ChevronLeft, AlertCircle } from 'lucide-react';
 import { BUSINESS_PHONE } from '../constants';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 import ProductCarousel from '../components/ProductCarousel';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -278,7 +279,7 @@ const ProductDetail = () => {
                 rel="noopener noreferrer"
                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2 transition-all"
               >
-                <MessageCircle className="h-5 w-5" />
+                <WhatsAppIcon className="h-5 w-5" />
                 <span>{t('orderWhatsApp')}</span>
               </a>
               <a
@@ -287,7 +288,7 @@ const ProductDetail = () => {
                 rel="noopener noreferrer"
                 className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-bold py-4 rounded-xl flex items-center justify-center space-x-2 transition-all"
               >
-                <MessageCircle className="h-5 w-5" />
+                <WhatsAppIcon className="h-5 w-5" />
                 <span>{t('askProduct')}</span>
               </a>
             </div>

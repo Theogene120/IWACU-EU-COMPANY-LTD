@@ -6,13 +6,14 @@ import { useCurrency } from '../context/CurrencyContext';
 import { Order, PaymentMethod, PaymentStatus } from '../types';
 import { BANK_DETAILS, BUSINESS_PHONE, RWANDA_LOCATIONS, DISTRICT_DELIVERY_FEES, MOMO_DETAILS, AIRTEL_DETAILS, calcDeliveryFee } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  CreditCard, 
-  Smartphone, 
-  Truck, 
-  Building2, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  CreditCard,
+  Smartphone,
+  Truck,
+  CarFront,
+  Building2,
+  CheckCircle2,
+  AlertCircle,
   Loader2,
   ArrowRight,
   ShieldCheck,
@@ -22,6 +23,7 @@ import {
   MapPin,
   Clock
 } from 'lucide-react';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -341,8 +343,8 @@ const Checkout: React.FC = () => {
             {/* Support Footer */}
             <div className="bg-gray-50 p-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-white rounded-full p-2 shadow-sm border border-gray-100">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" className="w-full h-full object-contain" />
+                 <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center shadow-sm border border-green-100">
+                    <WhatsAppIcon className="w-6 h-6 text-green-500" />
                  </div>
                  <div className="text-left">
                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Need Help?</p>
@@ -525,7 +527,7 @@ const Checkout: React.FC = () => {
                 {[
                   { id: 'momo', label: 'Mobile Money', icon: <Smartphone /> },
                   { id: 'card', label: 'Debit/Credit Card', icon: <CreditCard /> },
-                  { id: 'cod', label: 'Cash on Delivery', icon: <Truck /> },
+                  { id: 'cod', label: 'Cash on Delivery', icon: <CarFront /> },
                   { id: 'bank_transfer', label: 'Bank Transfer', icon: <Building2 /> },
                 ].map((method) => (
                   <button

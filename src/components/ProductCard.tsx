@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Star, Eye, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Star, Eye } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { useShop, Product } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -132,7 +133,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             rel="noopener noreferrer"
             className="bg-green-600 text-white text-[10px] font-black py-3 rounded-xl hover:bg-green-700 transition-all flex items-center justify-center space-x-1 shadow-lg shadow-green-100"
           >
-            <MessageCircle className="h-4 w-4" />
+            <WhatsAppIcon className="h-4 w-4" />
             <span>WhatsApp</span>
           </a>
         </div>

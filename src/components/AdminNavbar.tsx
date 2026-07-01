@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Search, Shield } from 'lucide-react';
+import { Menu, X, LogOut, Search, Shield, Truck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useShop } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
@@ -64,11 +64,15 @@ const AdminNavbar = ({ activeTab, setActiveTab }: AdminNavbarProps) => {
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          {language === 'rw'
-            ? 'KUGURUKA NI UBUNTU MU RWANDA HOSE! 🚚'
-            : language === 'fr'
-            ? 'LIVRAISON GRATUITE PARTOUT AU RWANDA ! 🚚'
-            : 'FREE DELIVERY ANYWHERE IN RWANDA! 🚚'}
+          <span className="inline-flex items-center justify-center gap-2">
+            <Truck className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {language === 'rw'
+              ? 'KUGURUKA NI UBUNTU MU RWANDA HOSE!'
+              : language === 'fr'
+              ? 'LIVRAISON GRATUITE PARTOUT AU RWANDA !'
+              : 'FREE DELIVERY ANYWHERE IN RWANDA!'}
+            <Truck className="h-4 w-4 shrink-0" aria-hidden="true" />
+          </span>
         </motion.div>
       </div>
 
