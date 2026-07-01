@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useShop } from '../context/ProductContext';
 import { BUSINESS_NAME } from '../constants';
-import { Facebook, Instagram, Music2, Phone, CheckCircle2, Target, Users, Award } from 'lucide-react';
+import { Facebook, Instagram, Music2, PhoneCall, CheckCircle2, Target, Users, Award } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const About: React.FC = () => {
@@ -134,7 +134,7 @@ const About: React.FC = () => {
                     href={`tel:${member.phone}`}
                     className="flex items-center justify-center gap-2 text-gray-700 font-bold bg-blue-50/50 py-4 rounded-2xl hover:bg-blue-600 hover:text-white transition-all group/phone border border-blue-100/50 shadow-sm"
                   >
-                    <Phone className="w-5 h-5 text-blue-600 group-hover/phone:text-white transition-colors" />
+                    <PhoneCall className="w-5 h-5 text-blue-600 group-hover/phone:text-white transition-colors" />
                     <span>Call: {member.phone}</span>
                   </a>
                 </div>

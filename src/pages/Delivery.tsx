@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Clock, MapPin, Phone, ShieldCheck, Info, Globe, ChevronDown } from 'lucide-react';
+import { Truck, Clock, MapPin, Phone, PhoneCall, ShieldCheck, Info, Globe, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { DISTRICT_DELIVERY_FEES, BUSINESS_PHONE, RWANDA_LOCATIONS } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 
 const Delivery: React.FC = () => {
   const { t } = useLanguage();
@@ -50,7 +51,7 @@ const Delivery: React.FC = () => {
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('delivery')}</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto font-medium">
-            Great News! We now offer <span className="text-green-600 font-bold">FREE DELIVERY</span> on all orders across Rwanda! 🚚
+            Great News! We now offer <span className="text-green-600 font-bold">FREE DELIVERY</span> on all orders across Rwanda! <Truck className="inline h-5 w-5 text-green-600 align-middle" aria-hidden="true" />
           </p>
         </motion.div>
 
@@ -191,7 +192,7 @@ const Delivery: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-blue-600" />
+                    <PhoneCall className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Call for Delivery Info</p>
@@ -200,7 +201,7 @@ const Delivery: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-green-600" />
+                    <WhatsAppIcon className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">WhatsApp Logistics</p>

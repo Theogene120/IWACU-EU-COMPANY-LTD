@@ -6,7 +6,7 @@ import { useShop } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { CATEGORIES } from '../constants';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Truck, Headphones, Star, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Truck, Headphones, Star, ArrowRight, PhoneCall } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const Home = () => {
@@ -62,13 +62,13 @@ const Home = () => {
             }}
             className="flex whitespace-nowrap space-x-12 px-6"
           >
-            {[
+            {([
               "WELCOME TO IWACU EU COMPANY LTD",
-              "Shop Smart. Live Better.📞 0796606178",
+              <span key="phone" className="inline-flex items-center gap-3">Shop Smart. Live Better. <PhoneCall className="h-[0.85em] w-[0.85em]" /> 0796606178</span>,
               "Trust, excellence, integrity, and service",
-              "Commit to the Lord whatever you do, and He will establish your plans. (Proverbs 16:3"
-            ].map((brand, i) => (
-              <span key={i} className="text-3xl md:text-5xl font-black text-green-200 Sentencecase tracking-tighter hover:text-blue-600 transition-colors cursor-default">
+              "Commit to the Lord whatever you do, and He will establish your plans. (Proverbs 16:3)",
+            ] as React.ReactNode[]).map((brand, i) => (
+              <span key={i} className="text-3xl md:text-5xl font-black text-blue-400 tracking-tighter hover:text-blue-600 transition-colors cursor-default inline-flex items-center">
                 {brand}
               </span>
             ))}

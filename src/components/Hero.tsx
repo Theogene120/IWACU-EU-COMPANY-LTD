@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, ShoppingBag, MessageCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { BUSINESS_PHONE, HERO_SLIDES } from '../constants';
@@ -156,7 +157,7 @@ const Hero = () => {
                   rel="noopener noreferrer"
                   className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 px-10 py-5 rounded-full font-bold flex items-center justify-center space-x-3 transition-all"
                 >
-                  <MessageCircle className="h-6 w-6 text-green-400" />
+                  <WhatsAppIcon className="h-6 w-6 text-green-400" />
                   <span className="uppercase tracking-wide">{t('orderWhatsApp')}</span>
                 </a>
               </div>
