@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment } from '../types';
-export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment };
+import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense } from '../types';
+export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense };
 import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
 import { useAuth } from './AuthContext';
 
@@ -61,6 +61,16 @@ interface ShopContextType {
   addEmployee: (employee: Employee) => Promise<void>;
   updateEmployee: (employee: Employee) => Promise<void>;
   deleteEmployee: (id: string) => Promise<void>;
+  fetchEmployeePayments: (employeeId: string, range?: { from?: string; to?: string }) => Promise<SalaryPayment[]>;
+  addEmployeePayment: (employeeId: string, payment: Omit<SalaryPayment, 'id'>) => Promise<SalaryPayment>;
+  updateEmployeePayment: (employeeId: string, paymentId: string, updates: Partial<Omit<SalaryPayment, 'id'>>) => Promise<SalaryPayment>;
+  deleteEmployeePayment: (employeeId: string, paymentId: string) => Promise<void>;
+  fetchPayrollSummary: (range?: { from?: string; to?: string }) => Promise<{ totalPaid: number; count: number }>;
+  fetchAllEmployeePayments: (range?: { from?: string; to?: string }) => Promise<EmployeePaymentRecord[]>;
+  otherExpenses: OtherExpense[];
+  addOtherExpense: (expense: OtherExpense) => Promise<void>;
+  updateOtherExpense: (expense: OtherExpense) => Promise<void>;
+  deleteOtherExpense: (id: string) => Promise<void>;
   addActivity: (action: string, type: ActivityLog['type'], adminName?: string) => void;
   isLoading: boolean;
   uploadImage: (file: File) => Promise<string>;
@@ -116,6 +126,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [otherExpenses, setOtherExpenses] = useState<OtherExpense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Initial data load (parallel fetches to each endpoint) ───────────────
@@ -128,7 +139,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const productsUrl = isAdmin ? `${API_BASE}/api/products/admin` : `${API_BASE}/api/products`;
         const [
           productsRes, categoriesRes, ordersRes, notificationsRes,
-          messagesRes, analyticsRes, activityLogRes, siteSettingsRes, employeesRes,
+          messagesRes, analyticsRes, activityLogRes, siteSettingsRes, employeesRes, otherExpensesRes,
         ] = await Promise.allSettled([
           fetch(productsUrl).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/categories`).then(r => r.ok ? r.json() : null),
@@ -139,6 +150,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           fetch(`${API_BASE}/api/activity-log`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/site-settings`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/employees`).then(r => r.ok ? r.json() : null),
+          fetch(`${API_BASE}/api/other-expenses`).then(r => r.ok ? r.json() : null),
         ]);
 
         if (productsRes.status === 'fulfilled' && productsRes.value) {
@@ -207,10 +219,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (employeesRes.status === 'fulfilled' && Array.isArray(employeesRes.value)) {
-          setEmployees(employeesRes.value.map((e: any) => ({
-            ...e,
-            payments: Array.isArray(e.payments) ? e.payments : [],
-          })));
+          setEmployees(employeesRes.value);
+        }
+
+        if (otherExpensesRes.status === 'fulfilled' && Array.isArray(otherExpensesRes.value)) {
+          setOtherExpenses(otherExpensesRes.value);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -670,6 +683,105 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setEmployees(prev => prev.filter(e => e.id !== id));
   }, []);
 
+  // Latest-payment summaries on `employees` are computed server-side; re-fetch the
+  // lean list after any payment mutation instead of duplicating that logic client-side.
+  const refreshEmployees = useCallback(async () => {
+    const res = await fetch(`${API_BASE}/api/employees`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) setEmployees(data);
+    }
+  }, []);
+
+  const fetchEmployeePayments = useCallback(async (employeeId: string, range?: { from?: string; to?: string }): Promise<SalaryPayment[]> => {
+    const params = new URLSearchParams();
+    if (range?.from) params.set('from', range.from);
+    if (range?.to) params.set('to', range.to);
+    const qs = params.toString();
+    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments${qs ? `?${qs}` : ''}`);
+    if (!res.ok) throw new Error('Failed to fetch payments');
+    return res.json();
+  }, []);
+
+  const addEmployeePayment = useCallback(async (employeeId: string, payment: Omit<SalaryPayment, 'id'>): Promise<SalaryPayment> => {
+    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payment),
+    });
+    if (!res.ok) throw new Error('Failed to add payment');
+    const created = await res.json();
+    await refreshEmployees();
+    return created;
+  }, [refreshEmployees]);
+
+  const updateEmployeePayment = useCallback(async (employeeId: string, paymentId: string, updates: Partial<Omit<SalaryPayment, 'id'>>): Promise<SalaryPayment> => {
+    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments/${paymentId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error('Failed to update payment');
+    const updated = await res.json();
+    await refreshEmployees();
+    return updated;
+  }, [refreshEmployees]);
+
+  const deleteEmployeePayment = useCallback(async (employeeId: string, paymentId: string) => {
+    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments/${paymentId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete payment');
+    await refreshEmployees();
+  }, [refreshEmployees]);
+
+  const fetchPayrollSummary = useCallback(async (range?: { from?: string; to?: string }): Promise<{ totalPaid: number; count: number }> => {
+    const params = new URLSearchParams();
+    if (range?.from) params.set('from', range.from);
+    if (range?.to) params.set('to', range.to);
+    const qs = params.toString();
+    const res = await fetch(`${API_BASE}/api/employees/payments/summary${qs ? `?${qs}` : ''}`);
+    if (!res.ok) throw new Error('Failed to fetch payroll summary');
+    return res.json();
+  }, []);
+
+  const fetchAllEmployeePayments = useCallback(async (range?: { from?: string; to?: string }): Promise<EmployeePaymentRecord[]> => {
+    const params = new URLSearchParams();
+    if (range?.from) params.set('from', range.from);
+    if (range?.to) params.set('to', range.to);
+    const qs = params.toString();
+    const res = await fetch(`${API_BASE}/api/employees/payments${qs ? `?${qs}` : ''}`);
+    if (!res.ok) throw new Error('Failed to fetch payments');
+    return res.json();
+  }, []);
+
+  // ── Other Expenses ────────────────────────────────────────────────────────
+  const addOtherExpense = useCallback(async (expense: OtherExpense) => {
+    const res = await fetch(`${API_BASE}/api/other-expenses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(expense),
+    });
+    if (!res.ok) throw new Error('Failed to add expense');
+    const created: OtherExpense = await res.json();
+    setOtherExpenses(prev => [created, ...prev]);
+  }, []);
+
+  const updateOtherExpense = useCallback(async (expense: OtherExpense) => {
+    const res = await fetch(`${API_BASE}/api/other-expenses/${expense.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(expense),
+    });
+    if (!res.ok) throw new Error('Failed to update expense');
+    const updated: OtherExpense = await res.json();
+    setOtherExpenses(prev => prev.map(e => e.id === updated.id ? updated : e));
+  }, []);
+
+  const deleteOtherExpense = useCallback(async (id: string) => {
+    const res = await fetch(`${API_BASE}/api/other-expenses/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete expense');
+    setOtherExpenses(prev => prev.filter(e => e.id !== id));
+  }, []);
+
   // ── Derived cart values ───────────────────────────────────────────────────
   const cartTotal = cart.reduce((sum, item) => {
     const price = item.price + (item.selectedVariation?.priceModifier || 0);
@@ -687,6 +799,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     analytics, activityLog, trackPageView,
     siteSettings, updateSiteSettings,
     employees, addEmployee, updateEmployee, deleteEmployee,
+    fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary, fetchAllEmployeePayments,
+    otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense,
     addActivity, isLoading, uploadImage
   }), [
     products, addProduct, updateProduct, deleteProduct,
@@ -698,6 +812,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     analytics, activityLog, trackPageView,
     siteSettings, updateSiteSettings,
     employees, addEmployee, updateEmployee, deleteEmployee,
+    fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary, fetchAllEmployeePayments,
+    otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense,
     addActivity, isLoading, uploadImage
   ]);
 
