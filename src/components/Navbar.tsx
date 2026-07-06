@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Globe, LogOut, Search, ChevronDown, Check, Truck } from 'lucide-react';
+import { ShoppingCart, Menu, X, Globe, LogOut, Search, ChevronDown, Check} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useShop } from '../context/ProductContext';
@@ -76,11 +76,11 @@ const Navbar = () => {
           transition={{ duration: 2, repeat: Infinity }}
         >
           <span className="inline-flex items-center justify-center gap-2">
-            <Truck className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {language === 'rw' ? 'KUGURURA NI UBUNTU MU RWANDA HOSE!' :
-             language === 'fr' ? 'LIVRAISON GRATUITE PARTOUT AU RWANDA !' :
-             'FREE DELIVERY ANYWHERE IN RWANDA!'}
-            <Truck className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {/* <Truck className="h-4 w-4 shrink-0" aria-hidden="true" /> */}
+            {language === 'rw' ? 'IBICURUZWA BYIZA UBUZIMA BWIZA' :
+             language === 'fr' ? 'SIMPLIFIEZ VOTRE VIE AVEC DES PRODUETS DE QUALITE' :
+             'MAKE LIFE EASY WITH QUALITY PRODUCT'}
+            {/* <Truck className="h-4 w-4 shrink-0" aria-hidden="true" /> */}
           </span>
         </motion.div>
       </div>
