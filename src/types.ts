@@ -117,5 +117,18 @@ export interface Employee {
   name: string;
   salary: number;
   startDate?: string;
-  payments: SalaryPayment[];
+  latestPayment?: SalaryPayment | null;
+}
+
+export interface EmployeePaymentRecord extends SalaryPayment {
+  employeeId: string;
+  employeeName: string;
+}
+
+export interface OtherExpense {
+  id: string;
+  name: string;
+  cost: number;
+  date: string;
+  notes?: string;
 }

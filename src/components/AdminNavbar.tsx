@@ -13,6 +13,8 @@ export type AdminTab =
   | 'products'
   | 'orders'
   | 'profit'
+  | 'employees'
+  | 'expenses'
   | 'analytics'
   | 'site-content'
   | 'messages'

@@ -136,3 +136,57 @@ CREATE TABLE IF NOT EXISTS employees (
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Employee payments migration: move payment history off the capped `payments` JSONB
+-- blob (previously trimmed to the 3 most recent) into its own table so every payment
+-- is kept permanently and can be filtered by date range with plain SQL.
+CREATE TABLE IF NOT EXISTS employee_payments (
+  id            TEXT PRIMARY KEY,
+  employee_id   TEXT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+  amount        NUMERIC(12,2) NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'pending',
+  date          DATE NOT NULL,
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_employee_payments_employee_id ON employee_payments(employee_id);
+CREATE INDEX IF NOT EXISTS idx_employee_payments_date ON employee_payments(date);
+
+-- One-time backfill from the old JSONB column, then drop it. Guarded so it's a no-op
+-- once the column is gone (safe to re-run on every deploy).
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'employees' AND column_name = 'payments'
+  ) THEN
+    INSERT INTO employee_payments (id, employee_id, amount, status, date)
+    SELECT
+      COALESCE(NULLIF(p->>'id', ''), e.id || '-' || row_number() OVER (PARTITION BY e.id)),
+      e.id,
+      (p->>'amount')::numeric,
+      COALESCE(p->>'status', 'pending'),
+      (p->>'date')::date
+    FROM employees e, jsonb_array_elements(e.payments) p
+    WHERE jsonb_typeof(e.payments) = 'array'
+    ON CONFLICT (id) DO NOTHING;
+
+    ALTER TABLE employees DROP COLUMN payments;
+  END IF;
+END $$;
+
+-- Other expenses tracking (add-only, safe to re-run).
+CREATE TABLE IF NOT EXISTS other_expenses (
+  id            TEXT PRIMARY KEY,
+  name          TEXT NOT NULL,
+  cost          NUMERIC(12,2) NOT NULL DEFAULT 0,
+  date          DATE NOT NULL,
+  notes         TEXT,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_other_expenses_date ON other_expenses(date);
+
+-- Category attribute removed — drop it if a prior run of this schema created it.
+ALTER TABLE other_expenses DROP COLUMN IF EXISTS category;

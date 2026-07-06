@@ -10,16 +10,84 @@ import {
   Bell, X as LucideX, Tag, Shield, Settings, Mail, Activity,
   Lock, Key, ShieldCheck, History, Terminal, Database, RefreshCw,
   User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send, LogOut,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, Receipt
 } from 'lucide-react';
 import AdminNavbar, { AdminTab } from '../components/AdminNavbar';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Product, Variation, Order, Testimonial, Employee, SalaryPayment } from '../types';
+import { Product, Variation, Order, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense } from '../types';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+// PDF Export Helpers — module-level so every admin tab (reports, expenses, ...) can
+// stamp the same company letterhead on its printable documents.
+type ReportLogo = { dataUrl: string; width: number; height: number };
+
+const loadImageAsDataUrl = async (url: string): Promise<ReportLogo | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+    return { dataUrl, width, height };
+  } catch {
+    return null;
+  }
+};
+
+const drawReportHeader = (doc: jsPDF, logo: ReportLogo | null, title: string): number => {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let textX = 14;
+
+  if (logo) {
+    try {
+      const targetHeight = 16;
+      const targetWidth = Math.min(55, targetHeight * (logo.width / logo.height));
+      const format = logo.dataUrl.includes('image/png') ? 'PNG' : 'JPEG';
+      doc.addImage(logo.dataUrl, format, 14, 8, targetWidth, targetHeight);
+      textX = 14 + targetWidth + 6;
+    } catch {
+      // Ignore malformed image data and continue without the logo
+    }
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(20);
+  doc.text('IWACU EU COMPANY LTD', textX, 18);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+
+  doc.setDrawColor(210);
+  doc.line(14, 32, pageWidth - 14, 32);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(20);
+  doc.text(title, 14, 42);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 49);
+
+  return 58;
+};
 
 const AdminDashboard = () => {
   const { isAdmin, logout } = useAuth();
@@ -31,6 +99,8 @@ const AdminDashboard = () => {
     messages, markMessageAsRead, deleteMessage, replyToMessage, analytics, activityLog, trackPageView,
     siteSettings, updateSiteSettings, addActivity,
     employees, addEmployee, updateEmployee, deleteEmployee,
+    fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary, fetchAllEmployeePayments,
+    otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense,
   } = useShop();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [profitTypeFilter, setProfitTypeFilter] = useState<'all' | 'online' | 'offline'>('all');
@@ -66,15 +136,11 @@ const AdminDashboard = () => {
   const [adminPhoto, setAdminPhoto] = useState(() => localStorage.getItem('adminPhoto') || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400");
   const [adminName, setAdminName] = useState(() => localStorage.getItem('adminName') || "MANIRAKIZA Emmanuel");
 
-  // PDF Export Helpers
-  const exportInventoryPDF = () => {
+  const exportInventoryPDF = async () => {
     const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text("Inventory Report - Remaining Products", 14, 22);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
-    
+    const logoDataUrl = await loadImageAsDataUrl(siteSettings.logoUrl || '/logo.png');
+    const startY = drawReportHeader(doc, logoDataUrl, 'Inventory Report - Remaining Products');
+
     const tableRows = filteredProducts.map(p => [
       p.id,
       p.title,
@@ -85,7 +151,7 @@ const AdminDashboard = () => {
     ]);
 
     autoTable(doc, {
-      startY: 40,
+      startY,
       head: [['ID', 'Product Name', 'Category', 'Price', 'Stock', 'Status']],
       body: tableRows,
       theme: 'grid',
@@ -97,15 +163,12 @@ const AdminDashboard = () => {
     toast.success("Inventory PDF exported successfully");
   };
 
-  const exportSalesReportPDF = () => {
+  const exportSalesReportPDF = async () => {
     const doc = new jsPDF();
+    const logoDataUrl = await loadImageAsDataUrl(siteSettings.logoUrl || '/logo.png');
     const releasedOrders = orders.filter(o => o.status !== 'pending');
-    
-    doc.setFontSize(20);
-    doc.text("Sales Report - Released Products", 14, 22);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const startY = drawReportHeader(doc, logoDataUrl, 'Sales Report - Released Products');
 
     const tableRows = releasedOrders.map(o => [
       o.id,
@@ -116,7 +179,7 @@ const AdminDashboard = () => {
     ]);
 
     autoTable(doc, {
-      startY: 40,
+      startY,
       head: [['Order ID', 'Customer', 'Date', 'Status', 'Amount']],
       body: tableRows,
       theme: 'grid',
@@ -134,13 +197,10 @@ const AdminDashboard = () => {
     toast.success("Sales PDF exported successfully");
   };
 
-  const exportPaymentReportPDF = () => {
+  const exportPaymentReportPDF = async () => {
     const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text("Payment & Transaction Report", 14, 22);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    const logoDataUrl = await loadImageAsDataUrl(siteSettings.logoUrl || '/logo.png');
+    const startY = drawReportHeader(doc, logoDataUrl, 'Payment & Transaction Report');
 
     const tableRows = orders.map(o => [
       o.id,
@@ -152,7 +212,7 @@ const AdminDashboard = () => {
     ]);
 
     autoTable(doc, {
-      startY: 40,
+      startY,
       head: [['Order ID', 'Customer', 'Method', 'Status', 'Transaction ID', 'Amount']],
       body: tableRows,
       theme: 'grid',
@@ -170,13 +230,10 @@ const AdminDashboard = () => {
     toast.success("Payment Report PDF exported successfully");
   };
 
-  const exportProfitReportPDF = () => {
+  const exportProfitReportPDF = async () => {
     const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text("Profit Report", 14, 22);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    const logoDataUrl = await loadImageAsDataUrl(siteSettings.logoUrl || '/logo.png');
+    const startY = drawReportHeader(doc, logoDataUrl, 'Profit Report');
 
     const tableRows = profitRows.map((row, i) => [
       i + 1,
@@ -189,7 +246,7 @@ const AdminDashboard = () => {
     ]);
 
     autoTable(doc, {
-      startY: 40,
+      startY,
       head: [['#', 'Item Name', 'Date', 'Cost', 'Delivery Fee', 'Revenue', 'Profit']],
       body: tableRows,
       theme: 'grid',
@@ -346,6 +403,7 @@ const AdminDashboard = () => {
             { id: 'orders', icon: <ShoppingBag className="h-5 w-5" />, label: 'Orders' },
             { id: 'profit', icon: <DollarSign className="h-5 w-5" />, label: 'Profit' },
             { id: 'employees', icon: <Users className="h-5 w-5" />, label: 'Employees' },
+            { id: 'expenses', icon: <Receipt className="h-5 w-5" />, label: 'Other Expenses' },
             { id: 'analytics', icon: <BarChart3 className="h-5 w-5" />, label: 'Analytics' },
             { id: 'site-content', icon: <Globe className="h-5 w-5" />, label: 'Site Content' },
             { id: 'messages', icon: <Mail className="h-5 w-5" />, label: 'Messages' },
@@ -1562,6 +1620,32 @@ const AdminDashboard = () => {
                 addEmployee={addEmployee}
                 updateEmployee={updateEmployee}
                 deleteEmployee={deleteEmployee}
+                fetchEmployeePayments={fetchEmployeePayments}
+                addEmployeePayment={addEmployeePayment}
+                updateEmployeePayment={updateEmployeePayment}
+                deleteEmployeePayment={deleteEmployeePayment}
+                fetchPayrollSummary={fetchPayrollSummary}
+                fetchAllEmployeePayments={fetchAllEmployeePayments}
+                logoUrl={siteSettings.logoUrl}
+                addActivity={addActivity}
+                formatPrice={formatPrice}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'expenses' && (
+            <motion.div
+              key="expenses"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <ExpensesTab
+                otherExpenses={otherExpenses}
+                addOtherExpense={addOtherExpense}
+                updateOtherExpense={updateOtherExpense}
+                deleteOtherExpense={deleteOtherExpense}
+                logoUrl={siteSettings.logoUrl}
                 addActivity={addActivity}
                 formatPrice={formatPrice}
               />
@@ -3768,14 +3852,29 @@ interface EmployeesTabProps {
   addEmployee: (e: Employee) => Promise<void>;
   updateEmployee: (e: Employee) => Promise<void>;
   deleteEmployee: (id: string) => Promise<void>;
+  fetchEmployeePayments: (employeeId: string, range?: { from?: string; to?: string }) => Promise<SalaryPayment[]>;
+  addEmployeePayment: (employeeId: string, payment: Omit<SalaryPayment, 'id'>) => Promise<SalaryPayment>;
+  updateEmployeePayment: (employeeId: string, paymentId: string, updates: Partial<Omit<SalaryPayment, 'id'>>) => Promise<SalaryPayment>;
+  deleteEmployeePayment: (employeeId: string, paymentId: string) => Promise<void>;
+  fetchPayrollSummary: (range?: { from?: string; to?: string }) => Promise<{ totalPaid: number; count: number }>;
+  fetchAllEmployeePayments: (range?: { from?: string; to?: string }) => Promise<EmployeePaymentRecord[]>;
+  logoUrl?: string;
   addActivity: (action: string, type: 'order' | 'product' | 'user' | 'system', adminName?: string) => void;
   formatPrice: (n: number) => string;
 }
 
 const EmployeesTab: React.FC<EmployeesTabProps> = ({
-  employees, addEmployee, updateEmployee, deleteEmployee, addActivity, formatPrice,
+  employees, addEmployee, updateEmployee, deleteEmployee,
+  fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary,
+  fetchAllEmployeePayments, logoUrl,
+  addActivity, formatPrice,
 }) => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [paymentsByEmployee, setPaymentsByEmployee] = useState<Record<string, SalaryPayment[]>>({});
+  const [loadingPayments, setLoadingPayments] = useState<Record<string, boolean>>({});
+  const [globalFilter, setGlobalFilter] = useState({ from: '', to: '' });
+  const [payrollSummary, setPayrollSummary] = useState({ totalPaid: 0, count: 0 });
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [editForm, setEditForm] = useState<{ name: string; salary: string; startDate: string } | null>(null);
@@ -3784,12 +3883,60 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [newEmpForm, setNewEmpForm] = useState({ name: '', salary: '', startDate: '' });
 
+  const activeRange = (globalFilter.from || globalFilter.to) ? globalFilter : undefined;
+
+  const loadSummary = async (range?: { from?: string; to?: string }) => {
+    setLoadingSummary(true);
+    try {
+      const data = await fetchPayrollSummary(range);
+      setPayrollSummary(data);
+    } catch {
+      toast.error('Failed to load payroll summary');
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSummary(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadPayments = async (employeeId: string, range?: { from?: string; to?: string }) => {
+    setLoadingPayments(prev => ({ ...prev, [employeeId]: true }));
+    try {
+      const data = await fetchEmployeePayments(employeeId, range);
+      setPaymentsByEmployee(prev => ({ ...prev, [employeeId]: data }));
+    } catch {
+      toast.error('Failed to load payment history');
+    } finally {
+      setLoadingPayments(prev => ({ ...prev, [employeeId]: false }));
+    }
+  };
+
   const toggleExpand = (id: string) => {
+    const alreadyExpanded = expandedRows.has(id);
     setExpandedRows(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (alreadyExpanded) next.delete(id); else next.add(id);
       return next;
     });
+    if (!alreadyExpanded && !paymentsByEmployee[id]) {
+      loadPayments(id, activeRange);
+    }
+  };
+
+  const applyGlobalFilter = () => {
+    loadSummary(activeRange);
+    setPaymentsByEmployee({});
+    expandedRows.forEach(id => loadPayments(id, activeRange));
+  };
+
+  const clearGlobalFilter = () => {
+    setGlobalFilter({ from: '', to: '' });
+    loadSummary(undefined);
+    setPaymentsByEmployee({});
+    expandedRows.forEach(id => loadPayments(id, undefined));
   };
 
   const handleAddEmployee = async () => {
@@ -3799,7 +3946,6 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
       name: newEmpForm.name.trim(),
       salary: parseFloat(newEmpForm.salary) || 0,
       startDate: newEmpForm.startDate || undefined,
-      payments: [],
     };
     try {
       await addEmployee(employee);
@@ -3840,24 +3986,47 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
     const amount = parseFloat(paymentForm.amount);
     if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
     const emp = employees.find(e => e.id === paymentEmployeeId);
-    if (!emp) return;
-    const newPayment: SalaryPayment = {
-      id: Math.random().toString(36).substr(2, 9),
-      amount,
-      status: paymentForm.status,
-      date: paymentForm.date,
-    };
-    const payments = [newPayment, ...(emp.payments ?? [])]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
+    if (!emp || !paymentEmployeeId) return;
     try {
-      await updateEmployee({ ...emp, payments });
+      await addEmployeePayment(paymentEmployeeId, { amount, status: paymentForm.status, date: paymentForm.date });
       addActivity(`Payment recorded for ${emp.name}: ${formatPrice(amount)}`, 'system');
       toast.success('Payment added');
+      loadSummary(activeRange);
+      if (expandedRows.has(paymentEmployeeId)) {
+        await loadPayments(paymentEmployeeId, activeRange);
+      }
       setPaymentEmployeeId(null);
       setPaymentForm({ amount: '', status: 'pending', date: new Date().toISOString().split('T')[0] });
     } catch {
       toast.error('Failed to add payment');
+    }
+  };
+
+  const handleConfirmPayment = async (emp: Employee, payment: SalaryPayment) => {
+    try {
+      await updateEmployeePayment(emp.id, payment.id, { status: 'confirmed' });
+      addActivity(`Payment confirmed for ${emp.name}`, 'system');
+      toast.success('Payment confirmed');
+      setPaymentsByEmployee(prev => ({
+        ...prev,
+        [emp.id]: (prev[emp.id] || []).map(p => p.id === payment.id ? { ...p, status: 'confirmed' } : p),
+      }));
+    } catch {
+      toast.error('Failed to confirm payment');
+    }
+  };
+
+  const handleDeletePayment = async (emp: Employee, payment: SalaryPayment) => {
+    try {
+      await deleteEmployeePayment(emp.id, payment.id);
+      addActivity(`Payment deleted for ${emp.name}`, 'system');
+      toast.success('Payment deleted');
+      setPaymentsByEmployee(prev => ({
+        ...prev,
+        [emp.id]: (prev[emp.id] || []).filter(p => p.id !== payment.id),
+      }));
+    } catch {
+      toast.error('Failed to delete payment');
     }
   };
 
@@ -3874,8 +4043,50 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
     }
   };
 
+  const exportPayrollPDF = async () => {
+    try {
+      const records = await fetchAllEmployeePayments(activeRange);
+      const doc = new jsPDF();
+      const logoDataUrl = await loadImageAsDataUrl(logoUrl || '/logo.png');
+      const title = activeRange
+        ? `Employee Payments Report (${globalFilter.from || '...'} to ${globalFilter.to || '...'})`
+        : 'Employee Payments Report (All Time)';
+      const startY = drawReportHeader(doc, logoDataUrl, title);
+
+      const tableRows = records.map((r, i) => [
+        i + 1,
+        r.employeeName,
+        new Date(r.date).toLocaleDateString(),
+        formatPrice(r.amount),
+        r.status.toUpperCase(),
+      ]);
+
+      autoTable(doc, {
+        startY,
+        head: [['No', 'Employee', 'Date', 'Amount', 'Status']],
+        body: tableRows,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 163, 74] },
+        styles: { fontSize: 9 }
+      });
+
+      const confirmedTotal = records.filter(r => r.status === 'confirmed').reduce((s, r) => s + r.amount, 0);
+      const pendingTotal = records.filter(r => r.status === 'pending').reduce((s, r) => s + r.amount, 0);
+      const finalY = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`Total Confirmed: ${formatPrice(confirmedTotal)}`, 14, finalY);
+      doc.text(`Total Pending: ${formatPrice(pendingTotal)}`, 14, finalY + 8);
+
+      doc.save(`Employee_Payments_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('Payroll PDF exported successfully');
+    } catch {
+      toast.error('Failed to export payroll report');
+    }
+  };
+
   const totalPayroll = employees.reduce((s, e) => s + e.salary, 0);
-  const pendingCount = employees.filter(e => (e.payments ?? [])[0]?.status === 'pending').length;
+  const pendingCount = employees.filter(e => e.latestPayment?.status === 'pending').length;
 
   return (
     <div className="space-y-6">
@@ -3894,6 +4105,64 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
             <h3 className="text-xl font-bold text-gray-900">{s.value}</h3>
           </div>
         ))}
+      </div>
+
+      {/* Payment date filter + total salary paid */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">From</label>
+              <input
+                type="date"
+                value={globalFilter.from}
+                onChange={e => setGlobalFilter(f => ({ ...f, from: e.target.value }))}
+                className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">To</label>
+              <input
+                type="date"
+                value={globalFilter.to}
+                onChange={e => setGlobalFilter(f => ({ ...f, to: e.target.value }))}
+                className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              onClick={applyGlobalFilter}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all"
+            >
+              Filter
+            </button>
+            {activeRange && (
+              <button
+                onClick={clearGlobalFilter}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-medium text-gray-500 mb-1">
+              {activeRange ? 'Total Salary Paid (filtered)' : 'Total Salary Paid (all time)'}
+            </p>
+            <h3 className="text-2xl font-bold text-green-700">
+              {loadingSummary ? '…' : formatPrice(payrollSummary.totalPaid)}
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">
+              {payrollSummary.count} confirmed payment{payrollSummary.count === 1 ? '' : 's'}
+            </p>
+            <button
+              onClick={exportPayrollPDF}
+              className="mt-3 px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-all shadow-sm ml-auto"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {activeRange ? 'Print Filtered' : 'Print All'}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Header bar */}
@@ -3932,7 +4201,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
                 </tr>
               )}
               {employees.map(emp => {
-                const latest = (emp.payments ?? [])[0];
+                const latest = emp.latestPayment;
                 const expanded = expandedRows.has(emp.id);
                 return (
                   <React.Fragment key={emp.id}>
@@ -4001,44 +4270,71 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
                     </tr>
                     {expanded && (
                       <tr className="bg-blue-50/40">
-                        <td colSpan={7} className="px-10 py-4">
-                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                            Payment History (latest 3)
-                          </p>
-                          {(emp.payments ?? []).length === 0 ? (
-                            <p className="text-xs text-gray-400">No payment records yet.</p>
+                        <td colSpan={7} className="px-10 py-5">
+                          <div className="flex items-center justify-between mb-4">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                              Payment History{activeRange ? ' (filtered)' : ''}
+                            </p>
+                            <span className="text-xs text-gray-400">
+                              {(paymentsByEmployee[emp.id] || []).length} payment{(paymentsByEmployee[emp.id] || []).length === 1 ? '' : 's'}
+                            </span>
+                          </div>
+
+                          {loadingPayments[emp.id] ? (
+                            <p className="text-xs text-gray-400">Loading payments…</p>
+                          ) : (paymentsByEmployee[emp.id] || []).length === 0 ? (
+                            <p className="text-xs text-gray-400">No payment records{activeRange ? ' in this range' : ''}.</p>
                           ) : (
-                            <div className="flex flex-wrap gap-3">
-                              {(emp.payments ?? []).map((p, i) => (
-                                <div key={p.id || i} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex flex-col gap-2 min-w-[170px]">
-                                  <span className={cn(
-                                    'text-[10px] font-bold uppercase',
-                                    p.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'
-                                  )}>{p.status}</span>
-                                  <span className="text-sm font-bold text-gray-900">{formatPrice(p.amount)}</span>
-                                  <span className="text-xs text-gray-400">{new Date(p.date).toLocaleDateString()}</span>
-                                  {p.status === 'pending' && (
-                                    <button
-                                      onClick={async () => {
-                                        const updated = (emp.payments ?? []).map((pay, j) =>
-                                          j === i ? { ...pay, status: 'confirmed' as const } : pay
-                                        );
-                                        try {
-                                          await updateEmployee({ ...emp, payments: updated });
-                                          addActivity(`Payment confirmed for ${emp.name}`, 'system');
-                                          toast.success('Payment confirmed');
-                                        } catch {
-                                          toast.error('Failed to confirm payment');
-                                        }
-                                      }}
-                                      className="mt-1 text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-all flex items-center gap-1 w-fit"
-                                    >
-                                      <CheckCircle className="h-3 w-3" />
-                                      Confirm
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
+                            <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+                              <table className="w-full text-left text-sm">
+                                <thead className="bg-gray-50 text-gray-500 text-[11px] font-bold uppercase tracking-wider">
+                                  <tr>
+                                    <th className="px-4 py-3">Date</th>
+                                    <th className="px-4 py-3">Amount</th>
+                                    <th className="px-4 py-3">Status</th>
+                                    <th className="px-4 py-3 text-right">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                  {(paymentsByEmployee[emp.id] || []).map(p => (
+                                    <tr key={p.id}>
+                                      <td className="px-4 py-3 text-gray-600">{new Date(p.date).toLocaleDateString()}</td>
+                                      <td className="px-4 py-3 font-bold text-gray-900">{formatPrice(p.amount)}</td>
+                                      <td className="px-4 py-3">
+                                        <span className={cn(
+                                          'text-[10px] font-bold px-2 py-1 rounded-full uppercase w-fit inline-flex items-center gap-1',
+                                          p.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-600'
+                                        )}>
+                                          {p.status === 'confirmed'
+                                            ? <CheckCircle className="h-3 w-3" />
+                                            : <Clock className="h-3 w-3" />}
+                                          {p.status}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                          {p.status === 'pending' && (
+                                            <button
+                                              onClick={() => handleConfirmPayment(emp, p)}
+                                              className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-all flex items-center gap-1"
+                                            >
+                                              <CheckCircle className="h-3 w-3" />
+                                              Confirm
+                                            </button>
+                                          )}
+                                          <button
+                                            title="Delete Payment"
+                                            onClick={() => handleDeletePayment(emp, p)}
+                                            className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
                           )}
                         </td>
@@ -4120,7 +4416,7 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
             <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md z-10" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">Add Payment</h2>
               <p className="text-sm text-gray-500 mb-6">
-                Only the 3 most recent payments are kept per employee.
+                All payments are kept and can be filtered by date in the employee's history.
               </p>
               <div className="space-y-4">
                 <div>
@@ -4160,6 +4456,356 @@ const EmployeesTab: React.FC<EmployeesTabProps> = ({
               <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Employee?</h3>
               <p className="text-sm text-gray-500 mb-8">
                 {employees.find(e => e.id === confirmDeleteId)?.name} and all their payment history will be permanently removed.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmDeleteId(null)} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleDelete} className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all">Delete</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+interface ExpensesTabProps {
+  otherExpenses: OtherExpense[];
+  addOtherExpense: (e: OtherExpense) => Promise<void>;
+  updateOtherExpense: (e: OtherExpense) => Promise<void>;
+  deleteOtherExpense: (id: string) => Promise<void>;
+  logoUrl?: string;
+  addActivity: (action: string, type: 'order' | 'product' | 'user' | 'system', adminName?: string) => void;
+  formatPrice: (n: number) => string;
+}
+
+const ExpensesTab: React.FC<ExpensesTabProps> = ({
+  otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense, logoUrl, addActivity, formatPrice,
+}) => {
+  const [filter, setFilter] = useState({ from: '', to: '' });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<OtherExpense | null>(null);
+  const [editForm, setEditForm] = useState<{ name: string; cost: string; date: string; notes: string } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [newExpenseForm, setNewExpenseForm] = useState({ name: '', cost: '', date: new Date().toISOString().split('T')[0], notes: '' });
+
+  const activeRange = Boolean(filter.from || filter.to);
+
+  const filteredExpenses = otherExpenses.filter(e => {
+    if (filter.from && e.date < filter.from) return false;
+    if (filter.to && e.date > filter.to) return false;
+    return true;
+  });
+
+  const totalCost = filteredExpenses.reduce((s, e) => s + e.cost, 0);
+
+  const handleAddExpense = async () => {
+    if (!newExpenseForm.name.trim()) { toast.error('Name is required'); return; }
+    const cost = parseFloat(newExpenseForm.cost);
+    if (!cost || cost <= 0) { toast.error('Enter a valid cost'); return; }
+    if (!newExpenseForm.date) { toast.error('Date is required'); return; }
+    const expense: OtherExpense = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: newExpenseForm.name.trim(),
+      cost,
+      date: newExpenseForm.date,
+      notes: newExpenseForm.notes.trim() || undefined,
+    };
+    try {
+      await addOtherExpense(expense);
+      addActivity(`Expense added: ${expense.name} (${formatPrice(cost)})`, 'system');
+      toast.success('Expense added');
+      setShowAddModal(false);
+      setNewExpenseForm({ name: '', cost: '', date: new Date().toISOString().split('T')[0], notes: '' });
+    } catch {
+      toast.error('Failed to add expense');
+    }
+  };
+
+  const openEdit = (exp: OtherExpense) => {
+    setEditingExpense(exp);
+    setEditForm({ name: exp.name, cost: String(exp.cost), date: exp.date, notes: exp.notes || '' });
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!editingExpense || !editForm) return;
+    if (!editForm.name.trim()) { toast.error('Name is required'); return; }
+    const cost = parseFloat(editForm.cost);
+    if (!cost || cost <= 0) { toast.error('Enter a valid cost'); return; }
+    try {
+      await updateOtherExpense({
+        ...editingExpense,
+        name: editForm.name.trim(),
+        cost,
+        date: editForm.date,
+        notes: editForm.notes.trim() || undefined,
+      });
+      addActivity(`Expense updated: ${editForm.name}`, 'system');
+      toast.success('Expense updated');
+      setEditingExpense(null);
+      setEditForm(null);
+    } catch {
+      toast.error('Failed to update expense');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
+    const exp = otherExpenses.find(e => e.id === confirmDeleteId);
+    try {
+      await deleteOtherExpense(confirmDeleteId);
+      if (exp) addActivity(`Expense deleted: ${exp.name}`, 'system');
+      toast.success('Expense deleted');
+      setConfirmDeleteId(null);
+    } catch {
+      toast.error('Failed to delete expense');
+    }
+  };
+
+  const exportExpensesPDF = async () => {
+    const doc = new jsPDF();
+    const logoDataUrl = await loadImageAsDataUrl(logoUrl || '/logo.png');
+    const title = activeRange
+      ? `Other Expenses Report (${filter.from || '...'} to ${filter.to || '...'})`
+      : 'Other Expenses Report (All Time)';
+    const startY = drawReportHeader(doc, logoDataUrl, title);
+
+    const tableRows = filteredExpenses.map((exp, i) => [
+      i + 1,
+      exp.name,
+      formatPrice(exp.cost),
+      new Date(exp.date).toLocaleDateString(),
+      exp.notes || '—',
+    ]);
+
+    autoTable(doc, {
+      startY,
+      head: [['No', 'Name', 'Cost', 'Date', 'Notes']],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [220, 38, 38] },
+      styles: { fontSize: 9 }
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Total Expenses: ${formatPrice(totalCost)}`, 14, finalY);
+
+    doc.save(`Other_Expenses_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Expenses PDF exported successfully');
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4 bg-red-500">
+            <Receipt className="h-5 w-5" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">
+            {activeRange ? 'Total Expenses (filtered)' : 'Total Expenses (all time)'}
+          </p>
+          <h3 className="text-xl font-bold text-gray-900">{formatPrice(totalCost)}</h3>
+        </div>
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4 bg-blue-500">
+            <LayoutGrid className="h-5 w-5" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Number of Expenses</p>
+          <h3 className="text-xl font-bold text-gray-900">{filteredExpenses.length}</h3>
+        </div>
+      </div>
+
+      {/* Filter + actions */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">From</label>
+              <input
+                type="date"
+                value={filter.from}
+                onChange={e => setFilter(f => ({ ...f, from: e.target.value }))}
+                className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">To</label>
+              <input
+                type="date"
+                value={filter.to}
+                onChange={e => setFilter(f => ({ ...f, to: e.target.value }))}
+                className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            {activeRange && (
+              <button
+                onClick={() => setFilter({ from: '', to: '' })}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={exportExpensesPDF}
+              className="px-5 py-2.5 bg-gray-900 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-all shadow-sm"
+            >
+              <Download className="h-4 w-4" />
+              {activeRange ? 'Print Filtered' : 'Print All'}
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add Expense
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+              <tr>
+                <th className="px-6 py-5">No</th>
+                <th className="px-6 py-5">Name</th>
+                <th className="px-6 py-5">Cost</th>
+                <th className="px-6 py-5">Date</th>
+                <th className="px-6 py-5">Notes</th>
+                <th className="px-6 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredExpenses.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">
+                    No expenses{activeRange ? ' in this range' : ' yet'}. Click "Add Expense" to get started.
+                  </td>
+                </tr>
+              )}
+              {filteredExpenses.map((exp, i) => (
+                <tr key={exp.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-5 text-sm text-gray-500">{i + 1}</td>
+                  <td className="px-6 py-5 font-bold text-gray-900">{exp.name}</td>
+                  <td className="px-6 py-5 font-bold text-red-600">{formatPrice(exp.cost)}</td>
+                  <td className="px-6 py-5 text-sm text-gray-600">
+                    {new Date(exp.date.slice(0, 10) + 'T12:00:00').toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-5 text-sm text-gray-500 max-w-xs truncate" title={exp.notes}>
+                    {exp.notes || '—'}
+                  </td>
+                  <td className="px-6 py-5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        title="Edit Expense"
+                        onClick={() => openEdit(exp)}
+                        className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        title="Delete Expense"
+                        onClick={() => setConfirmDeleteId(exp.id)}
+                        className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-all"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add Expense Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => setShowAddModal(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md z-10" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Add Expense</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Name *</label>
+                  <input type="text" value={newExpenseForm.name} onChange={e => setNewExpenseForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="e.g. Office Rent" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Cost *</label>
+                  <input type="number" min="0" value={newExpenseForm.cost} onChange={e => setNewExpenseForm(f => ({ ...f, cost: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="0" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Date *</label>
+                  <input type="date" value={newExpenseForm.date} onChange={e => setNewExpenseForm(f => ({ ...f, date: e.target.value }))} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Notes</label>
+                  <textarea value={newExpenseForm.notes} onChange={e => setNewExpenseForm(f => ({ ...f, notes: e.target.value }))} rows={3} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none" placeholder="Optional details" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => setShowAddModal(false)} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleAddExpense} className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all">Add Expense</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Expense Modal */}
+      <AnimatePresence>
+        {editingExpense && editForm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => { setEditingExpense(null); setEditForm(null); }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md z-10" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Expense</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Name *</label>
+                  <input type="text" value={editForm.name} onChange={e => setEditForm(f => f ? { ...f, name: e.target.value } : f)} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Cost *</label>
+                  <input type="number" min="0" value={editForm.cost} onChange={e => setEditForm(f => f ? { ...f, cost: e.target.value } : f)} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Date *</label>
+                  <input type="date" value={editForm.date} onChange={e => setEditForm(f => f ? { ...f, date: e.target.value } : f)} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-1 block">Notes</label>
+                  <textarea value={editForm.notes} onChange={e => setEditForm(f => f ? { ...f, notes: e.target.value } : f)} rows={3} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => { setEditingExpense(null); setEditForm(null); }} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                <button onClick={handleUpdateExpense} className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all">Save Changes</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <motion.div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDeleteId(null)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.div className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm z-10 text-center" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="h-8 w-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Expense?</h3>
+              <p className="text-sm text-gray-500 mb-8">
+                {otherExpenses.find(e => e.id === confirmDeleteId)?.name} will be permanently removed.
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setConfirmDeleteId(null)} className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">Cancel</button>
