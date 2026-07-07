@@ -7,7 +7,7 @@ import { Variation } from '../types';
 import { ShoppingCart, Star, ShieldCheck, Truck, RotateCcw, ChevronLeft, AlertCircle } from 'lucide-react';
 import { BUSINESS_PHONE } from '../constants';
 import { motion } from 'motion/react';
-import { cn } from '../lib/utils';
+import { cn, resolveColorSwatch } from '../lib/utils';
 import { toast } from 'sonner';
 import ProductCarousel from '../components/ProductCarousel';
 import WhatsAppIcon from '../components/WhatsAppIcon';
@@ -199,7 +199,7 @@ const ProductDetail = () => {
                             {isColor ? (
                               <div 
                                 className="w-full h-full rounded-full border border-black/5" 
-                                style={{ backgroundColor: v.value.toLowerCase() }} 
+                                style={{ backgroundColor: resolveColorSwatch(v.value) }}
                               />
                             ) : (
                               <span>{v.value}</span>
