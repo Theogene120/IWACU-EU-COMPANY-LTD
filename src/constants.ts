@@ -1779,19 +1779,22 @@ export const HERO_SLIDES = [
     image: "https://images.unsplash.com/photo-1692865217408-5e09d8958be2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8RWxpdGUlMjBGYXNoaW9uJTIwJTI2JTIwU3VpdHN8ZW58MHx8MHx8fDA%3D",
     title: { en: "Elite Fashion & Suits", fr: "Mode et Costumes d'Élite", rw: "Imyenda n'Amakositime" },
     subtitle: { en: "Premium Tuxedos, Baby Designer Wear & More", fr: "Tuxedos Premium, Vêtements Bébé & Plus", rw: "Amakositime n'Imyenda y'abana" },
-    cta: { en: "Shop Fashion", fr: "Acheter la Mode", rw: "Gura Imyenda" }
+    cta: { en: "Shop Fashion", fr: "Acheter la Mode", rw: "Gura Imyenda" },
+    productId: "f2"
   },
   {
     image: "https://images.unsplash.com/photo-1695822822491-d92cee704368?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aVBob25lJTIwMTUlMjBQcm8lMjBNYXh8ZW58MHx8MHx8fDA%3D",
     title: { en: "iPhone 15 Pro Max", fr: "iPhone 15 Pro Max", rw: "iPhone 15 Pro Max" },
     subtitle: { en: "Experience the Peak of Mobile Intelligence", fr: "Le Sommet de l'Intelligence Mobile", rw: "Telefone nshya ya iPhone 15" },
-    cta: { en: "Get Yours", fr: "Obtenir le Vôtre", rw: "Yigure ubu" }
+    cta: { en: "Get Yours", fr: "Obtenir le Vôtre", rw: "Yigure ubu" },
+    productId: "e16"
   },
   {
     image: "https://images.unsplash.com/photo-1643753072729-d54252008db0?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: { en: "Grand Cinema Experience", fr: "Expérience Grand Cinéma", rw: "Sinema mu rugo iwawe" },
     subtitle: { en: "Massive 85\" 4K Smart TVs and Luxury Audio", fr: "TV 85\" 4K Géantes & Audio de Luxe", rw: "TV nini n'ibyuma bisohora amajwi" },
-    cta: { en: "Browse Home Tech", fr: "Voir la Tech Maison", rw: "Reba ibikoresho" }
+    cta: { en: "Browse Home Tech", fr: "Voir la Tech Maison", rw: "Reba ibikoresho" },
+    productId: "e19"
   }
 ];
 

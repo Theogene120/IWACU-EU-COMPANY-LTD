@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, Eye } from 'lucide-react';
 import WhatsAppIcon from './WhatsAppIcon';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,8 +10,8 @@ import { cn } from '../lib/utils';
 
 const Hero = () => {
   const { siteSettings } = useShop();
-  const slides = siteSettings.heroSlides && siteSettings.heroSlides.length > 0 
-    ? siteSettings.heroSlides 
+  const slides = siteSettings.heroSlides && siteSettings.heroSlides.length > 0
+    ? siteSettings.heroSlides
     : HERO_SLIDES;
   const [current, setCurrent] = useState(0);
 
@@ -165,6 +165,18 @@ const Hero = () => {
           </div>
         </motion.div>
       </AnimatePresence>
+
+      {/* View Product Button */}
+      {slides[current].productId && (
+        <Link
+          key={slides[current].productId}
+          to={`/product/${slides[current].productId}`}
+          className="group absolute top-4 right-4 sm:top-6 sm:right-12 z-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-xl shadow-blue-900/40"
+        >
+          <Eye className="h-4 w-4" />
+          <span className="uppercase tracking-wide">View Product</span>
+        </Link>
+      )}
 
       {/* Modern Controls */}
       <div className="absolute bottom-12 right-4 sm:right-12 flex items-center space-x-4 z-20">

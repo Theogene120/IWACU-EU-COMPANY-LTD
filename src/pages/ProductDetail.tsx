@@ -15,23 +15,27 @@ import WhatsAppIcon from '../components/WhatsAppIcon';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, addToCart } = useShop();
+  const { products, addToCart, siteSettings } = useShop();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
-  
+
   const product = products.find(p => p.id === id);
+  const heroSlide = product ? siteSettings.heroSlides?.find(s => s.productId === product.id) : undefined;
+  const galleryImages = product
+    ? (heroSlide && !product.images.includes(heroSlide.image) ? [heroSlide.image, ...product.images] : product.images)
+    : [];
   const [quantity, setQuantity] = useState(1);
   const [selectedVariations, setSelectedVariations] = useState<Record<string, Variation>>({});
-  const [mainImage, setMainImage] = useState(product?.images[0] || '');
+  const [mainImage, setMainImage] = useState(heroSlide?.image || product?.images[0] || '');
 
   useEffect(() => {
     if (product) {
-      setMainImage(product.images[0]);
-      // If there's only one type of variation, auto-select if needed? 
+      setMainImage(heroSlide?.image || product.images[0]);
+      // If there's only one type of variation, auto-select if needed?
       // Actually, user wants mandatory selection, so don't auto-select.
       setSelectedVariations({});
     }
-  }, [product]);
+  }, [product, heroSlide]);
 
   if (!product) {
     return (
@@ -101,9 +105,9 @@ const ProductDetail = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           
-          {product.images.length > 1 && (
+          {galleryImages.length > 1 && (
             <div className="grid grid-cols-5 gap-3">
-              {product.images.map((img, i) => (
+              {galleryImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setMainImage(img)}

@@ -2456,7 +2456,7 @@ const AdminDashboard = () => {
 const API_BASE_SC = import.meta.env.VITE_API_URL ?? '';
 
 const SiteContentManager = () => {
-  const { siteSettings, updateSiteSettings, uploadImage } = useShop();
+  const { siteSettings, updateSiteSettings, uploadImage, products } = useShop();
   const [localSettings, setLocalSettings] = useState(siteSettings);
   const [isSaving, setIsSaving] = useState(false);
   const heroFileRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -2686,6 +2686,24 @@ const SiteContentManager = () => {
                 />
               </div>
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Linked Product</label>
+                  <select
+                    value={slide.productId || ''}
+                    onChange={(e) => {
+                      const newSlides = [...localSettings.heroSlides];
+                      newSlides[idx] = { ...newSlides[idx], productId: e.target.value || undefined };
+                      setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                    }}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
+                  >
+                    <option value="">No product linked</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>{p.title}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-gray-400">Shown as the "View Product" button on this slide.</p>
+                </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase">Title (EN)</label>
                   <input 
