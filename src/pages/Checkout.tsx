@@ -111,7 +111,7 @@ const Checkout: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!formData.name || !formData.phone || !formData.country || !formData.address) {
+    if (!formData.name || !formData.phone || !formData.country) {
       setError('Please fill in all required shipping details.');
       return;
     }
@@ -159,7 +159,9 @@ const Checkout: React.FC = () => {
 
   const finalizeOrder = (paymentStatus: PaymentStatus, transactionId?: string) => {
     const newOrderId = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    const fullAddress = `${formData.address}${formData.district ? `, ${formData.district}` : ''}${formData.province ? `, ${formData.province}` : ''}, ${formData.country}`;
+    const fullAddress = [formData.address, formData.district, formData.province, formData.country]
+      .filter(Boolean)
+      .join(', ');
 
     const order: Order = {
       id: newOrderId,
@@ -502,11 +504,10 @@ const Checkout: React.FC = () => {
                   )}
 
                   <div className={formData.country === 'Rwanda' ? 'md:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Address / Landmark</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Address / Landmark (Optional)</label>
                     <input
                       type="text"
                       name="address"
-                      required
                       value={formData.address}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"

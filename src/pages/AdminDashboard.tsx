@@ -3276,10 +3276,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
     onSave({
       ...formData,
       published: formData.salesType === 'online',
+      price: formData.price || 0,
+      oldPrice: formData.oldPrice || 0,
+      cost: formData.cost || 0,
+      stock: formData.stock || 0,
+      variations: formData.variations.map(v => ({
+        ...v,
+        stock: v.stock || 0,
+        priceModifier: v.priceModifier || 0,
+      })),
       // Offline-only fields are meaningless for an online product — keep them zeroed out.
       ...(formData.salesType === 'online'
         ? { salePrice: 0, saleDate: undefined, offlineDeliveryFee: 0 }
-        : { saleDate: new Date(formData.saleDate).toISOString() }),
+        : { saleDate: new Date(formData.saleDate).toISOString(), salePrice: formData.salePrice || 0, offlineDeliveryFee: formData.offlineDeliveryFee || 0 }),
     });
   };
 
@@ -3329,7 +3338,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
             required
             type="number"
             value={formData.cost}
-            onChange={e => setFormData({ ...formData, cost: parseInt(e.target.value) || 0 })}
+            onChange={e => setFormData({ ...formData, cost: parseInt(e.target.value) })}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
             placeholder="What you paid for this item"
           />
@@ -3625,7 +3634,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
                   required
                   type="number"
                   value={formData.salePrice}
-                  onChange={e => setFormData({ ...formData, salePrice: parseInt(e.target.value) || 0 })}
+                  onChange={e => setFormData({ ...formData, salePrice: parseInt(e.target.value) })}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="Actual selling price"
                 />
@@ -3645,7 +3654,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
                 <input
                   type="number"
                   value={formData.offlineDeliveryFee}
-                  onChange={e => setFormData({ ...formData, offlineDeliveryFee: parseInt(e.target.value) || 0 })}
+                  onChange={e => setFormData({ ...formData, offlineDeliveryFee: parseInt(e.target.value) })}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="0 (no website location, entered manually)"
                 />
