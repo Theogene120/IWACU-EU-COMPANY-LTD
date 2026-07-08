@@ -150,7 +150,7 @@ const Home = () => {
           </div>
           <div className="lg:w-1/2 h-80 lg:h-auto">
             <img
-              src="https://www.lbcexpress.com/assets/revamp/climg/ph/lbcrush/rush-1-m.webp"
+              src="client.png"
               alt="Shopping"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
