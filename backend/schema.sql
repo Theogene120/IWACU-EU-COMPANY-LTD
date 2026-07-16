@@ -190,3 +190,13 @@ CREATE INDEX IF NOT EXISTS idx_other_expenses_date ON other_expenses(date);
 
 -- Category attribute removed — drop it if a prior run of this schema created it.
 ALTER TABLE other_expenses DROP COLUMN IF EXISTS category;
+
+-- Admin password storage + email-verified reset flow (single shared admin credential).
+CREATE TABLE IF NOT EXISTS admin_credentials (
+  id                     INTEGER PRIMARY KEY DEFAULT 1,
+  password_hash          TEXT NOT NULL,
+  reset_code             TEXT,
+  reset_code_expires_at  TIMESTAMPTZ,
+  updated_at             TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT admin_credentials_single_row CHECK (id = 1)
+);

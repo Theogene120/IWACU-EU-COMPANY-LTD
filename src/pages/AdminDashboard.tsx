@@ -13,6 +13,7 @@ import {
   ChevronDown, ChevronRight, Receipt
 } from 'lucide-react';
 import AdminNavbar, { AdminTab } from '../components/AdminNavbar';
+import PasswordInput from '../components/PasswordInput';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -20,6 +21,9 @@ import { Product, Variation, Order, Testimonial, Employee, SalaryPayment, Employ
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+// API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 // PDF Export Helpers — module-level so every admin tab (reports, expenses, ...) can
 // stamp the same company letterhead on its printable documents.
@@ -135,6 +139,58 @@ const AdminDashboard = () => {
 
   const [adminPhoto, setAdminPhoto] = useState(() => localStorage.getItem('adminPhoto') || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400");
   const [adminName, setAdminName] = useState(() => localStorage.getItem('adminName') || "MANIRAKIZA Emmanuel");
+
+  // Change password (email-verified code flow)
+  const [passwordCodeSent, setPasswordCodeSent] = useState(false);
+  const [sendingPasswordCode, setSendingPasswordCode] = useState(false);
+  const [passwordCode, setPasswordCode] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handleSendPasswordCode = async () => {
+    setSendingPasswordCode(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/request-code`, { method: 'POST' });
+      if (!res.ok) throw new Error();
+      setPasswordCodeSent(true);
+      toast.success('Verification code sent to the company email');
+    } catch {
+      toast.error('Failed to send verification code');
+    } finally {
+      setSendingPasswordCode(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordCode || !newAdminPassword) {
+      toast.error('Enter the verification code and a new password');
+      return;
+    }
+    if (newAdminPassword !== confirmAdminPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: passwordCode, newPassword: newAdminPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to change password');
+      toast.success('Password changed successfully');
+      setPasswordCodeSent(false);
+      setPasswordCode('');
+      setNewAdminPassword('');
+      setConfirmAdminPassword('');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   const exportInventoryPDF = async () => {
     const doc = new jsPDF();
@@ -1399,6 +1455,80 @@ const AdminDashboard = () => {
                           Save Profile Changes
                         </button>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Change Password */}
+                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-3 mb-8">
+                      <Key className="h-6 w-6 text-blue-600" />
+                      <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-4">
+                        <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                        <p className="text-sm text-blue-800">
+                          A verification code will be emailed to the company address before the password is changed.
+                        </p>
+                      </div>
+
+                      {!passwordCodeSent ? (
+                        <button
+                          onClick={handleSendPasswordCode}
+                          disabled={sendingPasswordCode}
+                          className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60"
+                        >
+                          {sendingPasswordCode ? 'Sending code...' : 'Send Verification Code'}
+                        </button>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-400 uppercase">Verification Code</label>
+                            <input
+                              type="text"
+                              value={passwordCode}
+                              onChange={(e) => setPasswordCode(e.target.value)}
+                              placeholder="6-digit code"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-400 uppercase">New Password</label>
+                            <PasswordInput
+                              value={newAdminPassword}
+                              onChange={(e) => setNewAdminPassword(e.target.value)}
+                              placeholder="Enter new password"
+                              className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-400 uppercase">Confirm New Password</label>
+                            <PasswordInput
+                              value={confirmAdminPassword}
+                              onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                              placeholder="Confirm new password"
+                              className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                            />
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={handleChangePassword}
+                              disabled={changingPassword}
+                              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60"
+                            >
+                              {changingPassword ? 'Changing...' : 'Change Password'}
+                            </button>
+                            <button
+                              onClick={handleSendPasswordCode}
+                              disabled={sendingPasswordCode}
+                              className="border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all disabled:opacity-60"
+                            >
+                              {sendingPasswordCode ? 'Sending...' : 'Resend Code'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

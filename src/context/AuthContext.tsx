@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState } from 'react';
 
+// API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 interface AuthContextType {
   isAdmin: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -13,13 +16,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return sessionStorage.getItem('isAdmin') === 'true';
   });
 
-  const login = (password: string) => {
-    if (password === 'admin123') { // Simple demo password
-      setIsAdmin(true);
-      sessionStorage.setItem('isAdmin', 'true');
-      return true;
+  const login = async (password: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsAdmin(true);
+        sessionStorage.setItem('isAdmin', 'true');
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
