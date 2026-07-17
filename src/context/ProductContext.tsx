@@ -155,7 +155,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (productsRes.status === 'fulfilled' && productsRes.value) {
           const data: Product[] = productsRes.value;
-          setProducts(data.length >= DEMO_PRODUCTS.length ? data : DEMO_PRODUCTS);
+          setProducts(data.length > 0 ? data : DEMO_PRODUCTS);
         }
 
         if (categoriesRes.status === 'fulfilled' && categoriesRes.value?.length) {

@@ -51,7 +51,7 @@ const Delivery: React.FC = () => {
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('delivery')}</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto font-medium">
-            Great News! We now offer <span className="text-green-600 font-bold">FREE DELIVERY</span> on all orders across Rwanda! <Truck className="inline h-5 w-5 text-green-600 align-middle" aria-hidden="true" />
+            Great News! We now offer <span className="text-green-600 font-bold">FREE DELIVERY</span> on all orders inside Kigali! <Truck className="inline h-5 w-5 text-green-600 align-middle" aria-hidden="true" />
           </p>
         </motion.div>
 
@@ -226,9 +226,9 @@ const Delivery: React.FC = () => {
             <div className="bg-green-50 p-8 rounded-2xl border border-green-100">
               <div className="flex items-center gap-3 text-green-900 mb-2">
                 <Truck className="w-6 h-6" />
-                <h4 className="font-bold">100% Free Delivery</h4>
+                <h4 className="font-bold">Free Delivery in Kigali</h4>
               </div>
-              <p className="text-sm text-green-800 font-medium">To celebrate our community, we have removed all shipping fees. Enjoy free home delivery for every order, no matter the size or location in Rwanda!</p>
+              <p className="text-sm text-green-800 font-medium">To celebrate our community, we have removed shipping fees for all orders delivered within Kigali City. Orders outside Kigali are charged a distance-based delivery fee.</p>
             </div>
           </div>
         </div>

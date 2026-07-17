@@ -2760,23 +2760,34 @@ const SiteContentManager = () => {
             <p className="text-gray-500">Manage the slides on your home page</p>
           </div>
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                const newSlides = [...(localSettings.heroSlides || [])];
-                newSlides.push({
-                  image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1920",
-                  title: { en: "New Slide", fr: "Nouvelle Diapo", rw: "Iyindi Diapo" },
-                  subtitle: { en: "Add a catchy subtitle here", fr: "Ajoutez un sous-titre ici", rw: "Shyiraho akandi jambo" },
-                  cta: { en: "Learn More", fr: "En Savoir Plus", rw: "Menya byinshi" }
-                });
-                setLocalSettings({ ...localSettings, heroSlides: newSlides });
-              }}
-              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all flex items-center gap-2"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Add Slide</span>
-            </button>
-            <button 
+            <div className="relative">
+              <select
+                value=""
+                onChange={(e) => {
+                  const productId = e.target.value;
+                  if (!productId) return;
+                  const p = products.find(pr => pr.id === productId);
+                  if (!p) return;
+                  const newSlides = [...(localSettings.heroSlides || [])];
+                  newSlides.push({
+                    image: p.images?.[0] || "",
+                    title: { en: p.title, fr: p.title, rw: p.title },
+                    subtitle: { en: p.description || "", fr: "", rw: "" },
+                    cta: { en: "Shop Now", fr: "Acheter Maintenant", rw: "Gura Nonaha" },
+                    productId: p.id,
+                  });
+                  setLocalSettings({ ...localSettings, heroSlides: newSlides });
+                }}
+                className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all appearance-none pr-10 cursor-pointer"
+              >
+                <option value="">+ Feature a Product</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>{p.title}</option>
+                ))}
+              </select>
+              <Plus className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
+            </div>
+            <button
               onClick={handleSave}
               className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all"
             >
@@ -2784,6 +2795,7 @@ const SiteContentManager = () => {
             </button>
           </div>
         </div>
+        <p className="text-sm text-gray-400 -mt-4 mb-6">Every hero slide features one of your products — pick it from the list above and its image, name and price carry through to the "View Product" button and WhatsApp order message automatically.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {(localSettings.heroSlides || []).map((slide, idx) => (
@@ -2817,22 +2829,22 @@ const SiteContentManager = () => {
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase">Linked Product</label>
+                  <label className="text-xs font-bold text-gray-400 uppercase">Product</label>
                   <select
                     value={slide.productId || ''}
                     onChange={(e) => {
                       const newSlides = [...localSettings.heroSlides];
-                      newSlides[idx] = { ...newSlides[idx], productId: e.target.value || undefined };
+                      newSlides[idx] = { ...newSlides[idx], productId: e.target.value };
                       setLocalSettings({ ...localSettings, heroSlides: newSlides });
                     }}
                     className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm"
                   >
-                    <option value="">No product linked</option>
+                    {!slide.productId && <option value="" disabled>-- Select a product --</option>}
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>{p.title}</option>
                     ))}
                   </select>
-                  <p className="text-[10px] text-gray-400">Shown as the "View Product" button on this slide.</p>
+                  <p className="text-[10px] text-gray-400">Drives the "View Product" button and the product name/price in the WhatsApp order message.</p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase">Title (EN)</label>

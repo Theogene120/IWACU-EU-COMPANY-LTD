@@ -6,10 +6,12 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { BUSINESS_PHONE, HERO_SLIDES } from '../constants';
 import { useShop } from '../context/ProductContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { cn } from '../lib/utils';
 
 const Hero = () => {
-  const { siteSettings } = useShop();
+  const { siteSettings, products } = useShop();
+  const { formatPrice } = useCurrency();
   const slides = siteSettings.heroSlides && siteSettings.heroSlides.length > 0
     ? siteSettings.heroSlides
     : HERO_SLIDES;
@@ -46,7 +48,10 @@ const Hero = () => {
   const nextSlide = () => paginate(1);
   const prevSlide = () => paginate(-1);
 
-  const whatsappLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to inquire about your products.`;
+  const heroProduct = products.find(p => p.id === slides[current]?.productId);
+  const whatsappLink = heroProduct
+    ? `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${heroProduct.title} (Price: ${formatPrice(heroProduct.price)})`
+    : `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to inquire about your products.`;
 
   if (!slides.length || !slides[current]) {
     return null;
@@ -167,10 +172,10 @@ const Hero = () => {
       </AnimatePresence>
 
       {/* View Product Button */}
-      {slides[current].productId && (
+      {heroProduct && (
         <Link
-          key={slides[current].productId}
-          to={`/product/${slides[current].productId}`}
+          key={heroProduct.id}
+          to={`/product/${heroProduct.id}`}
           className="group absolute top-4 right-4 sm:top-6 sm:right-12 z-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-xl shadow-blue-900/40"
         >
           <Eye className="h-4 w-4" />

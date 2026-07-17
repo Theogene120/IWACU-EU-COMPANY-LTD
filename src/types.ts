@@ -74,7 +74,7 @@ export interface HeroSlide {
   title: { en: string; fr: string; rw: string };
   subtitle: { en: string; fr: string; rw: string };
   cta: { en: string; fr: string; rw: string };
-  productId?: string;
+  productId: string;
 }
 
 export interface TeamMember {
