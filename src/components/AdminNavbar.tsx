@@ -45,8 +45,13 @@ const AdminNavbar = ({ activeTab, setActiveTab }: AdminNavbarProps) => {
   // language only used for announcement bar text — no switcher in admin
   const { language } = useLanguage();
   const { siteSettings } = useShop();
-  const { logout } = useAuth();
+  const { logout, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
+
+  // Overview/Profit surface company money data — hidden from regular admins.
+  const visibleTabs = isSuperAdmin
+    ? adminTabs
+    : adminTabs.filter(tab => tab.id !== 'overview' && tab.id !== 'profit');
 
   const openSearch = () => {
     setSearchOpen(true);
@@ -155,7 +160,7 @@ const AdminNavbar = ({ activeTab, setActiveTab }: AdminNavbarProps) => {
 
             {/* ── MIDDLE: Admin tab links ──────────────────────────── */}
             <div className="hidden md:flex items-center space-x-1 lg:space-x-4">
-              {adminTabs.map((tab) => (
+              {visibleTabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -221,7 +226,7 @@ const AdminNavbar = ({ activeTab, setActiveTab }: AdminNavbarProps) => {
                 </div>
 
                 {/* Admin Tab Links */}
-                {adminTabs.map((tab) => (
+                {visibleTabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => { setActiveTab(tab.id); setIsOpen(false); }}

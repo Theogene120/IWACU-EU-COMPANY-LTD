@@ -18,6 +18,7 @@ import uploadRouter from './routes/upload.js';
 import payRouter from './routes/pay.js';
 import employeesRouter from './routes/employees.js';
 import otherExpensesRouter from './routes/otherExpenses.js';
+import adminsRouter from './routes/admins.js';
 
 dotenv.config();
 
@@ -60,6 +61,7 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/pay', payRouter);
 app.use('/api/employees', employeesRouter);
 app.use('/api/other-expenses', otherExpensesRouter);
+app.use('/api/admins', adminsRouter);
 
 // Serve the built frontend in production
 if (process.env.NODE_ENV === 'production') {

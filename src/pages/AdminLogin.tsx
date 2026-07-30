@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, Lock, AlertCircle, Mail, KeyRound } from 'lucide-react';
+import { ShoppingCart, Lock, AlertCircle, Mail, KeyRound, CheckCircle } from 'lucide-react';
 import { BUSINESS_NAME } from '../constants';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import PasswordInput from '../components/PasswordInput';
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 const AdminLogin = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -19,7 +20,9 @@ const AdminLogin = () => {
 
   // Forgot-password flow state
   const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
+  const [resettable, setResettable] = useState(true);
   const [sendingCode, setSendingCode] = useState(false);
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -29,7 +32,7 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const success = await login(password);
+    const success = await login(email, password);
     setSubmitting(false);
     if (success) {
       navigate('/admin');
@@ -40,14 +43,28 @@ const AdminLogin = () => {
   };
 
   const handleSendCode = async () => {
+    if (!forgotEmail) {
+      toast.error('Enter your email first');
+      return;
+    }
     setSendingCode(true);
     try {
-      const res = await fetch(`${API_BASE}/api/auth/request-code`, { method: 'POST' });
-      if (!res.ok) throw new Error();
+      const res = await fetch(`${API_BASE}/api/auth/request-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send verification code');
       setCodeSent(true);
-      toast.success('Verification code sent to the company email');
-    } catch {
-      toast.error('Failed to send verification code');
+      setResettable(!!data.resettable);
+      if (data.resettable) {
+        toast.success('Verification code sent to the company email');
+      } else {
+        toast.success('Request sent to the super admin');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send verification code');
     } finally {
       setSendingCode(false);
     }
@@ -71,6 +88,7 @@ const AdminLogin = () => {
       toast.success('Password reset successfully. Please log in.');
       setShowForgot(false);
       setCodeSent(false);
+      setForgotEmail('');
       setCode('');
       setNewPassword('');
       setConfirmPassword('');
@@ -100,6 +118,20 @@ const AdminLogin = () => {
           <>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Admin Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                    placeholder="Enter admin email"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Admin Password</label>
                 <PasswordInput
                   icon={Lock}
@@ -118,7 +150,7 @@ const AdminLogin = () => {
                   className="bg-red-50 text-red-600 p-4 rounded-xl flex items-center space-x-2 text-sm font-medium"
                 >
                   <AlertCircle className="h-5 w-5" />
-                  <span>Invalid password. Please try again.</span>
+                  <span>Invalid email or password. Please try again.</span>
                 </motion.div>
               )}
 
@@ -133,7 +165,7 @@ const AdminLogin = () => {
 
             <div className="mt-6 text-center">
               <button
-                onClick={() => setShowForgot(true)}
+                onClick={() => { setForgotEmail(email); setShowForgot(true); }}
                 className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
               >
                 Forgotten password?
@@ -146,17 +178,38 @@ const AdminLogin = () => {
               <p className="font-bold flex items-center gap-1">
                 <Mail className="h-3 w-3" /> Password Reset
               </p>
-              <p>A verification code will be sent to the company email. Enter it below along with your new password.</p>
+              <p>Enter your email — a verification notice will be sent to the company address.</p>
             </div>
 
             {!codeSent ? (
-              <button
-                onClick={handleSendCode}
-                disabled={sendingCode}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:opacity-60"
-              >
-                {sendingCode ? 'Sending code...' : 'Send Reset Code to Company Email'}
-              </button>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      required
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                      placeholder="Enter your admin email"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleSendCode}
+                  disabled={sendingCode}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:opacity-60"
+                >
+                  {sendingCode ? 'Sending...' : 'Send Reset Request'}
+                </button>
+              </div>
+            ) : !resettable ? (
+              <div className="bg-green-50 text-green-800 p-6 rounded-xl text-sm flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 mt-0.5 shrink-0" />
+                <p>Your request has been sent to the company email. Only the super admin can reset your password — ask them to do it from the dashboard's Manage Admins section.</p>
+              </div>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div className="space-y-2">
@@ -216,6 +269,8 @@ const AdminLogin = () => {
                 onClick={() => {
                   setShowForgot(false);
                   setCodeSent(false);
+                  setResettable(true);
+                  setForgotEmail('');
                   setCode('');
                   setNewPassword('');
                   setConfirmPassword('');

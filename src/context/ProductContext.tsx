@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense } from '../types';
 export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense };
 import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
-import { useAuth } from './AuthContext';
+import { useAuth, getAuthHeader } from './AuthContext';
 
 // API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
@@ -100,7 +100,7 @@ export interface Notification {
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin } = useAuth();
   const [products, setProducts] = useState<Product[]>(DEMO_PRODUCTS);
   const [categories, setCategories] = useState<string[]>(CATEGORIES);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -149,8 +149,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           fetch(`${API_BASE}/api/analytics`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/activity-log`).then(r => r.ok ? r.json() : null),
           fetch(`${API_BASE}/api/site-settings`).then(r => r.ok ? r.json() : null),
-          fetch(`${API_BASE}/api/employees`).then(r => r.ok ? r.json() : null),
-          fetch(`${API_BASE}/api/other-expenses`).then(r => r.ok ? r.json() : null),
+          // Super-admin only — regular admins never see Employees/Other Expenses.
+          isSuperAdmin
+            ? fetch(`${API_BASE}/api/employees`, { headers: getAuthHeader() }).then(r => r.ok ? r.json() : null)
+            : Promise.resolve(null),
+          isSuperAdmin
+            ? fetch(`${API_BASE}/api/other-expenses`, { headers: getAuthHeader() }).then(r => r.ok ? r.json() : null)
+            : Promise.resolve(null),
         ]);
 
         if (productsRes.status === 'fulfilled' && productsRes.value) {
@@ -233,7 +238,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     fetchData();
-  }, [isAdmin]);
+  }, [isAdmin, isSuperAdmin]);
 
   // ── Debounced per-entity syncs ───────────────────────────────────────────
   // Each entity is saved independently so a cart stock change only touches /api/products,
@@ -658,7 +663,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addEmployee = useCallback(async (employee: Employee) => {
     const res = await fetch(`${API_BASE}/api/employees`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(employee),
     });
     if (!res.ok) throw new Error('Failed to add employee');
@@ -669,7 +674,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateEmployee = useCallback(async (employee: Employee) => {
     const res = await fetch(`${API_BASE}/api/employees/${employee.id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(employee),
     });
     if (!res.ok) throw new Error('Failed to update employee');
@@ -678,7 +683,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const deleteEmployee = useCallback(async (id: string) => {
-    const res = await fetch(`${API_BASE}/api/employees/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/api/employees/${id}`, { method: 'DELETE', headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to delete employee');
     setEmployees(prev => prev.filter(e => e.id !== id));
   }, []);
@@ -686,7 +691,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Latest-payment summaries on `employees` are computed server-side; re-fetch the
   // lean list after any payment mutation instead of duplicating that logic client-side.
   const refreshEmployees = useCallback(async () => {
-    const res = await fetch(`${API_BASE}/api/employees`);
+    const res = await fetch(`${API_BASE}/api/employees`, { headers: getAuthHeader() });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) setEmployees(data);
@@ -698,7 +703,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (range?.from) params.set('from', range.from);
     if (range?.to) params.set('to', range.to);
     const qs = params.toString();
-    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments${qs ? `?${qs}` : ''}`);
+    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch payments');
     return res.json();
   }, []);
@@ -706,7 +711,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addEmployeePayment = useCallback(async (employeeId: string, payment: Omit<SalaryPayment, 'id'>): Promise<SalaryPayment> => {
     const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(payment),
     });
     if (!res.ok) throw new Error('Failed to add payment');
@@ -718,7 +723,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateEmployeePayment = useCallback(async (employeeId: string, paymentId: string, updates: Partial<Omit<SalaryPayment, 'id'>>): Promise<SalaryPayment> => {
     const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments/${paymentId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update payment');
@@ -728,7 +733,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshEmployees]);
 
   const deleteEmployeePayment = useCallback(async (employeeId: string, paymentId: string) => {
-    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments/${paymentId}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/api/employees/${employeeId}/payments/${paymentId}`, { method: 'DELETE', headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to delete payment');
     await refreshEmployees();
   }, [refreshEmployees]);
@@ -738,7 +743,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (range?.from) params.set('from', range.from);
     if (range?.to) params.set('to', range.to);
     const qs = params.toString();
-    const res = await fetch(`${API_BASE}/api/employees/payments/summary${qs ? `?${qs}` : ''}`);
+    const res = await fetch(`${API_BASE}/api/employees/payments/summary${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch payroll summary');
     return res.json();
   }, []);
@@ -748,7 +753,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (range?.from) params.set('from', range.from);
     if (range?.to) params.set('to', range.to);
     const qs = params.toString();
-    const res = await fetch(`${API_BASE}/api/employees/payments${qs ? `?${qs}` : ''}`);
+    const res = await fetch(`${API_BASE}/api/employees/payments${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch payments');
     return res.json();
   }, []);
@@ -757,7 +762,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addOtherExpense = useCallback(async (expense: OtherExpense) => {
     const res = await fetch(`${API_BASE}/api/other-expenses`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(expense),
     });
     if (!res.ok) throw new Error('Failed to add expense');
@@ -768,7 +773,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateOtherExpense = useCallback(async (expense: OtherExpense) => {
     const res = await fetch(`${API_BASE}/api/other-expenses/${expense.id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(expense),
     });
     if (!res.ok) throw new Error('Failed to update expense');
@@ -777,7 +782,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const deleteOtherExpense = useCallback(async (id: string) => {
-    const res = await fetch(`${API_BASE}/api/other-expenses/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/api/other-expenses/${id}`, { method: 'DELETE', headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to delete expense');
     setOtherExpenses(prev => prev.filter(e => e.id !== id));
   }, []);

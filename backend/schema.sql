@@ -192,6 +192,7 @@ CREATE INDEX IF NOT EXISTS idx_other_expenses_date ON other_expenses(date);
 ALTER TABLE other_expenses DROP COLUMN IF EXISTS category;
 
 -- Admin password storage + email-verified reset flow (single shared admin credential).
+-- This is the SUPER ADMIN — always logs in with the company email.
 CREATE TABLE IF NOT EXISTS admin_credentials (
   id                     INTEGER PRIMARY KEY DEFAULT 1,
   password_hash          TEXT NOT NULL,
@@ -200,3 +201,30 @@ CREATE TABLE IF NOT EXISTS admin_credentials (
   updated_at             TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT admin_credentials_single_row CHECK (id = 1)
 );
+
+-- Super admin's login email (add-only, safe to re-run). Backfilled from COMPANY_EMAIL
+-- in migrate.ts so the existing admin can log in immediately after this migration.
+ALTER TABLE admin_credentials ADD COLUMN IF NOT EXISTS email TEXT;
+
+-- Regular admins — created by the super admin from the dashboard. They can do everything
+-- a super admin can except see Overview/Profit/Employees/Other Expenses (enforced by
+-- requireSuperAdmin on those routes, and hidden client-side).
+CREATE TABLE IF NOT EXISTS sub_admins (
+  id            TEXT PRIMARY KEY,
+  email         TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bearer-token sessions issued on login, checked by requireSuperAdmin.
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  token       TEXT PRIMARY KEY,
+  role        TEXT NOT NULL, -- 'super_admin' | 'admin'
+  email       TEXT NOT NULL,
+  admin_id    TEXT, -- sub_admins.id when role='admin', NULL for the super admin
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  expires_at  TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);

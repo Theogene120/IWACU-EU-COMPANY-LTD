@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
 import { toDateString } from '../utils/date.js';
+import { requireSuperAdmin } from '../middleware/auth.js';
 
 const router = Router();
+
+// Salary/payment data is super-admin only — regular admins never see the Employees page.
+router.use(requireSuperAdmin);
 
 function rowToEmployee(row: any) {
   return {

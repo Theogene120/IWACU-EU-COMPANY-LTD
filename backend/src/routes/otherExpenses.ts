@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
 import { toDateString } from '../utils/date.js';
+import { requireSuperAdmin } from '../middleware/auth.js';
 
 const router = Router();
+
+// Business expense data is super-admin only — regular admins never see this page.
+router.use(requireSuperAdmin);
 
 function rowToExpense(row: any) {
   return {

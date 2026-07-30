@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useShop, ActivityLog } from '../context/ProductContext';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, getAuthHeader } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -10,7 +10,7 @@ import {
   Bell, X as LucideX, Tag, Shield, Settings, Mail, Activity,
   Lock, Key, ShieldCheck, History, Terminal, Database, RefreshCw,
   User, LayoutGrid, History as HistoryIcon, Edit2, AlertCircle, Download, Upload, Globe, Send, LogOut,
-  ChevronDown, ChevronRight, Receipt
+  ChevronDown, ChevronRight, Receipt, UserPlus
 } from 'lucide-react';
 import AdminNavbar, { AdminTab } from '../components/AdminNavbar';
 import PasswordInput from '../components/PasswordInput';
@@ -94,7 +94,7 @@ const drawReportHeader = (doc: jsPDF, logo: ReportLogo | null, title: string): n
 };
 
 const AdminDashboard = () => {
-  const { isAdmin, logout } = useAuth();
+  const { isAdmin, isSuperAdmin, email: adminEmail, logout } = useAuth();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const {
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
     fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary, fetchAllEmployeePayments,
     otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense,
   } = useShop();
-  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [activeTab, setActiveTab] = useState<AdminTab>(() => (isSuperAdmin ? 'overview' : 'products'));
   const [profitTypeFilter, setProfitTypeFilter] = useState<'all' | 'online' | 'offline'>('all');
   const [profitDateFrom, setProfitDateFrom] = useState('');
   const [profitDateTo, setProfitDateTo] = useState('');
@@ -151,7 +151,11 @@ const AdminDashboard = () => {
   const handleSendPasswordCode = async () => {
     setSendingPasswordCode(true);
     try {
-      const res = await fetch(`${API_BASE}/api/auth/request-code`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/api/auth/request-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminEmail }),
+      });
       if (!res.ok) throw new Error();
       setPasswordCodeSent(true);
       toast.success('Verification code sent to the company email');
@@ -189,6 +193,101 @@ const AdminDashboard = () => {
       toast.error(err.message || 'Failed to change password');
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  // ── Manage Admins (super admin only) ────────────────────────────────────
+  const [subAdmins, setSubAdmins] = useState<{ id: string; email: string; created_at: string }[]>([]);
+  const [loadingSubAdmins, setLoadingSubAdmins] = useState(false);
+  const [newSubAdminEmail, setNewSubAdminEmail] = useState('');
+  const [newSubAdminPassword, setNewSubAdminPassword] = useState('');
+  const [creatingSubAdmin, setCreatingSubAdmin] = useState(false);
+  const [resetPasswordForId, setResetPasswordForId] = useState<string | null>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState('');
+  const [savingResetId, setSavingResetId] = useState<string | null>(null);
+  const [deletingSubAdminId, setDeletingSubAdminId] = useState<string | null>(null);
+
+  const fetchSubAdmins = async () => {
+    setLoadingSubAdmins(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admins`, { headers: getAuthHeader() });
+      if (!res.ok) throw new Error();
+      setSubAdmins(await res.json());
+    } catch {
+      toast.error('Failed to load admins');
+    } finally {
+      setLoadingSubAdmins(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isSuperAdmin) fetchSubAdmins();
+  }, [isSuperAdmin]);
+
+  const handleCreateSubAdmin = async () => {
+    if (!newSubAdminEmail || !newSubAdminPassword) {
+      toast.error('Enter an email and password');
+      return;
+    }
+    if (newSubAdminPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setCreatingSubAdmin(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admins`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify({ email: newSubAdminEmail, password: newSubAdminPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add admin');
+      setSubAdmins(prev => [...prev, data]);
+      setNewSubAdminEmail('');
+      setNewSubAdminPassword('');
+      toast.success('Admin added successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add admin');
+    } finally {
+      setCreatingSubAdmin(false);
+    }
+  };
+
+  const handleResetSubAdminPassword = async (id: string) => {
+    if (!resetPasswordValue || resetPasswordValue.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setSavingResetId(id);
+    try {
+      const res = await fetch(`${API_BASE}/api/admins/${id}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify({ newPassword: resetPasswordValue }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+      toast.success('Password reset successfully');
+      setResetPasswordForId(null);
+      setResetPasswordValue('');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to reset password');
+    } finally {
+      setSavingResetId(null);
+    }
+  };
+
+  const handleDeleteSubAdmin = async (id: string) => {
+    setDeletingSubAdminId(id);
+    try {
+      const res = await fetch(`${API_BASE}/api/admins/${id}`, { method: 'DELETE', headers: getAuthHeader() });
+      if (!res.ok) throw new Error();
+      setSubAdmins(prev => prev.filter(a => a.id !== id));
+      toast.success('Admin removed');
+    } catch {
+      toast.error('Failed to remove admin');
+    } finally {
+      setDeletingSubAdminId(null);
     }
   };
 
@@ -464,7 +563,10 @@ const AdminDashboard = () => {
             { id: 'site-content', icon: <Globe className="h-5 w-5" />, label: 'Site Content' },
             { id: 'messages', icon: <Mail className="h-5 w-5" />, label: 'Messages' },
             { id: 'settings', icon: <Settings className="h-5 w-5" />, label: 'Settings' },
-          ].map(item => (
+          ]
+            // Overview/Profit/Employees/Other Expenses expose company money data — super admin only.
+            .filter(item => isSuperAdmin || !['overview', 'profit', 'employees', 'expenses'].includes(item.id))
+            .map(item => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
@@ -651,7 +753,7 @@ const AdminDashboard = () => {
             </motion.div>
           )}
 
-          {activeTab === 'overview' && (
+          {isSuperAdmin && activeTab === 'overview' && (
             <motion.div
               key="overview"
               initial={{ opacity: 0, y: 20 }}
@@ -966,7 +1068,7 @@ const AdminDashboard = () => {
           </motion.div>
         )}
 
-          {activeTab === 'profit' && (
+          {isSuperAdmin && activeTab === 'profit' && (
             <motion.div
               key="profit"
               initial={{ opacity: 0, y: 20 }}
@@ -1458,79 +1560,195 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Change Password */}
-                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                    <div className="flex items-center space-x-3 mb-8">
-                      <Key className="h-6 w-6 text-blue-600" />
-                      <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
-                    </div>
+                  {isSuperAdmin ? (
+                    <>
+                      {/* Change Password */}
+                      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <div className="flex items-center space-x-3 mb-8">
+                          <Key className="h-6 w-6 text-blue-600" />
+                          <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
+                        </div>
 
-                    <div className="space-y-6">
-                      <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-4">
-                        <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <p className="text-sm text-blue-800">
-                          A verification code will be emailed to the company address before the password is changed.
-                        </p>
-                      </div>
+                        <div className="space-y-6">
+                          <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-4">
+                            <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                            <p className="text-sm text-blue-800">
+                              A verification code will be emailed to the company address before the password is changed.
+                            </p>
+                          </div>
 
-                      {!passwordCodeSent ? (
-                        <button
-                          onClick={handleSendPasswordCode}
-                          disabled={sendingPasswordCode}
-                          className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60"
-                        >
-                          {sendingPasswordCode ? 'Sending code...' : 'Send Verification Code'}
-                        </button>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-400 uppercase">Verification Code</label>
-                            <input
-                              type="text"
-                              value={passwordCode}
-                              onChange={(e) => setPasswordCode(e.target.value)}
-                              placeholder="6-digit code"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-400 uppercase">New Password</label>
-                            <PasswordInput
-                              value={newAdminPassword}
-                              onChange={(e) => setNewAdminPassword(e.target.value)}
-                              placeholder="Enter new password"
-                              className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-400 uppercase">Confirm New Password</label>
-                            <PasswordInput
-                              value={confirmAdminPassword}
-                              onChange={(e) => setConfirmAdminPassword(e.target.value)}
-                              placeholder="Confirm new password"
-                              className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
-                            />
-                          </div>
-                          <div className="flex gap-3">
-                            <button
-                              onClick={handleChangePassword}
-                              disabled={changingPassword}
-                              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60"
-                            >
-                              {changingPassword ? 'Changing...' : 'Change Password'}
-                            </button>
+                          {!passwordCodeSent ? (
                             <button
                               onClick={handleSendPasswordCode}
                               disabled={sendingPasswordCode}
-                              className="border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all disabled:opacity-60"
+                              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60"
                             >
-                              {sendingPasswordCode ? 'Sending...' : 'Resend Code'}
+                              {sendingPasswordCode ? 'Sending code...' : 'Send Verification Code'}
+                            </button>
+                          ) : (
+                            <div className="space-y-4">
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 uppercase">Verification Code</label>
+                                <input
+                                  type="text"
+                                  value={passwordCode}
+                                  onChange={(e) => setPasswordCode(e.target.value)}
+                                  placeholder="6-digit code"
+                                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 uppercase">New Password</label>
+                                <PasswordInput
+                                  value={newAdminPassword}
+                                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                                  placeholder="Enter new password"
+                                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 uppercase">Confirm New Password</label>
+                                <PasswordInput
+                                  value={confirmAdminPassword}
+                                  onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                                  placeholder="Confirm new password"
+                                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                                />
+                              </div>
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={handleChangePassword}
+                                  disabled={changingPassword}
+                                  className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60"
+                                >
+                                  {changingPassword ? 'Changing...' : 'Change Password'}
+                                </button>
+                                <button
+                                  onClick={handleSendPasswordCode}
+                                  disabled={sendingPasswordCode}
+                                  className="border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all disabled:opacity-60"
+                                >
+                                  {sendingPasswordCode ? 'Sending...' : 'Resend Code'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Manage Admins */}
+                      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <div className="flex items-center space-x-3 mb-8">
+                          <Users className="h-6 w-6 text-blue-600" />
+                          <h2 className="text-xl font-bold text-gray-900">Manage Admins</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                          <p className="text-sm text-gray-500">
+                            Admins you add here can manage products, orders, messages and site content — but cannot see
+                            Overview, Profit, Employees or Other Expenses. Only you can change their password.
+                          </p>
+
+                          <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 uppercase">Admin Email</label>
+                                <input
+                                  type="email"
+                                  value={newSubAdminEmail}
+                                  onChange={(e) => setNewSubAdminEmail(e.target.value)}
+                                  placeholder="admin@example.com"
+                                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-400 uppercase">Password</label>
+                                <PasswordInput
+                                  value={newSubAdminPassword}
+                                  onChange={(e) => setNewSubAdminPassword(e.target.value)}
+                                  placeholder="Set a password"
+                                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              onClick={handleCreateSubAdmin}
+                              disabled={creatingSubAdmin}
+                              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-sm disabled:opacity-60 flex items-center gap-2"
+                            >
+                              <UserPlus className="h-4 w-4" />
+                              {creatingSubAdmin ? 'Adding...' : 'Add Admin'}
                             </button>
                           </div>
+
+                          <div className="space-y-3">
+                            <label className="text-xs font-bold text-gray-400 uppercase">Existing Admins</label>
+                            {loadingSubAdmins ? (
+                              <p className="text-sm text-gray-400">Loading...</p>
+                            ) : subAdmins.length === 0 ? (
+                              <p className="text-sm text-gray-400">No regular admins yet.</p>
+                            ) : (
+                              subAdmins.map(a => (
+                                <div key={a.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-gray-700">{a.email}</span>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => {
+                                          setResetPasswordForId(resetPasswordForId === a.id ? null : a.id);
+                                          setResetPasswordValue('');
+                                        }}
+                                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors bg-white rounded-lg shadow-sm"
+                                        title="Reset Password"
+                                      >
+                                        <Key className="h-4 w-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteSubAdmin(a.id)}
+                                        disabled={deletingSubAdminId === a.id}
+                                        className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white rounded-lg shadow-sm disabled:opacity-60"
+                                        title="Remove Admin"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {resetPasswordForId === a.id && (
+                                    <div className="flex gap-2">
+                                      <PasswordInput
+                                        value={resetPasswordValue}
+                                        onChange={(e) => setResetPasswordValue(e.target.value)}
+                                        placeholder="New password"
+                                        className="flex-1 pl-4 pr-12 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm"
+                                      />
+                                      <button
+                                        onClick={() => handleResetSubAdminPassword(a.id)}
+                                        disabled={savingResetId === a.id}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all text-sm disabled:opacity-60"
+                                      >
+                                        {savingResetId === a.id ? 'Saving...' : 'Save'}
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            )}
+                          </div>
                         </div>
-                      )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <Key className="h-6 w-6 text-gray-300" />
+                        <h2 className="text-xl font-bold text-gray-900">Password</h2>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        Only the super admin can change your password. If you've forgotten it, use "Forgotten password?" on
+                        the login page — the super admin will reset it for you from their dashboard.
+                      </p>
                     </div>
-                  </div>
+                  )}
 
                   {/* Category Management */}
                   <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
@@ -1738,7 +1956,7 @@ const AdminDashboard = () => {
             </motion.div>
           )}
 
-          {activeTab === 'employees' && (
+          {isSuperAdmin && activeTab === 'employees' && (
             <motion.div
               key="employees"
               initial={{ opacity: 0, y: 20 }}
@@ -1763,7 +1981,7 @@ const AdminDashboard = () => {
             </motion.div>
           )}
 
-          {activeTab === 'expenses' && (
+          {isSuperAdmin && activeTab === 'expenses' && (
             <motion.div
               key="expenses"
               initial={{ opacity: 0, y: 20 }}

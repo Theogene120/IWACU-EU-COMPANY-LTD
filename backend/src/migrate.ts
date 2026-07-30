@@ -21,6 +21,14 @@ export async function runMigrations() {
     await pool.query('INSERT INTO admin_credentials (id, password_hash) VALUES (1, $1)', [passwordHash]);
     console.log(`[migrate] Seeded default admin password ("${DEFAULT_ADMIN_PASSWORD}") — change it after first login`);
   }
+
+  // Super admin always logs in with the company email — backfill it if not set yet.
+  if (process.env.COMPANY_EMAIL) {
+    await pool.query(
+      'UPDATE admin_credentials SET email = $1 WHERE id=1 AND email IS NULL',
+      [process.env.COMPANY_EMAIL]
+    );
+  }
 }
 
 if (process.argv[1] === __filename) {
