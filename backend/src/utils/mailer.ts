@@ -31,3 +31,22 @@ export async function sendAdminResetRequestEmail(adminEmail: string) {
     html: `<p>The admin account <strong>${adminEmail}</strong> requested a password reset.</p><p>Only the super admin can reset it — go to <strong>Settings → Manage Admins</strong> in the dashboard to set a new password for this admin.</p>`,
   });
 }
+
+const SUBSCRIPTION_LABELS: Record<string, string> = {
+  advertise: 'Advertise with us',
+  partner: 'Become a partner',
+  agent: 'Become an agent',
+};
+
+export async function sendSubscriptionEmail(subscriberEmail: string, type: string) {
+  const to = process.env.COMPANY_EMAIL;
+  const label = SUBSCRIPTION_LABELS[type] ?? type;
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to,
+    replyTo: subscriberEmail,
+    subject: `New subscription: ${label}`,
+    text: `${subscriberEmail} subscribed to the newsletter and is interested in: ${label}.\n\nReply directly to this email to reach them.`,
+    html: `<p><strong>${subscriberEmail}</strong> subscribed to the newsletter and is interested in: <strong>${label}</strong>.</p><p>Reply directly to this email to reach them.</p>`,
+  });
+}

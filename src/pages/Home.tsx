@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Hero from '../components/Hero';
 import ProductCard from '../components/ProductCard';
 import Testimonials from '../components/Testimonials';
@@ -8,10 +8,42 @@ import { CATEGORIES } from '../constants';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Truck, Headphones, Star, ArrowRight, PhoneCall } from 'lucide-react';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
+
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
+const SUBSCRIPTION_TYPES = [
+  { value: 'advertise', label: 'Advertise with us' },
+  { value: 'partner', label: 'Become a partner' },
+  { value: 'agent', label: 'Become an agent' },
+];
 
 const Home = () => {
   const { products, categories, siteSettings } = useShop();
   const { t } = useLanguage();
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscriptionType, setSubscriptionType] = useState(SUBSCRIPTION_TYPES[0].value);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubscribing(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: subscribeEmail, type: subscriptionType }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      toast.success('Thanks for subscribing! We will be in touch soon.');
+      setSubscribeEmail('');
+      setSubscriptionType(SUBSCRIPTION_TYPES[0].value);
+    } catch (error) {
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 8);
   const testimonials = siteSettings.testimonials || [];
@@ -175,15 +207,32 @@ const Home = () => {
           <p className="text-black max-w-2xl mx-auto">
             Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
           </p>
-          <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-4">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black"
-              required
-            />
-            <button className="bg-blue-900 hover:bg-blue-950 text-white px-8 py-3 rounded-full font-bold transition-colors">
-              Subscribe
+          <form onSubmit={handleSubscribe} className="max-w-md mx-auto space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                value={subscribeEmail}
+                onChange={(e) => setSubscribeEmail(e.target.value)}
+                placeholder="Your email address"
+                className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black"
+                required
+              />
+              <select
+                value={subscriptionType}
+                onChange={(e) => setSubscriptionType(e.target.value)}
+                className="px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black bg-white"
+              >
+                {SUBSCRIPTION_TYPES.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              disabled={isSubscribing}
+              className="bg-blue-900 hover:bg-blue-950 text-white px-8 py-3 rounded-full font-bold transition-colors disabled:opacity-50"
+            >
+              {isSubscribing ? 'Subscribing...' : 'Subscribe'}
             </button>
           </form>
         </div>
