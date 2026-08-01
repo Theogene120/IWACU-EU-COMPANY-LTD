@@ -5,10 +5,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { localize, getCategoryLabel } from '../lib/utils';
 
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal: total } = useShop();
-  const { t } = useLanguage();
+  const { cart, removeFromCart, updateQuantity, cartTotal: total, siteSettings } = useShop();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
@@ -18,16 +19,15 @@ const Cart = () => {
         <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
           <ShoppingBag className="h-12 w-12 text-blue-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('cartEmptyTitle')}</h2>
         <p className="text-gray-500 mb-10 max-w-md mx-auto">
-          Looks like you haven't added anything to your cart yet. 
-          Start shopping to find the best deals!
+          {t('cartEmptyDesc')}
         </p>
         <Link
           to="/shop"
           className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-full font-bold transition-all inline-flex items-center space-x-2"
         >
-          <span>Start Shopping</span>
+          <span>{t('startShoppingBtn')}</span>
           <ArrowRight className="h-5 w-5" />
         </Link>
       </div>
@@ -63,11 +63,11 @@ const Cart = () => {
                   className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-6"
                 >
                   <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <img src={item.images[0]} alt={localize(item.title, language)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
-                  
+
                   <div className="flex-1 text-center sm:text-left">
-                    <h3 className="font-bold text-gray-900 text-lg mb-1">{item.title}</h3>
+                    <h3 className="font-bold text-gray-900 text-lg mb-1">{localize(item.title, language)}</h3>
                     <div className="flex flex-wrap gap-2 mb-2">
                        {item.selectedVariations && item.selectedVariations.map(v => (
                          <div key={v.id} className="inline-flex items-center gap-2 px-2 py-0.5 bg-blue-50 border border-blue-100 rounded text-[10px] font-bold text-blue-600 uppercase">
@@ -82,7 +82,7 @@ const Cart = () => {
                           </div>
                        )}
                     </div>
-                    <p className="text-sm text-gray-500 mb-2">{item.category}</p>
+                    <p className="text-sm text-gray-500 mb-2">{getCategoryLabel(item.category, language, siteSettings.categoryTranslations)}</p>
                     <p className="text-blue-600 font-bold">{formatPrice(itemPrice)}</p>
                   </div>
 
@@ -119,16 +119,16 @@ const Cart = () => {
         {/* Summary */}
         <div className="lg:w-96">
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-32">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Order Summary</h2>
-            
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('orderSummaryTitle')}</h2>
+
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
+                <span>{t('subtotalLabel')}</span>
                 <span>{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Delivery</span>
-                <span className="text-green-600 font-semibold">Calculated at checkout</span>
+                <span>{t('deliveryLabel')}</span>
+                <span className="text-green-600 font-semibold">{t('calculatedAtCheckout')}</span>
               </div>
               <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">
                 <span>{t('total')}</span>
@@ -140,15 +140,15 @@ const Cart = () => {
               onClick={() => navigate('/checkout')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 mb-4 flex items-center justify-center space-x-2"
             >
-              <span>Proceed to {t('checkout')}</span>
+              <span>{t('proceedToPrefix')} {t('checkout')}</span>
               <ArrowRight className="h-5 w-5" />
             </button>
-            
+
             <Link
               to="/shop"
               className="block w-full text-center text-gray-500 font-semibold hover:text-blue-600 transition-colors"
             >
-              Continue Shopping
+              {t('continueShoppingBtn')}
             </Link>
           </div>
         </div>

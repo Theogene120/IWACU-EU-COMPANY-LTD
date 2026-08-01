@@ -9,37 +9,42 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck, Truck, Headphones, Star, ArrowRight, PhoneCall } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
+import { getCategoryLabel } from '../lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
-const SUBSCRIPTION_TYPES = [
-  { value: 'advertise', label: 'Advertise with us' },
-  { value: 'partner', label: 'Become a partner' },
-  { value: 'agent', label: 'Become an agent' },
-];
-
 const Home = () => {
   const { products, categories, siteSettings } = useShop();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const SUBSCRIPTION_TYPES = [
+    { value: 'advertise', label: t('subscribeAdvertise') },
+    { value: 'partner', label: t('subscribePartner') },
+    { value: 'agent', label: t('subscribeAgent') },
+  ];
   const [subscribeEmail, setSubscribeEmail] = useState('');
-  const [subscriptionType, setSubscriptionType] = useState(SUBSCRIPTION_TYPES[0].value);
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
 
-  const handleSubscribe = async (e: React.FormEvent) => {
+  const handleOpenSubscribeModal = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubscribeModalOpen(true);
+  };
+
+  const handleConfirmSubscribe = async (type: string) => {
     setIsSubscribing(true);
     try {
       const res = await fetch(`${API_BASE}/api/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: subscribeEmail, type: subscriptionType }),
+        body: JSON.stringify({ email: subscribeEmail, type }),
       });
       if (!res.ok) throw new Error('Request failed');
-      toast.success('Thanks for subscribing! We will be in touch soon.');
+      toast.success(t('subscribeSuccess'));
       setSubscribeEmail('');
-      setSubscriptionType(SUBSCRIPTION_TYPES[0].value);
+      setIsSubscribeModalOpen(false);
     } catch (error) {
-      toast.error('Failed to subscribe. Please try again.');
+      toast.error(t('subscribeError'));
     } finally {
       setIsSubscribing(false);
     }
@@ -49,10 +54,10 @@ const Home = () => {
   const testimonials = siteSettings.testimonials || [];
 
   const features = [
-    { icon: <ShieldCheck className="h-8 w-8 text-blue-600" />, title: t('securePayment'), desc: "MTN MoMo, Airtel Money & Cards" },
-    { icon: <Truck className="h-8 w-8 text-blue-600" />, title: t('fastDelivery'), desc: "Delivery within 24 hours in Kigali" },
-    { icon: <Star className="h-8 w-8 text-blue-600" />, title: t('qualityProducts'), desc: "100% genuine and tested items" },
-    { icon: <Headphones className="h-8 w-8 text-blue-600" />, title: t('support247'), desc: "We are always here to help you" },
+    { icon: <ShieldCheck className="h-8 w-8 text-blue-600" />, title: t('securePayment'), desc: t('featureSecureDesc') },
+    { icon: <Truck className="h-8 w-8 text-blue-600" />, title: t('fastDelivery'), desc: t('featureDeliveryDesc') },
+    { icon: <Star className="h-8 w-8 text-blue-600" />, title: t('qualityProducts'), desc: t('featureQualityDesc') },
+    { icon: <Headphones className="h-8 w-8 text-blue-600" />, title: t('support247'), desc: t('featureSupportDesc') },
   ];
 
   return (
@@ -95,10 +100,10 @@ const Home = () => {
             className="flex whitespace-nowrap space-x-12 px-6"
           >
             {([
-              "WELCOME TO IWACU EU COMPANY LTD",
-              <span key="phone" className="inline-flex items-center gap-3">Shop Smart. Live Better. <PhoneCall className="h-[0.85em] w-[0.85em]" /> 0796606178</span>,
-              "Trust, excellence, integrity, and service",
-              "Commit to the Lord whatever you do, and He will establish your plans. (Proverbs 16:3)",
+              t('marqueeWelcome'),
+              <span key="phone" className="inline-flex items-center gap-3">{t('marqueeTagline')} <PhoneCall className="h-[0.85em] w-[0.85em]" /> 0796606178</span>,
+              t('marqueeValues'),
+              t('marqueeVerse'),
             ] as React.ReactNode[]).map((brand, i) => (
               <span key={i} className="text-3xl md:text-5xl font-black text-blue-400 tracking-tighter hover:text-blue-600 transition-colors cursor-default inline-flex items-center">
                 {brand}
@@ -113,10 +118,10 @@ const Home = () => {
         <div className="flex justify-between items-end mb-10">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('categories')}</h2>
-            <p className="text-gray-500">Explore our wide range of products</p>
+            <p className="text-gray-500">{t('exploreCategoriesDesc')}</p>
           </div>
           <Link to="/shop" className="text-blue-600 font-semibold flex items-center space-x-1 hover:underline">
-            <span>View All</span>
+            <span>{t('viewAll')}</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -133,12 +138,12 @@ const Home = () => {
                    : cat === 'Shoes' ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400'
                    : cat === 'Home Items' ? 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=400'
                    : 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&q=80&w=400'}
-                alt={cat}
+                alt={getCategoryLabel(cat, language, siteSettings.categoryTranslations)}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-              <span className="absolute bottom-4 left-4 text-white font-bold text-lg">{cat}</span>
+              <span className="absolute bottom-4 left-4 text-white font-bold text-lg">{getCategoryLabel(cat, language, siteSettings.categoryTranslations)}</span>
             </Link>
           ))}
         </div>
@@ -166,9 +171,9 @@ const Home = () => {
             <h2 className="text-4xl font-bold text-white">{t('whyChooseUs')}?</h2>
             <div className="space-y-6">
               {[
-                { title: "Trusted by Thousands", desc: "We have served over 10,000 happy customers across Rwanda." },
-                { title: "Secure Payments", desc: "Your financial information is always protected with our secure systems." },
-                { title: "Fast Delivery", desc: "We understand your urgency. Most orders are delivered same-day." }
+                { title: t('whyTrustedTitle'), desc: t('whyTrustedDesc') },
+                { title: t('securePaymentsTitle'), desc: t('whySecureDesc') },
+                { title: t('fastDelivery'), desc: t('whyDeliveryDesc') }
               ].map((item, i) => (
                 <div key={i} className="flex space-x-4">
                   <div className="h-6 w-6 rounded-full bg-orange-500 flex-shrink-0 mt-1" />
@@ -183,7 +188,7 @@ const Home = () => {
           <div className="lg:w-1/2 h-80 lg:h-auto">
             <img
               src="client.png"
-              alt="Shopping"
+              alt={t('shoppingAlt')}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -205,38 +210,67 @@ const Home = () => {
         <div className="bg-gray-200 rounded-3xl p-12 text-center text-black space-y-6">
           <h2 className="text-3xl font-bold">{t('newsletter')}</h2>
           <p className="text-black max-w-2xl mx-auto">
-            Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
+            {t('newsletterDesc')}
           </p>
-          <form onSubmit={handleSubscribe} className="max-w-md mx-auto space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="email"
-                value={subscribeEmail}
-                onChange={(e) => setSubscribeEmail(e.target.value)}
-                placeholder="Your email address"
-                className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black"
-                required
-              />
-              <select
-                value={subscriptionType}
-                onChange={(e) => setSubscriptionType(e.target.value)}
-                className="px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black bg-white"
-              >
-                {SUBSCRIPTION_TYPES.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
+          <form onSubmit={handleOpenSubscribeModal} className="max-w-md mx-auto flex flex-col sm:flex-row gap-4">
+            <input
+              type="email"
+              value={subscribeEmail}
+              onChange={(e) => setSubscribeEmail(e.target.value)}
+              placeholder={t('emailPlaceholder')}
+              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none border border-black"
+              required
+            />
             <button
               type="submit"
-              disabled={isSubscribing}
-              className="bg-blue-900 hover:bg-blue-950 text-white px-8 py-3 rounded-full font-bold transition-colors disabled:opacity-50"
+              className="bg-blue-900 hover:bg-blue-950 text-white px-8 py-3 rounded-full font-bold transition-colors"
             >
-              {isSubscribing ? 'Subscribing...' : 'Subscribe'}
+              {t('subscribe')}
             </button>
           </form>
         </div>
       </section>
+
+      {/* Subscription Type Modal */}
+      {isSubscribeModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={() => !isSubscribing && setIsSubscribeModalOpen(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl p-8 w-full max-w-sm space-y-6 text-center"
+          >
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">{t('subscribeModalTitle')}</h3>
+              <p className="text-sm text-gray-500 mt-1">{t('subscribeModalDesc')}</p>
+            </div>
+            <div className="space-y-3">
+              {SUBSCRIPTION_TYPES.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  disabled={isSubscribing}
+                  onClick={() => handleConfirmSubscribe(opt.value)}
+                  className="w-full px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-800 hover:border-blue-600 hover:text-blue-600 transition-colors disabled:opacity-50"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              disabled={isSubscribing}
+              onClick={() => setIsSubscribeModalOpen(false)}
+              className="text-sm text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            >
+              {t('cancel')}
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

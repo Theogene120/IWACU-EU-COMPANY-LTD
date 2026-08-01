@@ -1,8 +1,38 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { Language, LocalizedText } from "../types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// Resolves admin-entered text to the visitor's language. Handles legacy records
+// (saved before multi-language support existed) that still store a plain string.
+export function localize(value: LocalizedText | string | undefined | null, language: Language): string {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value[language] || value.en || value.fr || value.rw || "";
+}
+
+// True if `query` matches any language variant of `value` — used so search still
+// finds a product/description regardless of which language it was typed in.
+export function matchesLocalizedText(value: LocalizedText | string | undefined | null, query: string): boolean {
+  if (!value || !query) return false;
+  const q = query.toLowerCase();
+  if (typeof value === "string") return value.toLowerCase().includes(q);
+  return [value.en, value.fr, value.rw].some((v) => (v || "").toLowerCase().includes(q));
+}
+
+// Display label for a category name — falls back to the canonical (English) name
+// when no translation was entered, so nothing is ever shown blank.
+export function getCategoryLabel(
+  name: string,
+  language: Language,
+  translations?: Record<string, { fr?: string; rw?: string }>
+): string {
+  if (language === "en") return name;
+  const t = translations?.[name];
+  return (t && t[language]) || name;
 }
 
 // Descriptive marketing color names that have no valid CSS equivalent.

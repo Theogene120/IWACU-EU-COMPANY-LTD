@@ -20,6 +20,7 @@ import employeesRouter from './routes/employees.js';
 import otherExpensesRouter from './routes/otherExpenses.js';
 import adminsRouter from './routes/admins.js';
 import subscribeRouter from './routes/subscribe.js';
+import { runMigrations } from './migrate.js';
 
 dotenv.config();
 
@@ -74,6 +75,16 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
-app.listen(Number(PORT), '0.0.0.0', () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-});
+// Applies schema.sql (idempotent — safe to re-run) before accepting traffic, so the
+// running code and the database schema it expects can never drift apart, as happened
+// when the products.title/description JSONB migration shipped without being run.
+runMigrations()
+  .then(() => {
+    app.listen(Number(PORT), '0.0.0.0', () => {
+      console.log(`Backend running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('[startup] Migration failed — refusing to start with a stale schema:', err);
+    process.exit(1);
+  });

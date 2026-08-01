@@ -1,6 +1,15 @@
 export type Language = 'en' | 'fr' | 'rw';
 export type Currency = 'RWF' | 'USD' | 'EUR' | 'KES';
 
+// Text entered by admins that must be shown in the visitor's chosen language.
+// Legacy records saved before this existed may still arrive as a plain string —
+// see `localize()` in lib/utils.ts, which safely handles both shapes.
+export interface LocalizedText {
+  en: string;
+  fr: string;
+  rw: string;
+}
+
 export interface Variation {
   id: string;
   name: string; // e.g., "Size", "Color"
@@ -13,8 +22,8 @@ export type SalesType = 'online' | 'offline';
 
 export interface Product {
   id: string;
-  title: string;
-  description: string;
+  title: LocalizedText;
+  description: LocalizedText;
   price: number;
   oldPrice?: number;
   category: string;
@@ -94,7 +103,7 @@ export interface Testimonial {
   id: string;
   name: string;
   location?: string;
-  message: string;
+  message: LocalizedText;
   rating: number; // 1-5
   image?: string;
 }
@@ -104,6 +113,10 @@ export interface SiteSettings {
   heroSlides: HeroSlide[];
   teamMembers: TeamMember[];
   testimonials: Testimonial[];
+  // Optional French/Kinyarwanda display names for categories, keyed by the category's
+  // canonical (English) name — that English name stays the stable id used for
+  // filtering/URLs everywhere else.
+  categoryTranslations?: Record<string, { fr?: string; rw?: string }>;
 }
 
 export interface SalaryPayment {

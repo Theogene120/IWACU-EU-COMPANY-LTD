@@ -5,12 +5,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ProductCard from '../components/ProductCard';
 import { Search, Filter, SlidersHorizontal, X } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn, localize, matchesLocalizedText, getCategoryLabel } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
 const Shop = () => {
-  const { products, categories } = useShop();
-  const { t } = useLanguage();
+  const { products, categories, siteSettings } = useShop();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,7 +26,7 @@ const Shop = () => {
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
     return products
-      .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(p => matchesLocalizedText(p.title, searchQuery))
       .slice(0, 5);
   }, [products, searchQuery]);
 
@@ -34,8 +34,7 @@ const Shop = () => {
     return products
       .filter(p => {
         const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-        const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             p.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = matchesLocalizedText(p.title, searchQuery) || matchesLocalizedText(p.description, searchQuery);
         const matchesPrice = p.price <= priceRange;
         return matchesCategory && matchesSearch && matchesPrice;
       })
@@ -61,7 +60,7 @@ const Shop = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">{t('shop')}</h1>
-          <p className="text-gray-500">Showing {filteredProducts.length} products</p>
+          <p className="text-gray-500">{t('showingProductsPrefix')} {filteredProducts.length} {t('showingProductsSuffix')}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
@@ -98,9 +97,9 @@ const Shop = () => {
                       }}
                       className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left"
                     >
-                      <img src={p.images[0]} alt={p.title} className="w-10 h-10 rounded-lg object-cover" />
+                      <img src={p.images[0]} alt={localize(p.title, language)} className="w-10 h-10 rounded-lg object-cover" />
                       <div>
-                        <p className="text-sm font-bold text-gray-900 line-clamp-1">{p.title}</p>
+                        <p className="text-sm font-bold text-gray-900 line-clamp-1">{localize(p.title, language)}</p>
                         <p className="text-xs text-blue-600 font-bold">{formatPrice(p.price)}</p>
                       </div>
                     </button>
@@ -114,7 +113,7 @@ const Shop = () => {
             className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors md:hidden"
           >
             <SlidersHorizontal className="h-5 w-5" />
-            <span>Filters</span>
+            <span>{t('filtersBtn')}</span>
           </button>
         </div>
       </div>
@@ -127,7 +126,7 @@ const Shop = () => {
         )}>
           {showFilters && (
             <div className="flex justify-between items-center mb-8 lg:hidden">
-              <h2 className="text-xl font-bold">Filters</h2>
+              <h2 className="text-xl font-bold">{t('filtersBtn')}</h2>
               <button onClick={() => setShowFilters(false)}><X className="h-6 w-6" /></button>
             </div>
           )}
@@ -144,14 +143,14 @@ const Shop = () => {
                     selectedCategory === cat ? "bg-blue-600 text-white font-bold" : "text-gray-600 hover:bg-gray-100"
                   )}
                 >
-                  {cat}
+                  {cat === 'All' ? t('allCategoriesLabel') : getCategoryLabel(cat, language, siteSettings.categoryTranslations)}
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-900 mb-4 uppercase text-xs tracking-widest">Price Range</h3>
+            <h3 className="font-bold text-gray-900 mb-4 uppercase text-xs tracking-widest">{t('priceRangeTitle')}</h3>
             <input
               type="range"
               min="0"
@@ -168,16 +167,16 @@ const Shop = () => {
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-900 mb-4 uppercase text-xs tracking-widest">Sort By</h3>
+            <h3 className="font-bold text-gray-900 mb-4 uppercase text-xs tracking-widest">{t('sortByTitle')}</h3>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
             >
-              <option value="newest">Newest First</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Top Rated</option>
+              <option value="newest">{t('sortNewest')}</option>
+              <option value="price-low">{t('sortPriceLow')}</option>
+              <option value="price-high">{t('sortPriceHigh')}</option>
+              <option value="rating">{t('sortTopRated')}</option>
             </select>
           </div>
         </aside>
@@ -193,9 +192,9 @@ const Shop = () => {
           ) : (
             <div className="text-center py-20 bg-gray-50 rounded-3xl">
               <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900">No products found</h3>
-              <p className="text-gray-500">Try adjusting your filters or search query</p>
-              <button 
+              <h3 className="text-xl font-bold text-gray-900">{t('noProductsFoundTitle')}</h3>
+              <p className="text-gray-500">{t('noProductsFoundDesc')}</p>
+              <button
                 onClick={() => {
                   setSearchQuery("");
                   setPriceRange(5000000);
@@ -203,7 +202,7 @@ const Shop = () => {
                 }}
                 className="mt-6 text-blue-600 font-bold hover:underline"
               >
-                Clear all filters
+                {t('clearFiltersBtn')}
               </button>
             </div>
           )}

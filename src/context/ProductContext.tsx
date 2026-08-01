@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense } from '../types';
+import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense, LocalizedText } from '../types';
 export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense };
 import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
 import { useAuth, getAuthHeader } from './AuthContext';
 
 // API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
+// Normalizes a title/description/message field that may still be a plain string
+// (data saved before multi-language support existed) into the {en,fr,rw} shape.
+function toLocalizedField(value: any): LocalizedText {
+  if (value && typeof value === 'object') return value;
+  const s = value ?? '';
+  return { en: s, fr: s, rw: s };
+}
 
 interface Analytics {
   totalVisitors: number;
@@ -160,7 +168,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (productsRes.status === 'fulfilled' && productsRes.value) {
           const data: Product[] = productsRes.value;
-          setProducts(data.length > 0 ? data : DEMO_PRODUCTS);
+          setProducts(data.length > 0
+            ? data.map(p => ({ ...p, title: toLocalizedField(p.title), description: toLocalizedField(p.description) }))
+            : DEMO_PRODUCTS);
         }
 
         if (categoriesRes.status === 'fulfilled' && categoriesRes.value?.length) {
@@ -218,7 +228,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
               phone: m.phone ?? '',
               socials: m.socials ?? {},
             })),
-            testimonials: (ss.testimonials && ss.testimonials.length > 0) ? ss.testimonials : DEMO_TESTIMONIALS,
+            testimonials: ((ss.testimonials && ss.testimonials.length > 0) ? ss.testimonials : DEMO_TESTIMONIALS).map((tm: any) => ({
+              ...tm,
+              message: toLocalizedField(tm.message),
+            })),
           };
           setSiteSettings(migratedSettings);
         }
@@ -381,18 +394,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // ── Products ──────────────────────────────────────────────────────────────
   const addProduct = useCallback((product: Product) => {
     setProducts(prev => [...prev, product]);
-    addActivity(`New product added: ${product.title}`, 'product');
+    addActivity(`New product added: ${product.title.en}`, 'product');
   }, [addActivity]);
 
   const updateProduct = useCallback((product: Product) => {
     setProducts(prev => prev.map(p => p.id === product.id ? product : p));
-    addActivity(`Product updated: ${product.title}`, 'product');
+    addActivity(`Product updated: ${product.title.en}`, 'product');
   }, [addActivity]);
 
   const deleteProduct = useCallback((id: string) => {
     setProducts(prev => {
       const product = prev.find(p => p.id === id);
-      if (product) addActivity(`Product deleted: ${product.title}`, 'product');
+      if (product) addActivity(`Product deleted: ${product.title.en}`, 'product');
       return prev.filter(p => p.id !== id);
     });
     // Explicit delete call — the bulk PUT sync below is upsert-only (it never deletes),

@@ -3,8 +3,8 @@
 
 CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  description TEXT,
+  title JSONB NOT NULL,
+  description JSONB,
   price NUMERIC(12,2) NOT NULL,
   old_price NUMERIC(12,2),
   category TEXT,
@@ -86,10 +86,16 @@ CREATE TABLE IF NOT EXISTS site_settings (
   hero_slides JSONB DEFAULT '[]',
   team_members JSONB DEFAULT '[]',
   testimonials JSONB DEFAULT '[]',
+  category_translations JSONB NOT NULL DEFAULT '{}',
   CONSTRAINT site_settings_single_row CHECK (id = 1)
 );
 
 INSERT INTO site_settings (id) VALUES (1) ON CONFLICT DO NOTHING;
+
+-- Category display names in French/Kinyarwanda (add-only, safe to re-run).
+-- Canonical category identity stays the English `categories.name` — this column only
+-- supplies optional translated display labels, keyed by that same English name.
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS category_translations JSONB NOT NULL DEFAULT '{}';
 
 -- Profit tracking migration (adds columns only — never drops/alters existing data).
 -- products: admin-only cost field + online/offline sales tracking.
@@ -104,6 +110,37 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS offline_delivery_fee NUMERIC(12,2)
 -- (matches current catalog behavior exactly — nothing changes for existing data).
 UPDATE products SET sales_type = 'online' WHERE sales_type IS NULL;
 UPDATE products SET published = true WHERE published IS NULL;
+
+-- Multi-language product content: title/description move from plain TEXT to a
+-- {en, fr, rw} JSONB object. Guarded so it only runs once — on a fresh DB the
+-- CREATE TABLE above already defines these columns as JSONB, so this is a no-op there.
+DO $$
+BEGIN
+  IF (SELECT data_type FROM information_schema.columns WHERE table_name='products' AND column_name='title') = 'text' THEN
+    ALTER TABLE products ALTER COLUMN title TYPE JSONB USING jsonb_build_object('en', title, 'fr', title, 'rw', title);
+  END IF;
+  IF (SELECT data_type FROM information_schema.columns WHERE table_name='products' AND column_name='description') = 'text' THEN
+    ALTER TABLE products ALTER COLUMN description TYPE JSONB USING jsonb_build_object('en', COALESCE(description, ''), 'fr', COALESCE(description, ''), 'rw', COALESCE(description, ''));
+  END IF;
+END $$;
+
+-- Multi-language testimonials: backfill any plain-string `message` inside the
+-- testimonials JSONB array into a {en, fr, rw} object. Guarded per-element so it's
+-- safe to re-run (already-migrated elements are left untouched).
+UPDATE site_settings
+SET testimonials = (
+  SELECT jsonb_agg(
+    CASE
+      WHEN jsonb_typeof(t->'message') = 'string'
+        THEN jsonb_set(t, '{message}', jsonb_build_object('en', t->>'message', 'fr', t->>'message', 'rw', t->>'message'))
+      ELSE t
+    END
+  )
+  FROM jsonb_array_elements(testimonials) t
+)
+WHERE id = 1
+  AND testimonials IS NOT NULL
+  AND jsonb_typeof(testimonials) = 'array';
 
 -- orders: persist the location-based delivery fee computed at checkout.
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC(12,2) NOT NULL DEFAULT 0;

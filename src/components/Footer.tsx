@@ -34,7 +34,7 @@ const Footer = () => {
               )}
             </div>
             <p className="text-blue-100 text-sm leading-relaxed">
-              IWACU EU COMPANY ltd, We know the value of your money. Your trusted partner for quality fashion, electronics, and home essentials in Rwanda. 
+              {t('footerAbout')}
             </p>
             <div className="flex space-x-4">
               <a 
@@ -68,22 +68,22 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-6 border-b border-blue-800 pb-2">{t('shop')}</h3>
             <ul className="space-y-4 text-sm text-blue-100">
-              <li><Link to="/shop?category=Fashion" className="hover:text-orange-400 transition-colors">Fashion</Link></li>
-              <li><Link to="/shop?category=Shoes" className="hover:text-orange-400 transition-colors">Shoes</Link></li>
-              <li><Link to="/shop?category=Electronics" className="hover:text-orange-400 transition-colors">Electronics</Link></li>
-              <li><Link to="/shop?category=Home Items" className="hover:text-orange-400 transition-colors">Home Items</Link></li>
+              <li><Link to="/shop?category=Fashion" className="hover:text-orange-400 transition-colors">{t('catFashion')}</Link></li>
+              <li><Link to="/shop?category=Shoes" className="hover:text-orange-400 transition-colors">{t('catShoes')}</Link></li>
+              <li><Link to="/shop?category=Electronics" className="hover:text-orange-400 transition-colors">{t('catElectronics')}</Link></li>
+              <li><Link to="/shop?category=Home Items" className="hover:text-orange-400 transition-colors">{t('catHomeItems')}</Link></li>
             </ul>
           </div>
 
           {/* Information */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 border-b border-blue-800 pb-2">Information</h3>
+            <h3 className="text-lg font-semibold mb-6 border-b border-blue-800 pb-2">{t('informationTitle')}</h3>
             <ul className="space-y-4 text-sm text-blue-100">
               <li><Link to="/about" className="hover:text-orange-400 transition-colors">{t('about')}</Link></li>
               <li><Link to="/delivery" className="hover:text-orange-400 transition-colors">{t('delivery')}</Link></li>
               <li><Link to="/order-tracking" className="hover:text-orange-400 transition-colors">{t('trackOrder')}</Link></li>
-              <li><Link to="/privacy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-orange-400 transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/privacy" className="hover:text-orange-400 transition-colors">{t('privacyPolicyLink')}</Link></li>
+              <li><Link to="/terms" className="hover:text-orange-400 transition-colors">{t('termsLink')}</Link></li>
             </ul>
           </div>
 
@@ -104,14 +104,14 @@ const Footer = () => {
                 <span>{BUSINESS_EMAIL}</span>
               </li>
               <li className="pt-2 border-t border-blue-800">
-                <Link to="/admin/login" className="hover:text-orange-400 transition-colors text-[12px]">Login as Admin</Link>
+                <Link to="/admin/login" className="hover:text-orange-400 transition-colors text-[12px]">{t('loginAsAdmin')}</Link>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-blue-800 text-center text-sm text-blue-200">
-          <p>&copy; {new Date().getFullYear()} {BUSINESS_NAME}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {BUSINESS_NAME}. {t('allRightsReserved')}</p>
         </div>
       </div>
     </footer>

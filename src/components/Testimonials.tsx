@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { Testimonial } from '../types';
-import { cn } from '../lib/utils';
+import { cn, localize } from '../lib/utils';
+import { useLanguage } from '../context/LanguageContext';
 
 interface TestimonialsProps {
   testimonials: Testimonial[];
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({ testimonials }) => {
+  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -96,7 +98,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials }) => {
               </div>
 
               <p className="text-lg md:text-xl text-gray-700 italic leading-relaxed font-medium">
-                "{current.message}"
+                "{localize(current.message, language)}"
               </p>
 
               <div>

@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useShop } from '../context/ProductContext';
 import { Package, Clock, CheckCircle, Truck, PackageCheck, ChevronRight, Search, User } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn, localize } from '../lib/utils';
 import { useLanguage } from '../context/LanguageContext';
 import { BUSINESS_PHONE } from '../constants';
 
 const Account = () => {
   const { orders } = useShop();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [phone, setPhone] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
@@ -34,27 +34,27 @@ const Account = () => {
             <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <User className="h-8 w-8 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-black text-blue-900 mb-2">Customer Account</h1>
-            <p className="text-gray-500 text-sm">Enter your phone number to view your order history</p>
+            <h1 className="text-2xl font-black text-blue-900 mb-2">{t('customerAccountTitle')}</h1>
+            <p className="text-gray-500 text-sm">{t('customerAccountDesc')}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Phone Number</label>
-              <input 
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('phoneNumber')}</label>
+              <input
                 type="tel"
                 required
-                placeholder="e.g. 0782021871"
+                placeholder={t('phonePlaceholderExample')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-4 py-4 bg-gray-50 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold"
               />
             </div>
-            <button 
+            <button
               type="submit"
               className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform active:scale-95"
             >
-              View My Orders
+              {t('viewMyOrdersBtn')}
             </button>
           </form>
         </motion.div>
@@ -75,23 +75,23 @@ const Account = () => {
                 {phone.substring(0, 2)}
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase">Customer</p>
+                <p className="text-xs font-bold text-gray-400 uppercase">{t('customerLabel')}</p>
                 <p className="font-black text-blue-900">{phone}</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setIsLoggedIn(false)}
               className="w-full py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
             >
-              Logout
+              {t('logoutBtn')}
             </button>
           </div>
 
           <div className="bg-blue-900 p-6 rounded-3xl text-white shadow-xl shadow-blue-100">
-            <h3 className="font-bold mb-2">Need help?</h3>
-            <p className="text-sm text-blue-200 mb-4">If you have any questions about your orders, contact our support.</p>
+            <h3 className="font-bold mb-2">{t('needHelpTitle')}</h3>
+            <p className="text-sm text-blue-200 mb-4">{t('needHelpDesc')}</p>
             <a href={`tel:${BUSINESS_PHONE}`} className="block w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-center text-sm font-bold transition-colors">
-              Call Support
+              {t('callSupportBtn')}
             </a>
           </div>
         </div>
@@ -99,19 +99,19 @@ const Account = () => {
         {/* Main Content */}
         <div className="flex-1 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-blue-900">Order History</h2>
+            <h2 className="text-2xl font-black text-blue-900">{t('orderHistoryTitle')}</h2>
             <span className="px-4 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">
-              {customerOrders.length} Orders
+              {customerOrders.length} {t('ordersCountSuffix')}
             </span>
           </div>
 
           {customerOrders.length === 0 ? (
             <div className="bg-white p-20 rounded-3xl shadow-sm border border-gray-100 text-center">
               <Package className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No orders found</h3>
-              <p className="text-gray-500 mb-8">You haven't placed any orders with this phone number yet.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t('noOrdersTitle')}</h3>
+              <p className="text-gray-500 mb-8">{t('noOrdersDesc')}</p>
               <button className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold">
-                Start Shopping
+                {t('startShoppingBtn')}
               </button>
             </div>
           ) : (
@@ -138,13 +138,13 @@ const Account = () => {
                         {order.status === 'delivered' && <PackageCheck className="h-6 w-6" />}
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase">Order #{order.id}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase">{t('orderHashPrefix')}{order.id}</p>
                         <p className="font-black text-blue-900">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-8">
                       <div className="text-right">
-                        <p className="text-xs font-bold text-gray-400 uppercase">Total</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase">{t('total')}</p>
                         <p className="font-black text-blue-900">{order.total.toLocaleString()} RWF</p>
                       </div>
                       <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-blue-600 transition-colors" />
@@ -176,8 +176,8 @@ const Account = () => {
             >
               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                 <div>
-                  <h2 className="text-2xl font-black text-blue-900">Order Details</h2>
-                  <p className="text-sm text-gray-500">Order #{activeOrder.id}</p>
+                  <h2 className="text-2xl font-black text-blue-900">{t('orderDetailsTitle')}</h2>
+                  <p className="text-sm text-gray-500">{t('orderHashPrefix')}{activeOrder.id}</p>
                 </div>
                 <button 
                   onClick={() => setSelectedOrder(null)}
@@ -192,10 +192,10 @@ const Account = () => {
                 <div className="flex justify-between items-center relative">
                   <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gray-100 -z-10" />
                   {[
-                    { id: 'pending', icon: Clock, label: 'Pending' },
-                    { id: 'confirmed', icon: CheckCircle, label: 'Confirmed' },
-                    { id: 'shipped', icon: Truck, label: 'Shipped' },
-                    { id: 'delivered', icon: PackageCheck, label: 'Delivered' }
+                    { id: 'pending', icon: Clock, label: t('pending') },
+                    { id: 'confirmed', icon: CheckCircle, label: t('confirmed') },
+                    { id: 'shipped', icon: Truck, label: t('shipped') },
+                    { id: 'delivered', icon: PackageCheck, label: t('delivered') }
                   ].map((step, idx) => {
                     const statuses = ['pending', 'confirmed', 'shipped', 'delivered'];
                     const currentIdx = statuses.indexOf(activeOrder.status);
@@ -221,15 +221,15 @@ const Account = () => {
 
                 {/* Items */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Items Ordered</h3>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('itemsOrderedTitle')}</h3>
                   <div className="space-y-3">
                     {activeOrder.items.map((item) => (
                       <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                         <div className="flex items-center space-x-4">
-                          <img src={item.images[0]} alt={item.title} className="w-12 h-12 object-cover rounded-lg" referrerPolicy="no-referrer" />
+                          <img src={item.images[0]} alt={localize(item.title, language)} className="w-12 h-12 object-cover rounded-lg" referrerPolicy="no-referrer" />
                           <div>
-                            <p className="font-bold text-blue-900">{item.title}</p>
-                            <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                            <p className="font-bold text-blue-900">{localize(item.title, language)}</p>
+                            <p className="text-xs text-gray-500">{t('qtyLabel')} {item.quantity}</p>
                           </div>
                         </div>
                         <p className="font-bold text-blue-900">{(item.price * item.quantity).toLocaleString()} RWF</p>
@@ -241,11 +241,11 @@ const Account = () => {
                 {/* Summary */}
                 <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-100">
                   <div>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Delivery Address</h3>
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('address')}</h3>
                     <p className="text-sm font-bold text-blue-900 leading-relaxed">{activeOrder.address}</p>
                   </div>
                   <div className="text-right">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Order Total</h3>
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('orderTotalTitle')}</h3>
                     <p className="text-2xl font-black text-blue-600">{activeOrder.total.toLocaleString()} RWF</p>
                     <p className="text-xs text-gray-400 font-bold uppercase mt-1">{activeOrder.paymentMethod.replace('_', ' ')}</p>
                   </div>
@@ -257,7 +257,7 @@ const Account = () => {
                   onClick={() => window.print()}
                   className="w-full py-4 bg-white border border-gray-200 text-blue-900 rounded-2xl font-black shadow-sm hover:bg-gray-50 transition-all"
                 >
-                  Print Invoice
+                  {t('printInvoiceBtn')}
                 </button>
               </div>
             </motion.div>

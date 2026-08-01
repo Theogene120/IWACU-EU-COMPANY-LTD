@@ -6,7 +6,7 @@ import { useShop, Product } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { BUSINESS_PHONE } from '../constants';
-import { cn } from '../lib/utils';
+import { cn, localize, getCategoryLabel } from '../lib/utils';
 import { motion } from 'motion/react';
 
 interface ProductCardProps {
@@ -14,11 +14,12 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart } = useShop();
-  const { t } = useLanguage();
+  const { addToCart, siteSettings } = useShop();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const whatsappLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${product.title} (Price: ${formatPrice(product.price)})`;
+  const title = localize(product.title, language);
+  const whatsappLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${title} (Price: ${formatPrice(product.price)})`;
 
   const isLowStock = product.stock > 0 && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
@@ -31,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={product.images[0]}
-          alt={product.title}
+          alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
@@ -45,12 +46,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
           {isLowStock && (
             <div className="bg-yellow-500 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg animate-pulse">
-              LOW STOCK
+              {t('lowStockBadge')}
             </div>
           )}
           {isOutOfStock && (
-            <div className="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg">
-              OUT OF STOCK
+            <div className="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg uppercase">
+              {t('outOfStock')}
             </div>
           )}
         </div>
@@ -77,19 +78,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       <div className="p-4">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-[10px] text-blue-600 font-black uppercase tracking-wider">{product.category}</p>
+          <p className="text-[10px] text-blue-600 font-black uppercase tracking-wider">{getCategoryLabel(product.category, language, siteSettings.categoryTranslations)}</p>
           <span className={cn(
             "text-[10px] font-black px-2 py-0.5 rounded-full",
             product.stock > 10 ? "bg-green-50 text-green-600" : 
             product.stock > 0 ? "bg-yellow-50 text-yellow-600" : "bg-red-50 text-red-600"
           )}>
-            {product.stock} IN STOCK
+            {product.stock} {t('inStockLabel')}
           </span>
         </div>
         
         <Link to={`/product/${product.id}`} className="block">
           <h3 className="text-gray-900 font-bold mb-2 line-clamp-1 hover:text-blue-600 transition-colors">
-            {product.title}
+            {title}
           </h3>
         </Link>
         

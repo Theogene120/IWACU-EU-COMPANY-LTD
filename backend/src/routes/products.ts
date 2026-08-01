@@ -45,7 +45,7 @@ function rowToProduct(row: any, admin: boolean) {
 // blindly overwritten with a default just because a caller didn't send them.
 function productParams(p: any) {
   return [
-    p.id, p.title, p.description, p.price,
+    p.id, JSON.stringify(p.title), JSON.stringify(p.description ?? null), p.price,
     p.oldPrice ?? null, p.category,
     JSON.stringify(p.images ?? []),
     p.stock, p.rating, p.isFeatured ?? false,

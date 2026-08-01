@@ -29,10 +29,10 @@ const Contact = () => {
         message: formData.message
       });
       
-      toast.success('Message sent successfully! We will get back to you soon.');
+      toast.success(t('contactSendSuccess'));
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
+      toast.error(t('contactSendError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,8 +47,7 @@ const Contact = () => {
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('contact')}</h1>
         <p className="text-gray-500 max-w-2xl mx-auto">
-          Have questions or need assistance? Our team is here to help you. 
-          Reach out to us through any of the following channels.
+          {t('contactIntro')}
         </p>
       </div>
 
@@ -59,11 +58,11 @@ const Contact = () => {
           animate={{ opacity: 1, x: 0 }}
           className="bg-white p-10 rounded-3xl shadow-sm border border-gray-100"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Send us a message</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('sendMessageTitle')}</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Name</label>
+                <label className="text-sm font-semibold text-gray-700">{t('nameLabel')}</label>
                 <input
                   required
                   type="text"
@@ -71,11 +70,11 @@ const Contact = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  placeholder="Your name"
+                  placeholder={t('namePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Email</label>
+                <label className="text-sm font-semibold text-gray-700">{t('emailLabel')}</label>
                 <input
                   required
                   type="email"
@@ -83,12 +82,12 @@ const Contact = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  placeholder="Your email"
+                  placeholder={t('emailPlaceholderShort')}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Subject</label>
+              <label className="text-sm font-semibold text-gray-700">{t('subjectLabel')}</label>
               <input
                 required
                 type="text"
@@ -96,11 +95,11 @@ const Contact = () => {
                 value={formData.subject}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                placeholder="How can we help?"
+                placeholder={t('subjectPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Message</label>
+              <label className="text-sm font-semibold text-gray-700">{t('messageLabel')}</label>
               <textarea
                 required
                 rows={5}
@@ -108,7 +107,7 @@ const Contact = () => {
                 value={formData.message}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                placeholder="Your message..."
+                placeholder={t('messagePlaceholder')}
               />
             </div>
             <button
@@ -116,7 +115,7 @@ const Contact = () => {
               disabled={isSubmitting}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+              <span>{isSubmitting ? t('sendingBtn') : t('sendMessageBtn')}</span>
               <Send className="h-5 w-5" />
             </button>
           </form>
@@ -134,7 +133,7 @@ const Contact = () => {
                 <Phone className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900">Phone & WhatsApp</h4>
+                <h4 className="font-bold text-gray-900">{t('phoneWhatsappLabel')}</h4>
                 <p className="text-sm text-gray-600">{BUSINESS_PHONE}</p>
               </div>
             </div>
@@ -143,7 +142,7 @@ const Contact = () => {
                 <Mail className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900">Email Address</h4>
+                <h4 className="font-bold text-gray-900">{t('emailAddressLabel')}</h4>
                 <p className="text-sm text-gray-600">{BUSINESS_EMAIL}</p>
               </div>
             </div>
@@ -152,7 +151,7 @@ const Contact = () => {
                 <MapPin className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900">Our Location</h4>
+                <h4 className="font-bold text-gray-900">{t('ourLocationLabel')}</h4>
                 <p className="text-sm text-gray-600">{BUSINESS_ADDRESS}</p>
               </div>
             </div>
@@ -161,16 +160,16 @@ const Contact = () => {
                 <Clock className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900">Working Hours</h4>
-                <p className="text-sm text-gray-600">Mon - Sat: 8AM - 8PM</p>
-                <p className="text-sm text-gray-600">Sun: 10AM - 4PM</p>
+                <h4 className="font-bold text-gray-900">{t('workingHoursTitle')}</h4>
+                <p className="text-sm text-gray-600">{t('monSatHours')}</p>
+                <p className="text-sm text-gray-600">{t('sunHours')}</p>
               </div>
             </div>
           </div>
 
           <div className="h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100">
             <iframe
-              title="Google Map"
+              title={t('googleMapTitle')}
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31899.66444857502!2d30.0401!3d-1.9441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19dca429ed308f77%3A0x80610336f9872f2!2sKigali%2C%20Rwanda!5e0!3m2!1sen!2sus!4v1625561234567!5m2!1sen!2sus"
               width="100%"
               height="100%"

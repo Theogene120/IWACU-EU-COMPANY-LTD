@@ -7,7 +7,7 @@ import { Variation } from '../types';
 import { ShoppingCart, Star, ShieldCheck, Truck, RotateCcw, ChevronLeft, AlertCircle } from 'lucide-react';
 import { BUSINESS_PHONE } from '../constants';
 import { motion } from 'motion/react';
-import { cn, resolveColorSwatch } from '../lib/utils';
+import { cn, resolveColorSwatch, localize, getCategoryLabel } from '../lib/utils';
 import { toast } from 'sonner';
 import ProductCarousel from '../components/ProductCarousel';
 import WhatsAppIcon from '../components/WhatsAppIcon';
@@ -16,7 +16,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { products, addToCart, siteSettings } = useShop();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
   const product = products.find(p => p.id === id);
@@ -40,9 +40,9 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold mb-4">Product not found</h2>
+        <h2 className="text-2xl font-bold mb-4">{t('productNotFoundTitle')}</h2>
         <button onClick={() => navigate('/shop')} className="text-blue-600 font-bold hover:underline">
-          Back to Shop
+          {t('backToShopBtn')}
         </button>
       </div>
     );
@@ -66,17 +66,18 @@ const ProductDetail = () => {
     ? Math.min(...(Object.values(selectedVariations) as Variation[]).map(v => v.stock))
     : product.stock;
 
-  const whatsappLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${product.title} ${Object.entries(selectedVariations).map(([name, v]) => `(${name}: ${(v as Variation).value})`).join(' ')} (Price: ${formatPrice(currentPrice)}, Quantity: ${quantity})`;
-  const inquiryLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I have a question about this product: ${product.title}`;
+  const productTitle = localize(product.title, language);
+  const whatsappLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${productTitle} ${Object.entries(selectedVariations).map(([name, v]) => `(${name}: ${(v as Variation).value})`).join(' ')} (Price: ${formatPrice(currentPrice)}, Quantity: ${quantity})`;
+  const inquiryLink = `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I have a question about this product: ${productTitle}`;
 
   const handleAddToCart = () => {
     if (variationNames.length > 0 && !allSelected) {
-      toast.error(`Please select ${variationNames.filter(n => !selectedVariations[n]).join(' and ')}`);
+      toast.error(`${t('pleaseSelectPrefix')} ${variationNames.filter(n => !selectedVariations[n]).join(' and ')}`);
       return;
     }
     // We pass the all selected variations
     addToCart(product, quantity, Object.values(selectedVariations));
-    toast.success(`${product.title} added to cart!`);
+    toast.success(`${productTitle} ${t('addedToCartSuffix')}`);
   };
 
   return (
@@ -86,7 +87,7 @@ const ProductDetail = () => {
         className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-bold mb-8 transition-colors group"
       >
         <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-        Back
+        {t('backBtn')}
       </button>
 
       <div className="flex flex-col lg:flex-row gap-12">
@@ -97,8 +98,8 @@ const ProductDetail = () => {
               key={mainImage}
               initial={{ opacity: 0, scale: 1.1 }}
               animate={{ opacity: 1, scale: 1 }}
-              src={mainImage} 
-              alt={product.title} 
+              src={mainImage}
+              alt={productTitle}
               className="w-full h-full object-cover" 
               referrerPolicy="no-referrer" 
             />
@@ -116,7 +117,7 @@ const ProductDetail = () => {
                     mainImage === img ? "border-blue-600 scale-95 shadow-sm" : "border-gray-100 opacity-60 hover:opacity-100"
                   )}
                 >
-                  <img src={img} alt={`${product.title} ${i + 1}`} className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
+                  <img src={img} alt={`${productTitle} ${i + 1}`} className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
                 </button>
               ))}
             </div>
@@ -127,12 +128,12 @@ const ProductDetail = () => {
         <div className="lg:w-1/2 space-y-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-               <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100">{product.category}</span>
+               <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100">{getCategoryLabel(product.category, language, siteSettings.categoryTranslations)}</span>
                {product.oldPrice && (
-                 <span className="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-orange-100">Sale</span>
+                 <span className="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-orange-100">{t('saleLabel')}</span>
                )}
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight tracking-tight">{product.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight tracking-tight">{productTitle}</h1>
             
             <div className="flex items-center space-x-6 mb-8 pb-8 border-b border-gray-100">
               <div className="flex items-center space-x-1">
@@ -146,7 +147,7 @@ const ProductDetail = () => {
                   />
                 ))}
                 <span className="text-sm font-bold text-gray-900 ml-2">{product.rating}</span>
-                <span className="text-gray-400 text-xs ml-1">(12+ reviews)</span>
+                <span className="text-gray-400 text-xs ml-1">{t('reviewsCount')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className={cn("h-2 w-2 rounded-full animate-pulse", currentStock > 0 ? "bg-green-500" : "bg-red-500")} />
@@ -171,9 +172,9 @@ const ProductDetail = () => {
                 {variationNames.map(groupName => (
                   <div key={groupName} className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <h3 className="font-black text-gray-900 uppercase text-[10px] tracking-widest">Select {groupName}</h3>
+                      <h3 className="font-black text-gray-900 uppercase text-[10px] tracking-widest">{t('selectLabel')} {groupName}</h3>
                       {selectedVariations[groupName] && (
-                        <span className="text-blue-600 font-bold text-xs">Selected: {selectedVariations[groupName].value}</span>
+                        <span className="text-blue-600 font-bold text-xs">{t('selectedLabel')} {selectedVariations[groupName].value}</span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -224,15 +225,15 @@ const ProductDetail = () => {
             )}
 
             <div className="bg-gray-50 rounded-3xl p-6 mb-10">
-               <h3 className="font-black text-gray-900 uppercase text-[10px] tracking-widest mb-4">Description</h3>
+               <h3 className="font-black text-gray-900 uppercase text-[10px] tracking-widest mb-4">{t('descriptionTitle')}</h3>
                <p className="text-gray-600 leading-relaxed text-sm">
-                 {product.description}
+                 {localize(product.description, language)}
                </p>
             </div>
 
             {product.specifications && (
               <div className="mb-10">
-                <h3 className="font-black text-gray-900 mb-4 uppercase text-[10px] tracking-widest">Specifications</h3>
+                <h3 className="font-black text-gray-900 mb-4 uppercase text-[10px] tracking-widest">{t('specificationsTitle')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {product.specifications.map((spec, i) => (
                     <div key={i} className="flex items-center space-x-3 p-3 bg-white border border-gray-100 rounded-2xl">
@@ -301,18 +302,18 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-10 border-t border-gray-100">
             <div className="flex flex-col items-center text-center space-y-2">
               <Truck className="h-6 w-6 text-blue-600" />
-              <h4 className="font-bold text-sm">Fast Delivery</h4>
-              <p className="text-xs text-gray-500">24h in Kigali</p>
+              <h4 className="font-bold text-sm">{t('fastDelivery')}</h4>
+              <p className="text-xs text-gray-500">{t('fastDelivery24h')}</p>
             </div>
             <div className="flex flex-col items-center text-center space-y-2">
               <ShieldCheck className="h-6 w-6 text-blue-600" />
-              <h4 className="font-bold text-sm">Secure Payment</h4>
-              <p className="text-xs text-gray-500">100% Protected</p>
+              <h4 className="font-bold text-sm">{t('securePayment')}</h4>
+              <p className="text-xs text-gray-500">{t('securePaymentProtected')}</p>
             </div>
             <div className="flex flex-col items-center text-center space-y-2">
               <RotateCcw className="h-6 w-6 text-blue-600" />
-              <h4 className="font-bold text-sm">Easy Returns</h4>
-              <p className="text-xs text-gray-500">7 Days Policy</p>
+              <h4 className="font-bold text-sm">{t('easyReturnsTitle')}</h4>
+              <p className="text-xs text-gray-500">{t('easyReturns7Days')}</p>
             </div>
           </div>
         </div>

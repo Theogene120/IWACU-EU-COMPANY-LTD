@@ -21,19 +21,17 @@ const About: React.FC = () => {
             className="space-y-8"
           >
             <h1 className="text-5xl font-bold text-gray-900 leading-tight">
-              Welcome to <span className="text-blue-600">{BUSINESS_NAME}</span>
+              {t('aboutWelcomePrefix')} <span className="text-blue-600">{BUSINESS_NAME}</span>
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-              IWACU EU COMPANY LTD is a dynamic and customer-focused enterprise based in Kigali, Rwanda, dedicated to providing high-quality products and services that meet modern lifestyle and business needs. The company operates across multiple sectors, with a strong emphasis on retail, general supply, and distribution of essential goods including home appliances, kitchen equipment, and lifestyle products.
-              Driven by a commitment to quality, affordability, and customer satisfaction, IWACU EU COMPANY LTD sources reliable products—often inspired by international standards—to ensure durability, efficiency, and value for money. The company aims to simplify everyday living by offering practical solutions that enhance comfort and convenience for households and businesses alike.
-              With a growing reputation in the markt.
+              {t('aboutIntro')}
             </p>
             <div className="space-y-4">
               {[
-                "Strong customer relationships and responsive service",
-                "Focus on modern, energy-efficient, and innovative products",
-                "Reliable delivery and accessible pricing",
-                "Commitment to integrity and professionalism in all operations"
+                t('aboutBullet1'),
+                t('aboutBullet2'),
+                t('aboutBullet3'),
+                t('aboutBullet4')
               ].map((item, i) => (
                 <div key={i} className="flex items-center space-x-3 text-gray-700 font-medium">
                   <CheckCircle2 className="h-6 w-6 text-green-500" />
@@ -50,14 +48,14 @@ const About: React.FC = () => {
             <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
               <img
                 src="city.jpg"
-                alt="About Us"
+                alt={t('aboutUsAlt')}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div className="absolute -bottom-10 -left-10 bg-blue-600 p-8 rounded-3xl text-white shadow-xl hidden sm:block">
               <p className="text-4xl font-bold mb-1">10+</p>
-              <p className="text-sm font-medium opacity-80 uppercase tracking-widest">Years Experience</p>
+              <p className="text-sm font-medium opacity-80 uppercase tracking-widest">{t('yearsExperience')}</p>
             </div>
           </motion.div>
         </div>
@@ -65,9 +63,9 @@ const About: React.FC = () => {
         {/* Mission & Vision */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-32">
           {[
-            { icon: <Target className="h-10 w-10 text-blue-600" />, title: "Our Mission", desc: "To provide accessible, high-quality products that enhance the lives of our customers." },
-            { icon: <Users className="h-10 w-10 text-blue-600" />, title: "Our Vision", desc: "The company’s vision is to become a trusted leading supplier in Rwanda and beyond, known for delivering quality products and excellent service, while continuously adapting to the evolving needs of its customers.." },
-            { icon: <Award className="h-10 w-10 text-blue-600" />, title: "Our Values", desc: "Excellence, customer satisfaction, and community growth are at the heart of everything we do." },
+            { icon: <Target className="h-10 w-10 text-blue-600" />, title: t('missionTitle'), desc: t('missionDesc') },
+            { icon: <Users className="h-10 w-10 text-blue-600" />, title: t('visionTitle'), desc: t('visionDesc') },
+            { icon: <Award className="h-10 w-10 text-blue-600" />, title: t('valuesTitle'), desc: t('valuesDesc') },
           ].map((item, i) => (
             <motion.div
               key={i}
@@ -87,8 +85,8 @@ const About: React.FC = () => {
         {/* Team Section */}
         <div className="mb-32">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Meet Our Team</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">The dedicated professionals driving {BUSINESS_NAME} towards excellence.</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t('meetTeamTitle')}</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">{t('meetTeamDescPrefix')} {BUSINESS_NAME} {t('meetTeamDescSuffix')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {TEAM_MEMBERS.map((member, index) => member && (
@@ -135,7 +133,7 @@ const About: React.FC = () => {
                     className="flex items-center justify-center gap-2 text-gray-700 font-bold bg-blue-50/50 py-4 rounded-2xl hover:bg-blue-600 hover:text-white transition-all group/phone border border-blue-100/50 shadow-sm"
                   >
                     <PhoneCall className="w-5 h-5 text-blue-600 group-hover/phone:text-white transition-colors" />
-                    <span>Call: {member.phone}</span>
+                    <span>{t('callLabel')} {member.phone}</span>
                   </a>
                 </div>
               </motion.div>
@@ -145,12 +143,12 @@ const About: React.FC = () => {
 
         {/* CTA Section */}
         <div className="bg-gray-900 rounded-3xl p-12 lg:p-20 text-center text-white space-y-8">
-          <h2 className="text-4xl font-bold">Ready to start shopping?</h2>
+          <h2 className="text-4xl font-bold">{t('ctaTitle')}</h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-            Join thousands of satisfied customers who trust {BUSINESS_NAME} for their daily needs.
+            {t('ctaDescPrefix')} {BUSINESS_NAME} {t('ctaDescSuffix')}
           </p>
           <button className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105">
-            Explore Our Shop
+            {t('exploreShopBtn')}
           </button>
         </div>
       </div>

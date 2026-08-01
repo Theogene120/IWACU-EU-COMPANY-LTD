@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import AdminNavbar, { AdminTab } from '../components/AdminNavbar';
 import PasswordInput from '../components/PasswordInput';
-import { cn } from '../lib/utils';
+import { cn, localize } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Product, Variation, Order, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense } from '../types';
@@ -298,7 +298,7 @@ const AdminDashboard = () => {
 
     const tableRows = filteredProducts.map(p => [
       p.id,
-      p.title,
+      localize(p.title, 'en'),
       p.category,
       formatPrice(p.price),
       p.stock,
@@ -444,7 +444,7 @@ const AdminDashboard = () => {
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
 
   const filteredProducts = products.filter(p =>
-    (p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (localize(p.title, 'en').toLowerCase().includes(productSearch.toLowerCase()) ||
     p.id.toLowerCase().includes(productSearch.toLowerCase())) &&
     (productCategoryFilter === 'all' || p.category === productCategoryFilter) &&
     (productSalesTypeFilter === 'all' || (p.salesType || 'online') === productSalesTypeFilter)
@@ -487,7 +487,7 @@ const AdminDashboard = () => {
       const deliveryFee = idx === 0 ? orderDeliveryFee : 0;
       allProfitRows.push({
         key: `online-${order.id}-${idx}`,
-        itemName: item.title,
+        itemName: localize(item.title, 'en'),
         date: order.createdAt,
         cost,
         deliveryFee,
@@ -504,7 +504,7 @@ const AdminDashboard = () => {
     const deliveryFee = p.offlineDeliveryFee || 0;
     allProfitRows.push({
       key: `offline-${p.id}`,
-      itemName: p.title,
+      itemName: localize(p.title, 'en'),
       date: p.saleDate || '',
       cost,
       deliveryFee,
@@ -1007,8 +1007,8 @@ const AdminDashboard = () => {
                     <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-8 py-6">
                         <div className="flex items-center space-x-4">
-                          <img src={product.images[0]} alt={product.title} className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
-                          <span className="font-bold text-gray-900">{product.title}</span>
+                          <img src={product.images[0]} alt={localize(product.title, 'en')} className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                          <span className="font-bold text-gray-900">{localize(product.title, 'en')}</span>
                         </div>
                       </td>
                       <td className="px-8 py-6 text-sm text-gray-600">{product.category}</td>
@@ -2804,7 +2804,7 @@ const AdminDashboard = () => {
 const API_BASE_SC = import.meta.env.VITE_API_URL ?? '';
 
 const SiteContentManager = () => {
-  const { siteSettings, updateSiteSettings, uploadImage, products } = useShop();
+  const { siteSettings, updateSiteSettings, uploadImage, products, categories } = useShop();
   const [localSettings, setLocalSettings] = useState(siteSettings);
   const [isSaving, setIsSaving] = useState(false);
   const heroFileRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -2989,8 +2989,8 @@ const SiteContentManager = () => {
                   const newSlides = [...(localSettings.heroSlides || [])];
                   newSlides.push({
                     image: p.images?.[0] || "",
-                    title: { en: p.title, fr: p.title, rw: p.title },
-                    subtitle: { en: p.description || "", fr: "", rw: "" },
+                    title: p.title,
+                    subtitle: p.description || { en: "", fr: "", rw: "" },
                     cta: { en: "Shop Now", fr: "Acheter Maintenant", rw: "Gura Nonaha" },
                     productId: p.id,
                   });
@@ -3000,7 +3000,7 @@ const SiteContentManager = () => {
               >
                 <option value="">+ Feature a Product</option>
                 {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.title}</option>
+                  <option key={p.id} value={p.id}>{localize(p.title, 'en')}</option>
                 ))}
               </select>
               <Plus className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
@@ -3059,7 +3059,7 @@ const SiteContentManager = () => {
                   >
                     {!slide.productId && <option value="" disabled>-- Select a product --</option>}
                     {products.map((p) => (
-                      <option key={p.id} value={p.id}>{p.title}</option>
+                      <option key={p.id} value={p.id}>{localize(p.title, 'en')}</option>
                     ))}
                   </select>
                   <p className="text-[10px] text-gray-400">Drives the "View Product" button and the product name/price in the WhatsApp order message.</p>
@@ -3416,6 +3416,54 @@ const SiteContentManager = () => {
         </div>
       </section>
 
+      {/* Category Translations */}
+      <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mt-12">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Category Names (Translations)</h2>
+          <p className="text-gray-500">Set French/Kinyarwanda display names for each category. The English name stays canonical and is what filtering/URLs use — leave a field blank to fall back to it.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {categories.map(cat => {
+            const catTranslations = localSettings.categoryTranslations?.[cat] || {};
+            return (
+              <div key={cat} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                <p className="text-sm font-bold text-gray-900">{cat}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">French</label>
+                    <input
+                      type="text"
+                      value={catTranslations.fr || ''}
+                      onChange={(e) => {
+                        const categoryTranslations = { ...(localSettings.categoryTranslations || {}) };
+                        categoryTranslations[cat] = { ...categoryTranslations[cat], fr: e.target.value };
+                        setLocalSettings({ ...localSettings, categoryTranslations });
+                      }}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                      placeholder={cat}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Kinyarwanda</label>
+                    <input
+                      type="text"
+                      value={catTranslations.rw || ''}
+                      onChange={(e) => {
+                        const categoryTranslations = { ...(localSettings.categoryTranslations || {}) };
+                        categoryTranslations[cat] = { ...categoryTranslations[cat], rw: e.target.value };
+                        setLocalSettings({ ...localSettings, categoryTranslations });
+                      }}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                      placeholder={cat}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Customer Testimonials Section */}
       <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mt-12">
         <div className="flex items-center justify-between mb-8">
@@ -3429,7 +3477,7 @@ const SiteContentManager = () => {
                 id: Math.random().toString(36).substr(2, 9),
                 name: '',
                 location: '',
-                message: '',
+                message: { en: '', fr: '', rw: '' },
                 rating: 5,
                 image: ''
               };
@@ -3522,16 +3570,40 @@ const SiteContentManager = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase">Message/Review</label>
-                    <textarea 
-                      value={testimonial.message}
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Message/Review (EN)</label>
+                    <textarea
+                      value={testimonial.message.en}
                       onChange={(e) => {
                         const newTestimonials = [...localSettings.testimonials];
-                        newTestimonials[idx] = { ...newTestimonials[idx], message: e.target.value };
+                        newTestimonials[idx] = { ...newTestimonials[idx], message: { ...newTestimonials[idx].message, en: e.target.value } };
                         setLocalSettings({ ...localSettings, testimonials: newTestimonials });
                       }}
-                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[100px]"
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[80px]"
                       placeholder="Write the customer's review here..."
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Message/Review (FR)</label>
+                    <textarea
+                      value={testimonial.message.fr}
+                      onChange={(e) => {
+                        const newTestimonials = [...localSettings.testimonials];
+                        newTestimonials[idx] = { ...newTestimonials[idx], message: { ...newTestimonials[idx].message, fr: e.target.value } };
+                        setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[80px]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">Message/Review (RW)</label>
+                    <textarea
+                      value={testimonial.message.rw}
+                      onChange={(e) => {
+                        const newTestimonials = [...localSettings.testimonials];
+                        newTestimonials[idx] = { ...newTestimonials[idx], message: { ...newTestimonials[idx].message, rw: e.target.value } };
+                        setLocalSettings({ ...localSettings, testimonials: newTestimonials });
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[80px]"
                     />
                   </div>
                 </div>
@@ -3563,11 +3635,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
   const { categories, uploadImage } = useShop();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
-    title: initialData?.title || '',
+    title: initialData?.title || { en: '', fr: '', rw: '' },
     price: initialData?.price || 0,
     oldPrice: initialData?.oldPrice || 0,
     category: initialData?.category || categories[0],
-    description: initialData?.description || '',
+    description: initialData?.description || { en: '', fr: '', rw: '' },
     stock: initialData?.stock || 0,
     images: initialData?.images || [''],
     variations: initialData?.variations || [] as Variation[],
@@ -3656,14 +3728,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-12">
       <div className="space-y-6">
         <div className="space-y-2">
-          <label className="text-sm font-bold text-gray-700">Product Title</label>
+          <label className="text-sm font-bold text-gray-700">Product Title (EN)</label>
           <input
             required
             type="text"
-            value={formData.title}
-            onChange={e => setFormData({ ...formData, title: e.target.value })}
+            value={formData.title.en}
+            onChange={e => setFormData({ ...formData, title: { ...formData.title, en: e.target.value } })}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
             placeholder="e.g. Smart LED TV"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Product Title (FR)</label>
+          <input
+            type="text"
+            value={formData.title.fr}
+            onChange={e => setFormData({ ...formData, title: { ...formData.title, fr: e.target.value } })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Product Title (RW)</label>
+          <input
+            type="text"
+            value={formData.title.rw}
+            onChange={e => setFormData({ ...formData, title: { ...formData.title, rw: e.target.value } })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
         </div>
 
@@ -3729,14 +3819,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-bold text-gray-700">Description</label>
+          <label className="text-sm font-bold text-gray-700">Description (EN)</label>
           <textarea
             required
             rows={4}
-            value={formData.description}
-            onChange={e => setFormData({ ...formData, description: e.target.value })}
+            value={formData.description.en}
+            onChange={e => setFormData({ ...formData, description: { ...formData.description, en: e.target.value } })}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
             placeholder="Detailed product description..."
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Description (FR)</label>
+          <textarea
+            rows={4}
+            value={formData.description.fr}
+            onChange={e => setFormData({ ...formData, description: { ...formData.description, fr: e.target.value } })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-gray-700">Description (RW)</label>
+          <textarea
+            rows={4}
+            value={formData.description.rw}
+            onChange={e => setFormData({ ...formData, description: { ...formData.description, rw: e.target.value } })}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
         </div>
 
@@ -4160,9 +4268,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave }) => {
         <div className="space-y-3">
           {formData.items.map((item, index) => (
             <div key={`${item.id}-${index}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-              <img src={item.images[0]} alt={item.title} className="w-16 h-16 object-cover rounded-lg" referrerPolicy="no-referrer" />
+              <img src={item.images[0]} alt={localize(item.title, 'en')} className="w-16 h-16 object-cover rounded-lg" referrerPolicy="no-referrer" />
               <div className="flex-1">
-                <h4 className="font-bold text-gray-900">{item.title}</h4>
+                <h4 className="font-bold text-gray-900">{localize(item.title, 'en')}</h4>
                 {item.selectedVariation && (
                   <p className="text-xs text-gray-500">
                     {item.selectedVariation.name}: {item.selectedVariation.value}

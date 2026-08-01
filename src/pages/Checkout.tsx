@@ -24,11 +24,12 @@ import {
   Clock
 } from 'lucide-react';
 import WhatsAppIcon from '../components/WhatsAppIcon';
+import { localize } from '../lib/utils';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { cart, cartTotal: subtotal, clearCart, addOrder, products } = useShop();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
   const [formData, setFormData] = useState({
@@ -112,22 +113,22 @@ const Checkout: React.FC = () => {
     setError('');
 
     if (!formData.name || !formData.phone || !formData.country) {
-      setError('Please fill in all required shipping details.');
+      setError(t('errFillShipping'));
       return;
     }
 
     if (formData.country === 'Rwanda' && (!formData.province || !formData.district)) {
-      setError('Please select your Province and District.');
+      setError(t('errSelectProvinceDistrict'));
       return;
     }
 
     if (paymentMethod === 'cod' && formData.province !== 'Kigali City') {
-      setError('Only Kigali is allowed to pay for this service, and then your order will arrive. If you need help, write to us.');
+      setError(t('errKigaliOnlyCod'));
       return;
     }
 
     if (paymentMethod === 'momo' && !validatePhone(formData.momoNumber)) {
-      setError('Please enter a valid Rwanda Mobile Money number (e.g., 078xxxxxxx).');
+      setError(t('errInvalidMomo'));
       return;
     }
 
@@ -138,7 +139,7 @@ const Checkout: React.FC = () => {
     });
 
     if (inconsistencies.length > 0) {
-      setError('Some items in your cart are no longer available. Please review your cart.');
+      setError(t('errItemsUnavailable'));
       return;
     }
 
@@ -207,17 +208,17 @@ const Checkout: React.FC = () => {
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
                 <CheckCircle2 className="w-12 h-12 text-white" />
               </div>
-              <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">Order Received!</h2>
-              <p className="text-blue-100 font-medium">Please complete your payment to finalize your order.</p>
+              <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">{t('orderReceivedTitle')}</h2>
+              <p className="text-blue-100 font-medium">{t('orderReceivedDesc')}</p>
             </div>
 
             <div className="p-8 md:p-12">
               <div className="mb-10 text-center">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
-                  How to Pay
+                  {t('howToPayTitle')}
                 </h3>
                 <div className="bg-blue-50 text-blue-700 px-6 py-4 rounded-2xl inline-block font-bold text-lg">
-                  Total Amount: {formatPrice(finalTotal)}
+                  {t('totalAmountLabel')} {formatPrice(finalTotal)}
                 </div>
               </div>
 
@@ -231,28 +232,28 @@ const Checkout: React.FC = () => {
                         <div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center text-white shadow-sm">
                           <Smartphone className="w-6 h-6" />
                         </div>
-                        <h4 className="font-black text-gray-900 uppercase tracking-wide">MTN Mobile Money</h4>
+                        <h4 className="font-black text-gray-900 uppercase tracking-wide">{t('mtnMomoTitle')}</h4>
                       </div>
                       <ul className="text-sm space-y-3 text-gray-700 mb-6">
                         <li className="flex gap-2">
                           <span className="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
-                          <span>Dial <strong>*182*1*1#</strong></span>
+                          <span>{t('dialLabel')} <strong>*182*1*1#</strong></span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
-                          <span>Enter Number: <strong>{MOMO_DETAILS.number}</strong></span>
+                          <span>{t('enterNumberLabel')} <strong>{MOMO_DETAILS.number}</strong></span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
-                          <span>Enter Amount: <strong>{formatPrice(finalTotal)}</strong></span>
+                          <span>{t('enterAmountLabel')} <strong>{formatPrice(finalTotal)}</strong></span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-yellow-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">4</span>
-                          <span>Verify Name: <strong>{MOMO_DETAILS.name}</strong></span>
+                          <span>{t('verifyNameLabel')} <strong>{MOMO_DETAILS.name}</strong></span>
                         </li>
                         <li className="flex gap-2 text-blue-600 font-bold">
                           <span className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">5</span>
-                          <span>Use Order Code <strong>{orderId}</strong> as Reference</span>
+                          <span>{t('useOrderCodeLabel')} <strong>{orderId}</strong> {t('asReferenceLabel')}</span>
                         </li>
                       </ul>
                     </div>
@@ -263,28 +264,28 @@ const Checkout: React.FC = () => {
                         <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-sm">
                           <Smartphone className="w-6 h-6" />
                         </div>
-                        <h4 className="font-black text-gray-900 uppercase tracking-wide">Airtel Money</h4>
+                        <h4 className="font-black text-gray-900 uppercase tracking-wide">{t('airtelMoneyTitle')}</h4>
                       </div>
                       <ul className="text-sm space-y-3 text-gray-700 mb-6">
                         <li className="flex gap-2">
                           <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
-                          <span>Dial <strong>*182#</strong> then choose Airtel</span>
+                          <span>{t('dialLabel')} <strong>*182#</strong> {t('dialThenChooseAirtel')}</span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
-                          <span>Transfer to: <strong>{AIRTEL_DETAILS.number}</strong></span>
+                          <span>{t('transferToLabel')} <strong>{AIRTEL_DETAILS.number}</strong></span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
-                          <span>Enter Amount: <strong>{formatPrice(finalTotal)}</strong></span>
+                          <span>{t('enterAmountLabel')} <strong>{formatPrice(finalTotal)}</strong></span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">4</span>
-                          <span>Verify Name: <strong>{AIRTEL_DETAILS.name}</strong></span>
+                          <span>{t('verifyNameLabel')} <strong>{AIRTEL_DETAILS.name}</strong></span>
                         </li>
                         <li className="flex gap-2 text-blue-600 font-bold">
                           <span className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">5</span>
-                          <span>Use Order Code <strong>{orderId}</strong> as Reference</span>
+                          <span>{t('useOrderCodeLabel')} <strong>{orderId}</strong> {t('asReferenceLabel')}</span>
                         </li>
                       </ul>
                     </div>
@@ -299,25 +300,25 @@ const Checkout: React.FC = () => {
                         <Building2 className="w-7 h-7" />
                       </div>
                       <div>
-                        <h4 className="font-black text-gray-900 uppercase tracking-tight">Bank Transfer</h4>
-                        <p className="text-xs text-gray-500 font-bold">Equity Bank Rwanda</p>
+                        <h4 className="font-black text-gray-900 uppercase tracking-tight">{t('bankTransferLabel')}</h4>
+                        <p className="text-xs text-gray-500 font-bold">{t('equityBankRwanda')}</p>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-4">
                          <div>
-                            <p className="text-[10px] text-gray-400 font-black uppercase mb-1">Account Holder</p>
+                            <p className="text-[10px] text-gray-400 font-black uppercase mb-1">{t('accountHolderLabel')}</p>
                             <p className="text-lg font-bold text-gray-900">{BANK_DETAILS.accountName}</p>
                          </div>
                          <div>
-                            <p className="text-[10px] text-gray-400 font-black uppercase mb-1">Account Number</p>
+                            <p className="text-[10px] text-gray-400 font-black uppercase mb-1">{t('accountNumberLabel').replace(':', '')}</p>
                             <p className="text-xl font-black text-blue-600 tracking-wider font-mono">{BANK_DETAILS.accountNumber}</p>
                          </div>
                        </div>
                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
                           <p className="text-xs text-gray-500 italic leading-relaxed">
-                            "Please ensure you include the order code <strong>{orderId}</strong> in the bank transfer description to help us process your order faster."
+                            "{t('bankTransferHelperPrefix')} <strong>{orderId}</strong> {t('bankTransferHelperSuffix')}"
                           </p>
                        </div>
                     </div>
@@ -331,11 +332,10 @@ const Checkout: React.FC = () => {
                       <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white">
                         <Truck className="w-6 h-6" />
                       </div>
-                      <h4 className="font-black text-green-900 uppercase tracking-wide">Cash on Delivery</h4>
+                      <h4 className="font-black text-green-900 uppercase tracking-wide">{t('cod')}</h4>
                     </div>
                     <p className="text-sm text-green-800 leading-relaxed">
-                      Our delivery team will contact you once they are near your location. 
-                      Please have the exact amount of <strong>{formatPrice(finalTotal)}</strong> ready in cash or available on your Mobile Money phone.
+                      {t('codDeliveryDescPrefix')} <strong>{formatPrice(finalTotal)}</strong> {t('codDeliveryDescSuffix')}
                     </p>
                   </div>
                 )}
@@ -349,25 +349,25 @@ const Checkout: React.FC = () => {
                     <WhatsAppIcon className="w-6 h-6 text-green-500" />
                  </div>
                  <div className="text-left">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Need Help?</p>
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('needHelpLabel')}</p>
                    <a href={`https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Help with Order ${orderId}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-gray-900 hover:text-blue-600 transition-colors">
-                     WhatsApp us: {BUSINESS_PHONE}
+                     {t('whatsappUsLabel')} {BUSINESS_PHONE}
                    </a>
                  </div>
                </div>
-               
+
                <div className="flex gap-3">
-                 <button 
+                 <button
                    onClick={() => navigate('/order-tracking', { state: { orderId } })}
                    className="px-6 py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm hover:bg-black transition-all shadow-lg"
                  >
-                   Track Order
+                   {t('trackOrder')}
                  </button>
-                 <button 
+                 <button
                    onClick={() => navigate('/')}
                    className="px-6 py-4 bg-white text-gray-900 border border-gray-200 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all shadow-sm"
                  >
-                   Home
+                   {t('home')}
                  </button>
                </div>
             </div>
@@ -384,7 +384,7 @@ const Checkout: React.FC = () => {
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-white rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('checkout')}</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -394,12 +394,12 @@ const Checkout: React.FC = () => {
             <section className="bg-white rounded-3xl shadow-sm p-8">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Truck className="text-blue-600" />
-                Shipping Information
+                {t('shippingInfoTitle')}
               </h2>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('fullName')}</label>
                     <input
                       type="text"
                       name="name"
@@ -407,11 +407,11 @@ const Checkout: React.FC = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Enter your full name"
+                      placeholder={t('fullNamePlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('phoneNumber')}</label>
                     <input
                       type="tel"
                       name="phone"
@@ -419,12 +419,12 @@ const Checkout: React.FC = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                      placeholder="078xxxxxxx"
+                      placeholder={t('phonePlaceholderPattern')}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('emailOptionalLabel')}</label>
                   <input
                     type="email"
                     name="email"
@@ -441,7 +441,7 @@ const Checkout: React.FC = () => {
                   {/* Country */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Globe className="w-4 h-4" /> Country
+                      <Globe className="w-4 h-4" /> {t('countryLabel')}
                     </label>
                     <div className="relative">
                       <select
@@ -450,12 +450,12 @@ const Checkout: React.FC = () => {
                         onChange={handleInputChange}
                         className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl appearance-none focus:ring-2 focus:ring-blue-600 outline-none"
                       >
-                        <option value="Rwanda">Rwanda</option>
-                        <option value="Uganda">Uganda</option>
-                        <option value="Kenya">Kenya</option>
-                        <option value="Tanzania">Tanzania</option>
-                        <option value="Burundi">Burundi</option>
-                        <option value="DRC">DRC</option>
+                        <option value="Rwanda">{t('countryRwanda')}</option>
+                        <option value="Uganda">{t('countryUganda')}</option>
+                        <option value="Kenya">{t('countryKenya')}</option>
+                        <option value="Tanzania">{t('countryTanzania')}</option>
+                        <option value="Burundi">{t('countryBurundi')}</option>
+                        <option value="DRC">{t('countryDRC')}</option>
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                     </div>
@@ -464,7 +464,7 @@ const Checkout: React.FC = () => {
                   {/* Province (Rwanda Only) */}
                   {formData.country === 'Rwanda' && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Province</label>
+                      <label className="text-sm font-medium text-gray-700">{t('provinceLabel')}</label>
                       <div className="relative">
                         <select
                           name="province"
@@ -472,7 +472,7 @@ const Checkout: React.FC = () => {
                           onChange={handleInputChange}
                           className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl appearance-none focus:ring-2 focus:ring-blue-600 outline-none"
                         >
-                          <option value="">Select Province</option>
+                          <option value="">{t('selectProvince')}</option>
                           {Object.keys(RWANDA_LOCATIONS).map(p => (
                             <option key={p} value={p}>{p}</option>
                           ))}
@@ -485,7 +485,7 @@ const Checkout: React.FC = () => {
                   {/* District (Rwanda Only) */}
                   {formData.country === 'Rwanda' && formData.province && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">District</label>
+                      <label className="text-sm font-medium text-gray-700">{t('districtLabel')}</label>
                       <div className="relative">
                         <select
                           name="district"
@@ -493,7 +493,7 @@ const Checkout: React.FC = () => {
                           onChange={handleInputChange}
                           className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl appearance-none focus:ring-2 focus:ring-blue-600 outline-none"
                         >
-                          <option value="">Select District</option>
+                          <option value="">{t('selectDistrict')}</option>
                           {RWANDA_LOCATIONS[formData.province as keyof typeof RWANDA_LOCATIONS].map(d => (
                             <option key={d} value={d}>{d}</option>
                           ))}
@@ -504,14 +504,14 @@ const Checkout: React.FC = () => {
                   )}
 
                   <div className={formData.country === 'Rwanda' ? 'md:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Address / Landmark (Optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('streetAddressLabel')}</label>
                     <input
                       type="text"
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                      placeholder="e.g. KN 2 Rd, Downtown Building"
+                      placeholder={t('streetAddressPlaceholder')}
                     />
                   </div>
                 </div>
@@ -522,14 +522,14 @@ const Checkout: React.FC = () => {
             <section className="bg-white rounded-3xl shadow-sm p-8">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <CreditCard className="text-blue-600" />
-                Payment Method
+                {t('paymentMethod')}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 {[
-                  { id: 'momo', label: 'Mobile Money', icon: <Smartphone /> },
-                  { id: 'card', label: 'Debit/Credit Card', icon: <CreditCard /> },
-                  { id: 'cod', label: 'Cash on Delivery', icon: <CarFront /> },
-                  { id: 'bank_transfer', label: 'Bank Transfer', icon: <Building2 /> },
+                  { id: 'momo', label: t('momo'), icon: <Smartphone /> },
+                  { id: 'card', label: t('card'), icon: <CreditCard /> },
+                  { id: 'cod', label: t('cod'), icon: <CarFront /> },
+                  { id: 'bank_transfer', label: t('bankTransferLabel'), icon: <Building2 /> },
                 ].map((method) => (
                   <button
                     key={method.id}
@@ -562,11 +562,11 @@ const Checkout: React.FC = () => {
                     <div className="p-4 bg-yellow-50 rounded-2xl border border-yellow-100 flex gap-3">
                       <AlertCircle className="text-yellow-600 flex-shrink-0" />
                       <p className="text-xs text-yellow-800">
-                        Enter your Mobile Money number. You will receive a prompt on your phone to confirm the payment.
+                        {t('momoInstructionAlert')}
                       </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">MoMo Number</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('momoNumberLabel')}</label>
                       <input
                         type="tel"
                         name="momoNumber"
@@ -588,7 +588,7 @@ const Checkout: React.FC = () => {
                     className="space-y-4"
                   >
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('cardNumberLabel')}</label>
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -597,7 +597,7 @@ const Checkout: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('expiryDateLabel')}</label>
                         <input
                           type="text"
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -605,7 +605,7 @@ const Checkout: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('cvvLabel')}</label>
                         <input
                           type="text"
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -624,23 +624,23 @@ const Checkout: React.FC = () => {
                     exit={{ opacity: 0, y: -10 }}
                     className="p-6 bg-blue-50 rounded-2xl border border-blue-100 space-y-4"
                   >
-                    <h4 className="font-bold text-blue-900">Bank Details</h4>
+                    <h4 className="font-bold text-blue-900">{t('bankDetailsTitle')}</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-blue-700">Bank:</span>
+                        <span className="text-blue-700">{t('bankLabel')}</span>
                         <span className="font-bold">{BANK_DETAILS.bank}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-700">Account Name:</span>
+                        <span className="text-blue-700">{t('accountNameLabel')}</span>
                         <span className="font-bold">{BANK_DETAILS.accountName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-700">Account Number:</span>
+                        <span className="text-blue-700">{t('accountNumberLabel')}</span>
                         <span className="font-bold font-mono">{BANK_DETAILS.accountNumber}</span>
                       </div>
                     </div>
                     <p className="text-xs text-blue-800 italic">
-                      * Please use your Name or Phone Number as the transfer reference.
+                      {t('bankTransferNote')}
                     </p>
                   </motion.div>
                 )}
@@ -655,7 +655,7 @@ const Checkout: React.FC = () => {
                   >
                     <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
                       <p className="text-sm text-gray-600">
-                        You will pay for your order in cash or via MoMo when it is delivered to your doorstep.
+                        {t('codNote')}
                       </p>
                     </div>
                     {formData.province !== 'Kigali City' && (
@@ -663,11 +663,11 @@ const Checkout: React.FC = () => {
                         <AlertCircle className="text-orange-600 flex-shrink-0" />
                         <div className="space-y-2">
                           <p className="text-xs text-orange-800 font-bold">
-                            Restricted Service
+                            {t('restrictedServiceTitle')}
                           </p>
                           <p className="text-[10px] text-orange-700 leading-relaxed">
-                            Only Kigali is allowed to pay for this service, and then your order will arrive. 
-                            If you need help, <a href={`https://wa.me/${BUSINESS_PHONE.replace('+', '')}`} className="underline font-bold" target="_blank" rel="noreferrer">write to us</a>.
+                            {t('restrictedServiceDesc')}
+                            {' '}{t('needHelpWriteToUsPrefix')} <a href={`https://wa.me/${BUSINESS_PHONE.replace('+', '')}`} className="underline font-bold" target="_blank" rel="noreferrer">{t('writeToUsLink')}</a>.
                           </p>
                         </div>
                       </div>
@@ -681,14 +681,14 @@ const Checkout: React.FC = () => {
           {/* Right Column: Order Summary */}
           <div className="space-y-8">
             <section className="bg-white rounded-3xl shadow-sm p-8 sticky top-24">
-              <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+              <h2 className="text-xl font-bold mb-6">{t('orderSummaryTitle')}</h2>
               <div className="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
                 {cart.map((item) => (
                   <div key={item.id} className="flex gap-4">
-                    <img src={item.images[0]} alt={item.title} className="w-16 h-16 rounded-xl object-cover" />
+                    <img src={item.images[0]} alt={localize(item.title, language)} className="w-16 h-16 rounded-xl object-cover" />
                     <div className="flex-1">
-                      <h4 className="text-sm font-bold line-clamp-1">{item.title}</h4>
-                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                      <h4 className="text-sm font-bold line-clamp-1">{localize(item.title, language)}</h4>
+                      <p className="text-xs text-gray-500">{t('qtyLabel')} {item.quantity}</p>
                       <p className="text-sm font-bold text-blue-600">{formatPrice(item.price * item.quantity)}</p>
                     </div>
                   </div>
@@ -697,12 +697,12 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-3 border-t border-gray-100 pt-6 mb-8">
                 <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
+                  <span>{t('subtotalLabel')}</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-600">
                   <span className="flex items-center gap-1">
-                    Delivery Fee
+                    {t('deliveryFeeLabel')}
                     {isCalculating && <Loader2 className="w-3 h-3 animate-spin" />}
                   </span>
                   <AnimatePresence mode="wait">
@@ -715,7 +715,7 @@ const Checkout: React.FC = () => {
                         className="text-right"
                       >
                         {deliveryFee === 0 ? (
-                          <span className="text-green-600 font-black tracking-wider uppercase text-sm">FREE</span>
+                          <span className="text-green-600 font-black tracking-wider uppercase text-sm">{t('freeLabel')}</span>
                         ) : (
                           <span className="text-blue-600 font-bold">{formatPrice(deliveryFee)}</span>
                         )}
@@ -724,12 +724,12 @@ const Checkout: React.FC = () => {
                         </p>
                       </motion.div>
                     ) : (
-                      <span className="text-xs text-orange-500 font-medium italic">Select location</span>
+                      <span className="text-xs text-orange-500 font-medium italic">{t('selectLocationLabel')}</span>
                     )}
                   </AnimatePresence>
                 </div>
                 <div className="flex justify-between text-2xl font-black text-gray-900 pt-3 border-t border-gray-100">
-                  <span>Total</span>
+                  <span>{t('total')}</span>
                   <motion.span
                     key={total}
                     initial={{ scale: 1.1, color: '#2563eb' }}
@@ -758,15 +758,15 @@ const Checkout: React.FC = () => {
                   <div className="flex flex-col items-center gap-2">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>{paymentMethod === 'momo' ? (paymentMessage || 'Initiating...') : 'Processing...'}</span>
+                      <span>{paymentMethod === 'momo' ? (paymentMessage || t('initiatingLabel')) : t('processingBtn')}</span>
                     </div>
                     {paymentMethod === 'momo' && (
-                      <p className="text-[10px] text-blue-100 font-medium">Please do not refresh this page</p>
+                      <p className="text-[10px] text-blue-100 font-medium">{t('pleaseDontRefresh')}</p>
                     )}
                   </div>
                 ) : (
                   <>
-                    {paymentMethod === 'momo' ? 'Pay Now' : (paymentMethod === 'card' ? `Pay ${formatPrice(total)}` : 'Place Order')}
+                    {paymentMethod === 'momo' ? t('payNowBtn') : (paymentMethod === 'card' ? `${t('payAmountPrefix')} ${formatPrice(total)}` : t('placeOrder'))}
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
@@ -774,7 +774,7 @@ const Checkout: React.FC = () => {
 
               <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
                 <ShieldCheck className="w-4 h-4" />
-                Secure SSL Encrypted Payment
+                {t('secureSSL')}
               </div>
             </section>
           </div>

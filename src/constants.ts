@@ -1,4 +1,11 @@
-import { Product, Translation, TeamMember } from './types';
+import { Product, Translation, TeamMember, LocalizedText } from './types';
+
+// Wraps a plain string into a {en,fr,rw} object (same value in all three) — used
+// only for the built-in demo/seed catalog below, so its literals can stay simple
+// strings instead of being rewritten as full translation objects by hand.
+function asLocalized(value: string): LocalizedText {
+  return { en: value, fr: value, rw: value };
+}
 
 export const BUSINESS_NAME = "IWACU EU COMPANY LTD";
 export const BUSINESS_PHONE = "+250796606178";
@@ -13,7 +20,9 @@ export const CATEGORIES = [
   "General Merchandise"
 ];
 
-export const DEMO_PRODUCTS: Product[] = [
+type RawDemoProduct = Omit<Product, 'title' | 'description'> & { title: string; description: string };
+
+const RAW_DEMO_PRODUCTS: RawDemoProduct[] = [
   // FASHION (8 PRODUCTS)
   {
     id: "f1",
@@ -1599,6 +1608,12 @@ export const DEMO_PRODUCTS: Product[] = [
   }
 ];
 
+export const DEMO_PRODUCTS: Product[] = RAW_DEMO_PRODUCTS.map((p) => ({
+  ...p,
+  title: asLocalized(p.title),
+  description: asLocalized(p.description),
+}));
+
 export const RWANDA_LOCATIONS = {
   "Kigali City": ["Nyarugenge", "Gasabo", "Kicukiro"],
   "Northern Province": ["Musanze", "Burera", "Gicumbi", "Gakenke", "Rulindo"],
@@ -1729,7 +1744,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
   }
 ];
 
-export const DEMO_TESTIMONIALS = [
+const RAW_DEMO_TESTIMONIALS = [
   {
     id: "1",
     name: "Diane Mukeshimana",
@@ -1756,6 +1771,10 @@ export const DEMO_TESTIMONIALS = [
   }
 ];
 
+export const DEMO_TESTIMONIALS = RAW_DEMO_TESTIMONIALS.map((t) => ({
+  ...t,
+  message: asLocalized(t.message),
+}));
 
 export const BANK_DETAILS = {
   bank: "Equity Bank",
@@ -1840,4 +1859,301 @@ export const TRANSLATIONS: Record<string, any> = {
   momo: { en: "Mobile Money", fr: "Mobile Money", rw: "Momo" },
   card: { en: "Debit/Credit Card", fr: "Carte Bancaire", rw: "Ikarita ya Banki" },
   cod: { en: "Cash on Delivery", fr: "Paiement à la Livraison", rw: "Kwishura uhawe" },
+
+  // ── Shared / generic ─────────────────────────────────────────────────────
+  subscribe: { en: "Subscribe", fr: "S'abonner", rw: "Iyandikishe" },
+  subscribing: { en: "Subscribing...", fr: "Inscription...", rw: "Kwiyandikisha..." },
+  cancel: { en: "Cancel", fr: "Annuler", rw: "Hagarika" },
+  viewAll: { en: "View All", fr: "Voir tout", rw: "Reba Byose" },
+  callLabel: { en: "Call:", fr: "Appeler :", rw: "Hamagara:" },
+  qtyLabel: { en: "Qty:", fr: "Qté :", rw: "Umubare:" },
+  dateLabel: { en: "Date:", fr: "Date :", rw: "Itariki:" },
+  backBtn: { en: "Back", fr: "Retour", rw: "Subira inyuma" },
+  selectLabel: { en: "Select", fr: "Sélectionner", rw: "Hitamo" },
+  selectedLabel: { en: "Selected:", fr: "Sélectionné :", rw: "Byahiswemo:" },
+  countryLabel: { en: "Country", fr: "Pays", rw: "Igihugu" },
+  countryRwanda: { en: "Rwanda", fr: "Rwanda", rw: "u Rwanda" },
+  countryUganda: { en: "Uganda", fr: "Ouganda", rw: "Uganda" },
+  countryKenya: { en: "Kenya", fr: "Kenya", rw: "Kenya" },
+  countryTanzania: { en: "Tanzania", fr: "Tanzanie", rw: "Tanzaniya" },
+  countryBurundi: { en: "Burundi", fr: "Burundi", rw: "Uburundi" },
+  countryDRC: { en: "DRC", fr: "RDC", rw: "DRC" },
+  provinceLabel: { en: "Province", fr: "Province", rw: "Intara" },
+  districtLabel: { en: "District", fr: "District", rw: "Akarere" },
+  selectProvince: { en: "Select Province", fr: "Sélectionner la Province", rw: "Hitamo Intara" },
+  selectDistrict: { en: "Select District", fr: "Sélectionner le District", rw: "Hitamo Akarere" },
+  deliveryLabel: { en: "Delivery", fr: "Livraison", rw: "Itonji" },
+  subtotalLabel: { en: "Subtotal", fr: "Sous-total", rw: "Igiteranyo cy'ibanze" },
+  deliveryFeeLabel: { en: "Delivery Fee", fr: "Frais de Livraison", rw: "Amafaranga y'Itonji" },
+  freeLabel: { en: "FREE", fr: "GRATUIT", rw: "KU BUNTU" },
+  workingHoursLabel: { en: "Working Hours:", fr: "Heures d'Ouverture :", rw: "Amasaha y'Akazi:" },
+  monSat: { en: "Mon - Sat:", fr: "Lun - Sam :", rw: "Kuwa Mbere - Kuwa Gatandatu:" },
+  sundayLabel: { en: "Sunday:", fr: "Dimanche :", rw: "Ku Cyumweru:" },
+  allCategoriesLabel: { en: "All", fr: "Tous", rw: "Byose" },
+  startShoppingBtn: { en: "Start Shopping", fr: "Commencer vos achats", rw: "Tangira Kuguraho" },
+  continueShoppingBtn: { en: "Continue Shopping", fr: "Continuer mes achats", rw: "Komeza Kuguraho" },
+  orderSummaryTitle: { en: "Order Summary", fr: "Résumé de la Commande", rw: "Incamake y'Itegeko" },
+  orderTotalTitle: { en: "Order Total", fr: "Total de la Commande", rw: "Igiteranyo cy'Itegeko" },
+  printInvoiceBtn: { en: "Print Invoice", fr: "Imprimer la Facture", rw: "Sohora Fagitire" },
+  backToHomeBtn: { en: "Back to Home", fr: "Retour à l'Accueil", rw: "Subira Ahabanza" },
+
+  // ── Home page ────────────────────────────────────────────────────────────
+  exploreCategoriesDesc: { en: "Explore our wide range of products", fr: "Découvrez notre large gamme de produits", rw: "Reba ibicuruzwa byacu byinshi" },
+  marqueeWelcome: { en: "WELCOME TO IWACU EU COMPANY LTD", fr: "BIENVENUE CHEZ IWACU EU COMPANY LTD", rw: "MURAKAZE KURI IWACU EU COMPANY LTD" },
+  marqueeTagline: { en: "Shop Smart. Live Better.", fr: "Achetez Intelligemment. Vivez Mieux.", rw: "Gura mu Buryo Bwiza. Ubeho Neza." },
+  marqueeValues: { en: "Trust, excellence, integrity, and service", fr: "Confiance, excellence, intégrité et service", rw: "Icyizere, Ubunyangamugayo, n'Umurimo Mwiza" },
+  marqueeVerse: { en: "Commit to the Lord whatever you do, and He will establish your plans. (Proverbs 16:3)", fr: "Recommande à l'Éternel tes œuvres, et tes projets réussiront. (Proverbes 16:3)", rw: "Habwaho Uwiteka ibyo ukora, kandi imigambi yawe izagenda neza. (Imigani 16:3)" },
+  featureSecureDesc: { en: "MTN MoMo, Airtel Money & Cards", fr: "MTN MoMo, Airtel Money et Cartes", rw: "MTN MoMo, Airtel Money n'Amakarita" },
+  featureDeliveryDesc: { en: "Delivery within 24 hours in Kigali", fr: "Livraison en 24 heures à Kigali", rw: "Kugeza mu masaha 24 muri Kigali" },
+  featureQualityDesc: { en: "100% genuine and tested items", fr: "Articles 100% authentiques et testés", rw: "Ibintu 100% by'ukuri kandi byagenzuwe" },
+  featureSupportDesc: { en: "We are always here to help you", fr: "Nous sommes toujours là pour vous aider", rw: "Turi hano igihe cyose kugira ngo tubafashe" },
+  whyTrustedTitle: { en: "Trusted by Thousands", fr: "Approuvé par des Milliers de Clients", rw: "Twizerwa n'Ibihumbi by'Abantu" },
+  whyTrustedDesc: { en: "We have served over 10,000 happy customers across Rwanda.", fr: "Nous avons servi plus de 10 000 clients satisfaits à travers le Rwanda.", rw: "Twamaze gufasha abakiriya barenga 10,000 banyuranye mu Rwanda hose." },
+  securePaymentsTitle: { en: "Secure Payments", fr: "Paiements Sécurisés", rw: "Kwishura mu Mutekano" },
+  whySecureDesc: { en: "Your financial information is always protected with our secure systems.", fr: "Vos informations financières sont toujours protégées par nos systèmes sécurisés.", rw: "Amakuru yawe y'imari arindwa buri gihe n'uburyo bwacu bw'umutekano." },
+  whyDeliveryDesc: { en: "We understand your urgency. Most orders are delivered same-day.", fr: "Nous comprenons votre urgence. La plupart des commandes sont livrées le jour même.", rw: "Twumva ko bikwiye kwihutishwa. Ibyinshi mu bitegeko bigezwa ku munsi umwe." },
+  newsletterDesc: { en: "Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.", fr: "Abonnez-vous pour recevoir des offres spéciales, des cadeaux gratuits et des promotions exceptionnelles.", rw: "Iyandikishe kugira ngo ubone ibiciro byihariye, ibihembo ku buntu, n'amasoko adasanzwe." },
+  emailPlaceholder: { en: "Your email address", fr: "Votre adresse e-mail", rw: "Aderesi yawe ya imeri" },
+  subscribeModalTitle: { en: "What are you interested in?", fr: "Qu'est-ce qui vous intéresse ?", rw: "Ni iki gishimishije?" },
+  subscribeModalDesc: { en: "Tell us why you're subscribing so we can follow up.", fr: "Dites-nous pourquoi vous vous abonnez afin que nous puissions vous recontacter.", rw: "Tubwire impamvu wiyandikishije kugira ngo tuguhamagare." },
+  subscribeAdvertise: { en: "Advertise with us", fr: "Faire de la publicité avec nous", rw: "Kwamamaza kuri twe" },
+  subscribePartner: { en: "Become a partner", fr: "Devenir partenaire", rw: "Kuba umufatanyabikorwa" },
+  subscribeAgent: { en: "Become an agent", fr: "Devenir agent", rw: "Kuba umuhagarariye" },
+  subscribeSuccess: { en: "Thanks for subscribing! We will be in touch soon.", fr: "Merci de vous être abonné ! Nous vous contacterons bientôt.", rw: "Murakoze kwiyandikisha! Tuzabahamagara vuba." },
+  subscribeError: { en: "Failed to subscribe. Please try again.", fr: "Échec de l'inscription. Veuillez réessayer.", rw: "Kwiyandikisha byanze. Ongera ugerageze." },
+
+  // ── About page ───────────────────────────────────────────────────────────
+  aboutWelcomePrefix: { en: "Welcome to", fr: "Bienvenue chez", rw: "Murakaze kuri" },
+  aboutIntro: {
+    en: "IWACU EU COMPANY LTD is a dynamic and customer-focused enterprise based in Kigali, Rwanda, dedicated to providing high-quality products and services that meet modern lifestyle and business needs. The company operates across multiple sectors, with a strong emphasis on retail, general supply, and distribution of essential goods including home appliances, kitchen equipment, and lifestyle products. Driven by a commitment to quality, affordability, and customer satisfaction, IWACU EU COMPANY LTD sources reliable products—often inspired by international standards—to ensure durability, efficiency, and value for money. The company aims to simplify everyday living by offering practical solutions that enhance comfort and convenience for households and businesses alike. With a growing reputation in the market.",
+    fr: "IWACU EU COMPANY LTD est une entreprise dynamique et centrée sur le client, basée à Kigali, au Rwanda, dédiée à fournir des produits et services de haute qualité répondant aux besoins modernes de la vie quotidienne et des affaires. L'entreprise opère dans plusieurs secteurs, avec un accent particulier sur le commerce de détail, l'approvisionnement général et la distribution de biens essentiels tels que les appareils électroménagers, les équipements de cuisine et les produits de style de vie. Animée par un engagement envers la qualité, l'accessibilité financière et la satisfaction client, IWACU EU COMPANY LTD s'approvisionne en produits fiables — souvent inspirés des normes internationales — afin de garantir durabilité, efficacité et bon rapport qualité-prix. L'entreprise vise à simplifier la vie quotidienne en offrant des solutions pratiques qui améliorent le confort et la commodité des ménages et des entreprises. Avec une réputation grandissante sur le marché.",
+    rw: "IWACU EU COMPANY LTD ni isosiyete ikora ku muvuduko yita cyane ku bakiriya, ifite icyicaro i Kigali mu Rwanda, yiyemeje gutanga ibicuruzwa n'imirimo by'ubwiza buhambaye bihuye n'ubuzima bugezweho n'ibikenewe mu bucuruzi. Iyi sosiyete ikorera mu byiciro byinshi, yibanda cyane cyane ku bucuruzi busanzwe, itangwa ry'ibintu bikenewe harimo ibikoresho byo mu rugo, ibikoresho byo mu gikoni, n'ibindi bicuruzwa by'ubuzima bwa buri munsi. Iyobowe n'ubushake bwo gutanga ubwiza, ibiciro bigerwaho, n'ukunyurwa kw'abakiriya, IWACU EU COMPANY LTD itoranya ibicuruzwa byizewe—akenshi bishingiye ku bipimo mpuzamahanga—kugira ngo hemezwe imbaraga, ubunyangamugayo, n'agaciro k'amafaranga yatanzwe. Iyi sosiyete igamije koroshya ubuzima bwa buri munsi itanga ibisubizo byifashishwa bituma imiryango n'ubucuruzi byishimira ubworoherane. Ifite icyubahiro kigenda kiyongera ku isoko.",
+  },
+  aboutBullet1: { en: "Strong customer relationships and responsive service", fr: "Des relations clients solides et un service réactif", rw: "Umubano mwiza n'abakiriya n'umurimo wihuse" },
+  aboutBullet2: { en: "Focus on modern, energy-efficient, and innovative products", fr: "Un accent sur des produits modernes, économes en énergie et innovants", rw: "Kwibanda ku bicuruzwa bigezweho, bikoresha ingufu neza, kandi bishya" },
+  aboutBullet3: { en: "Reliable delivery and accessible pricing", fr: "Une livraison fiable et des prix accessibles", rw: "Itonji ryizewe n'ibiciro bigerwaho" },
+  aboutBullet4: { en: "Commitment to integrity and professionalism in all operations", fr: "Un engagement envers l'intégrité et le professionnalisme dans toutes les opérations", rw: "Kwiyemeza ubunyangamugayo n'ubuhanga mu mirimo yose" },
+  yearsExperience: { en: "Years Experience", fr: "Années d'Expérience", rw: "Imyaka y'Uburambe" },
+  missionTitle: { en: "Our Mission", fr: "Notre Mission", rw: "Intego Yacu" },
+  missionDesc: { en: "To provide accessible, high-quality products that enhance the lives of our customers.", fr: "Fournir des produits accessibles et de haute qualité qui améliorent la vie de nos clients.", rw: "Gutanga ibicuruzwa bigerwaho kandi by'ubwiza buhambaye bituma ubuzima bw'abakiriya bacu bunoga." },
+  visionTitle: { en: "Our Vision", fr: "Notre Vision", rw: "Icyerekezo Cyacu" },
+  visionDesc: { en: "The company's vision is to become a trusted leading supplier in Rwanda and beyond, known for delivering quality products and excellent service, while continuously adapting to the evolving needs of its customers.", fr: "La vision de l'entreprise est de devenir un fournisseur de premier plan et de confiance au Rwanda et au-delà, reconnu pour la qualité de ses produits et l'excellence de son service, tout en s'adaptant continuellement aux besoins évolutifs de ses clients.", rw: "Icyerekezo cy'iyi sosiyete ni ukuba umutanga w'ibicuruzwa uzewe kandi uyoboye mu Rwanda no hanze yarwo, uzwiho gutanga ibicuruzwa by'ubwiza n'umurimo mwiza, mu gihe ihindagurika buri gihe hakurikijwe ibikenewe by'abakiriya." },
+  valuesTitle: { en: "Our Values", fr: "Nos Valeurs", rw: "Indangagaciro Zacu" },
+  valuesDesc: { en: "Excellence, customer satisfaction, and community growth are at the heart of everything we do.", fr: "L'excellence, la satisfaction client et le développement communautaire sont au cœur de tout ce que nous faisons.", rw: "Ubwiza, ukunyurwa kw'abakiriya, n'iterambere ry'umuryango ni byo shingiro ry'ibyo dukora byose." },
+  meetTeamTitle: { en: "Meet Our Team", fr: "Rencontrez Notre Équipe", rw: "Menyana n'Itsinda Ryacu" },
+  meetTeamDescPrefix: { en: "The dedicated professionals driving", fr: "Les professionnels dévoués qui font avancer", rw: "Abanyamwuga biyemeje batera imbere" },
+  meetTeamDescSuffix: { en: "towards excellence.", fr: "vers l'excellence.", rw: "berekeza ku bwiza buhambaye." },
+  ctaTitle: { en: "Ready to start shopping?", fr: "Prêt à commencer vos achats ?", rw: "Witeguye gutangira kuguraho?" },
+  ctaDescPrefix: { en: "Join thousands of satisfied customers who trust", fr: "Rejoignez des milliers de clients satisfaits qui font confiance à", rw: "Ifatanye n'ibihumbi by'abakiriya banyuzwe bizeye" },
+  ctaDescSuffix: { en: "for their daily needs.", fr: "pour leurs besoins quotidiens.", rw: "ku bikenewe byabo bya buri munsi." },
+  exploreShopBtn: { en: "Explore Our Shop", fr: "Découvrir Notre Boutique", rw: "Reba Iduka Ryacu" },
+
+  // ── Account page ─────────────────────────────────────────────────────────
+  customerAccountTitle: { en: "Customer Account", fr: "Compte Client", rw: "Konti y'Umukiriya" },
+  customerAccountDesc: { en: "Enter your phone number to view your order history", fr: "Entrez votre numéro de téléphone pour voir votre historique de commandes", rw: "Andika numero ya telefoni yawe kugira ngo urebe amateka y'ibyo watumije" },
+  phonePlaceholderExample: { en: "e.g. 0782021871", fr: "ex. 0782021871", rw: "urugero 0782021871" },
+  viewMyOrdersBtn: { en: "View My Orders", fr: "Voir Mes Commandes", rw: "Reba Ibyo Natumije" },
+  customerLabel: { en: "Customer", fr: "Client", rw: "Umukiriya" },
+  logoutBtn: { en: "Logout", fr: "Déconnexion", rw: "Sohoka" },
+  needHelpTitle: { en: "Need help?", fr: "Besoin d'aide ?", rw: "Ukeneye ubufasha?" },
+  needHelpDesc: { en: "If you have any questions about your orders, contact our support.", fr: "Si vous avez des questions sur vos commandes, contactez notre support.", rw: "Niba ufite ikibazo ku byerekeye ibyo watumije, hamagara ubufasha bwacu." },
+  callSupportBtn: { en: "Call Support", fr: "Appeler le Support", rw: "Hamagara Ubufasha" },
+  orderHistoryTitle: { en: "Order History", fr: "Historique des Commandes", rw: "Amateka y'Ibyatumijwe" },
+  ordersCountSuffix: { en: "Orders", fr: "Commandes", rw: "Ibyatumijwe" },
+  noOrdersTitle: { en: "No orders found", fr: "Aucune commande trouvée", rw: "Nta cyatumijwe cyabonetse" },
+  noOrdersDesc: { en: "You haven't placed any orders with this phone number yet.", fr: "Vous n'avez encore passé aucune commande avec ce numéro de téléphone.", rw: "Ntabwo waratumiza ikintu ukoresheje iyi numero ya telefoni." },
+  orderHashPrefix: { en: "Order #", fr: "Commande n° ", rw: "Itegeko #" },
+  orderDetailsTitle: { en: "Order Details", fr: "Détails de la Commande", rw: "Amakuru y'Itegeko" },
+  itemsOrderedTitle: { en: "Items Ordered", fr: "Articles Commandés", rw: "Ibintu Byatumijwe" },
+
+  // ── Cart page ────────────────────────────────────────────────────────────
+  cartEmptyTitle: { en: "Your cart is empty", fr: "Votre panier est vide", rw: "Ikarita yawe ni ubusa" },
+  cartEmptyDesc: { en: "Looks like you haven't added anything to your cart yet. Start shopping to find the best deals!", fr: "Il semble que vous n'ayez encore rien ajouté à votre panier. Commencez vos achats pour trouver les meilleures offres !", rw: "Bisa n'aho utarashyira ikintu mu ikarita yawe. Tangira kuguraho ubone amasoko meza!" },
+  calculatedAtCheckout: { en: "Calculated at checkout", fr: "Calculé lors du paiement", rw: "Igenwa igihe cyo kwishyura" },
+  proceedToPrefix: { en: "Proceed to", fr: "Passer à", rw: "Komeza kuri" },
+
+  // ── Checkout page ────────────────────────────────────────────────────────
+  shippingInfoTitle: { en: "Shipping Information", fr: "Informations de Livraison", rw: "Amakuru y'Itonji" },
+  fullNamePlaceholder: { en: "Enter your full name", fr: "Entrez votre nom complet", rw: "Andika amazina yawe yose" },
+  phonePlaceholderPattern: { en: "078xxxxxxx", fr: "078xxxxxxx", rw: "078xxxxxxx" },
+  emailOptionalLabel: { en: "Email Address (Optional)", fr: "Adresse e-mail (Facultatif)", rw: "Aderesi ya imeri (Si itegeko)" },
+  streetAddressLabel: { en: "Street Address / Landmark (Optional)", fr: "Adresse / Point de repère (Facultatif)", rw: "Aho utuye / Ikimenyetso (Si itegeko)" },
+  streetAddressPlaceholder: { en: "e.g. KN 2 Rd, Downtown Building", rw: "urugero: KN 2 Rd, Downtown Building", fr: "ex. KN 2 Rd, Downtown Building" },
+  bankTransferLabel: { en: "Bank Transfer", fr: "Virement Bancaire", rw: "Kohereza kuri Banki" },
+  momoInstructionAlert: { en: "Enter your Mobile Money number. You will receive a prompt on your phone to confirm the payment.", fr: "Entrez votre numéro Mobile Money. Vous recevrez une invite sur votre téléphone pour confirmer le paiement.", rw: "Andika numero yawe ya Mobile Money. Uzabona ubutumwa kuri telefoni yawe bwo kwemeza kwishyura." },
+  momoNumberLabel: { en: "MoMo Number", fr: "Numéro MoMo", rw: "Numero ya MoMo" },
+  cardNumberLabel: { en: "Card Number", fr: "Numéro de Carte", rw: "Numero y'Ikarita" },
+  expiryDateLabel: { en: "Expiry Date", fr: "Date d'Expiration", rw: "Itariki Irangira" },
+  cvvLabel: { en: "CVV", fr: "CVV", rw: "CVV" },
+  bankDetailsTitle: { en: "Bank Details", fr: "Coordonnées Bancaires", rw: "Amakuru ya Banki" },
+  bankLabel: { en: "Bank:", fr: "Banque :", rw: "Banki:" },
+  accountNameLabel: { en: "Account Name:", fr: "Nom du Compte :", rw: "Amazina ya Konti:" },
+  accountNumberLabel: { en: "Account Number:", fr: "Numéro de Compte :", rw: "Numero ya Konti:" },
+  bankTransferNote: { en: "* Please use your Name or Phone Number as the transfer reference.", fr: "* Veuillez utiliser votre nom ou votre numéro de téléphone comme référence de virement.", rw: "* Koresha amazina yawe cyangwa numero ya telefoni nk'inyandiko y'ubwoherezi." },
+  codNote: { en: "You will pay for your order in cash or via MoMo when it is delivered to your doorstep.", fr: "Vous paierez votre commande en espèces ou via MoMo à la livraison à votre domicile.", rw: "Uzishyura ibyo watumije mu mafaranga y'ipapuro cyangwa kuri MoMo igihe bigejejwe iwawe." },
+  restrictedServiceTitle: { en: "Restricted Service", fr: "Service Restreint", rw: "Umurimo Ugarukira" },
+  restrictedServiceDesc: { en: "Only Kigali is allowed to pay for this service, and then your order will arrive.", fr: "Seule Kigali est autorisée à payer pour ce service, votre commande arrivera ensuite.", rw: "Ni Kigali gusa yemerewe kwishyura uyu murimo, hanyuma ikintu wasabye kikaza kigera." },
+  needHelpWriteToUsPrefix: { en: "If you need help,", fr: "Si vous avez besoin d'aide,", rw: "Niba ukeneye ubufasha," },
+  writeToUsLink: { en: "write to us", fr: "écrivez-nous", rw: "twandikire" },
+  selectLocationLabel: { en: "Select location", fr: "Sélectionnez un lieu", rw: "Hitamo aho uri" },
+  payNowBtn: { en: "Pay Now", fr: "Payer Maintenant", rw: "Ishyura Nonaha" },
+  processingBtn: { en: "Processing...", fr: "Traitement en cours...", rw: "Birimo gutunganywa..." },
+  payAmountPrefix: { en: "Pay", fr: "Payer", rw: "Ishyura" },
+  initiatingLabel: { en: "Initiating...", fr: "Initialisation...", rw: "Biratangira..." },
+  pleaseDontRefresh: { en: "Please do not refresh this page", fr: "Veuillez ne pas actualiser cette page", rw: "Ntukongere gufungura iyi paji" },
+  secureSSL: { en: "Secure SSL Encrypted Payment", fr: "Paiement Sécurisé et Crypté SSL", rw: "Kwishura mu Mutekano wa SSL" },
+  errFillShipping: { en: "Please fill in all required shipping details.", fr: "Veuillez remplir tous les détails de livraison requis.", rw: "Uzuza amakuru yose y'itonji akenewe." },
+  errSelectProvinceDistrict: { en: "Please select your Province and District.", fr: "Veuillez sélectionner votre Province et District.", rw: "Hitamo Intara yawe n'Akarere kawe." },
+  errKigaliOnlyCod: { en: "Only Kigali is allowed to pay for this service, and then your order will arrive. If you need help, write to us.", fr: "Seule Kigali est autorisée à payer pour ce service, votre commande arrivera ensuite. Si vous avez besoin d'aide, écrivez-nous.", rw: "Ni Kigali gusa yemerewe kwishyura uyu murimo, hanyuma ikintu wasabye kikaza kigera. Niba ukeneye ubufasha, twandikire." },
+  errInvalidMomo: { en: "Please enter a valid Rwanda Mobile Money number (e.g., 078xxxxxxx).", fr: "Veuillez entrer un numéro Mobile Money rwandais valide (ex. 078xxxxxxx).", rw: "Andika numero nyayo ya Mobile Money yo mu Rwanda (urugero: 078xxxxxxx)." },
+  errItemsUnavailable: { en: "Some items in your cart are no longer available. Please review your cart.", fr: "Certains articles de votre panier ne sont plus disponibles. Veuillez vérifier votre panier.", rw: "Ibintu bimwe biri mu ikarita yawe ntibikiboneka. Ongera urebe ikarita yawe." },
+  orderReceivedTitle: { en: "Order Received!", fr: "Commande Reçue !", rw: "Itegeko Ryakiriwe!" },
+  orderReceivedDesc: { en: "Please complete your payment to finalize your order.", fr: "Veuillez finaliser votre paiement pour valider votre commande.", rw: "Uzuza kwishyura kugira ngo urangize itegeko ryawe." },
+  howToPayTitle: { en: "How to Pay", fr: "Comment Payer", rw: "Uko Wishyura" },
+  totalAmountLabel: { en: "Total Amount:", fr: "Montant Total :", rw: "Amafaranga Yose:" },
+  mtnMomoTitle: { en: "MTN Mobile Money", fr: "MTN Mobile Money", rw: "MTN Mobile Money" },
+  dialLabel: { en: "Dial", fr: "Composez", rw: "Kanda" },
+  enterNumberLabel: { en: "Enter Number:", fr: "Entrez le Numéro :", rw: "Andika Numero:" },
+  enterAmountLabel: { en: "Enter Amount:", fr: "Entrez le Montant :", rw: "Andika Amafaranga:" },
+  verifyNameLabel: { en: "Verify Name:", fr: "Vérifiez le Nom :", rw: "Genzura Izina:" },
+  useOrderCodeLabel: { en: "Use Order Code", fr: "Utilisez le Code de Commande", rw: "Koresha Kode y'Itegeko" },
+  asReferenceLabel: { en: "as Reference", fr: "comme référence", rw: "nk'inyandiko" },
+  airtelMoneyTitle: { en: "Airtel Money", fr: "Airtel Money", rw: "Airtel Money" },
+  dialThenChooseAirtel: { en: "then choose Airtel", fr: "puis choisissez Airtel", rw: "hanyuma uhitemo Airtel" },
+  transferToLabel: { en: "Transfer to:", fr: "Transférer à :", rw: "Ohereza kuri:" },
+  equityBankRwanda: { en: "Equity Bank Rwanda", fr: "Equity Bank Rwanda", rw: "Equity Bank Rwanda" },
+  accountHolderLabel: { en: "Account Holder", fr: "Titulaire du Compte", rw: "Nyir'Ikonti" },
+  bankTransferHelperPrefix: { en: "Please ensure you include the order code", fr: "Veuillez inclure le code de commande", rw: "Menya neza ko washyizemo kode y'itegeko" },
+  bankTransferHelperSuffix: { en: "in the bank transfer description to help us process your order faster.", fr: "dans la description du virement pour nous aider à traiter votre commande plus rapidement.", rw: "mu nyandiko y'ubwoherezi kugira ngo dutunganye itegeko ryawe vuba." },
+  codDeliveryDescPrefix: { en: "Our delivery team will contact you once they are near your location. Please have the exact amount of", fr: "Notre équipe de livraison vous contactera lorsqu'elle sera près de chez vous. Veuillez préparer le montant exact de", rw: "Itsinda ryacu ry'itonji rizabahamagara igihe rigeze hafi yawe. Tegura amafaranga ahwanye na" },
+  codDeliveryDescSuffix: { en: "ready in cash or available on your Mobile Money phone.", fr: "en espèces ou disponible sur votre téléphone Mobile Money.", rw: "mu mafaranga y'ipapuro cyangwa kuri telefoni yawe ya Mobile Money." },
+  needHelpLabel: { en: "Need Help?", fr: "Besoin d'Aide ?", rw: "Ukeneye Ubufasha?" },
+  whatsappUsLabel: { en: "WhatsApp us:", fr: "WhatsApp :", rw: "Twandikire kuri WhatsApp:" },
+
+  // ── Delivery page ────────────────────────────────────────────────────────
+  freeNewsPrefix: { en: "Great News! We now offer", fr: "Bonne Nouvelle ! Nous offrons désormais", rw: "Amakuru Meza! Ubu dutanga" },
+  freeDeliveryHighlight: { en: "FREE DELIVERY", fr: "LIVRAISON GRATUITE", rw: "ITONJI KU BUNTU" },
+  freeNewsSuffix: { en: "on all orders inside Kigali!", fr: "sur toutes les commandes à Kigali !", rw: "ku bitegeko byose biri muri Kigali!" },
+  deliveryCalcTitle: { en: "Delivery Fee Calculator", fr: "Calculateur de Frais de Livraison", rw: "Igenzura ry'Amafaranga y'Itonji" },
+  estimatedDeliveryLabel: { en: "Estimated Delivery", fr: "Livraison Estimée", rw: "Igihe cy'Itonji" },
+  shippingCostLabel: { en: "Shipping Cost", fr: "Frais de Livraison", rw: "Amafaranga y'Itonji" },
+  deliveryToPrefix: { en: "Delivery to", fr: "Livraison à", rw: "Itonji rigana" },
+  deliveryToSuffix: { en: "Rates are subject to change based on order size.", fr: "Les tarifs peuvent varier selon la taille de la commande.", rw: "Ibiciro bishobora guhindagurika bitewe n'ubunini bw'ibisabwa." },
+  selectLocationPrompt: { en: "Please select your location to see shipping details", fr: "Veuillez sélectionner votre emplacement pour voir les détails de livraison", rw: "Hitamo aho uri kugira ngo urebe amakuru y'itonji" },
+  expressDeliveryTitle: { en: "Express Delivery", fr: "Livraison Express", rw: "Itonji Ryihuse" },
+  expressDeliveryDesc: { en: "Need it faster? Contact us for express delivery options within Kigali for urgent orders.", fr: "Besoin d'être livré plus vite ? Contactez-nous pour des options de livraison express à Kigali pour les commandes urgentes.", rw: "Ukeneye vuba? Duhamagare kugira ngo tuguhe uburyo bw'itonji ryihuse muri Kigali ku bisabwa byihutirwa." },
+  safeHandlingTitle: { en: "Safe Handling", fr: "Manipulation Sécurisée", rw: "Gufata mu Mutekano" },
+  safeHandlingDesc: { en: "All items are carefully packed and handled to ensure they reach you in perfect condition.", fr: "Tous les articles sont soigneusement emballés et manipulés pour garantir qu'ils vous parviennent en parfait état.", rw: "Ibintu byose bipakirwa kandi bikitagwaho neza kugira ngo bigere iwawe bimeze neza." },
+  logisticsSupportTitle: { en: "Logistics Support", fr: "Support Logistique", rw: "Ubufasha bw'Ubwikorezi" },
+  callForDeliveryInfo: { en: "Call for Delivery Info", fr: "Appelez pour Infos Livraison", rw: "Hamagara ku Makuru y'Itonji" },
+  whatsappLogistics: { en: "WhatsApp Logistics", fr: "WhatsApp Logistique", rw: "WhatsApp y'Ubwikorezi" },
+  freeDeliveryKigaliTitle: { en: "Free Delivery in Kigali", fr: "Livraison Gratuite à Kigali", rw: "Itonji ku Buntu muri Kigali" },
+  freeDeliveryKigaliDesc: { en: "To celebrate our community, we have removed shipping fees for all orders delivered within Kigali City. Orders outside Kigali are charged a distance-based delivery fee.", fr: "Pour célébrer notre communauté, nous avons supprimé les frais de livraison pour toutes les commandes livrées dans la ville de Kigali. Les commandes en dehors de Kigali sont facturées selon la distance.", rw: "Kugira ngo twishimire umuryango wacu, twavanyeho amafaranga y'itonji ku bisabwa byose bigezwa muri Umujyi wa Kigali. Ibisabwa biri hanze ya Kigali bishyurwa hakurikijwe intera." },
+
+  // ── Order Tracking page ──────────────────────────────────────────────────
+  trackOrderDesc: { en: "Enter your Order ID to see the current status of your delivery.", fr: "Entrez votre identifiant de commande pour voir le statut actuel de votre livraison.", rw: "Andika nimero y'itegeko ryawe kugira ngo urebe uko rigeze." },
+  orderIdPlaceholderSuffix: { en: "(e.g. ORD-XXXXXX)", fr: "(ex. ORD-XXXXXX)", rw: "(urugero ORD-XXXXXX)" },
+  orderInfoTitle: { en: "Order Info", fr: "Infos Commande", rw: "Amakuru y'Itegeko" },
+  deliveryToTitle: { en: "Delivery To", fr: "Livraison à", rw: "Itonji rigenewe" },
+  orderNotFoundTitle: { en: "Order not found", fr: "Commande introuvable", rw: "Itegeko ntiryabonetse" },
+  orderNotFoundDesc: { en: "Please check your Order ID and try again.", fr: "Veuillez vérifier votre identifiant de commande et réessayer.", rw: "Genzura nimero y'itegeko ryawe hanyuma ongere ugerageze." },
+
+  // ── Product detail / Shop / Product card ────────────────────────────────
+  productNotFoundTitle: { en: "Product not found", fr: "Produit introuvable", rw: "Igicuruzwa ntikibonetse" },
+  backToShopBtn: { en: "Back to Shop", fr: "Retour à la Boutique", rw: "Subira ku Iduka" },
+  saleLabel: { en: "Sale", fr: "Solde", rw: "Igurishwa" },
+  reviewsCount: { en: "(12+ reviews)", fr: "(12+ avis)", rw: "(ibitekerezo 12+)" },
+  descriptionTitle: { en: "Description", fr: "Description", rw: "Ibisobanuro" },
+  specificationsTitle: { en: "Specifications", fr: "Spécifications", rw: "Ibiranga Igicuruzwa" },
+  fastDelivery24h: { en: "24h in Kigali", fr: "24h à Kigali", rw: "Amasaha 24 muri Kigali" },
+  securePaymentProtected: { en: "100% Protected", fr: "100% Protégé", rw: "100% Birinzwe" },
+  easyReturnsTitle: { en: "Easy Returns", fr: "Retours Faciles", rw: "Gusubiza Byoroshye" },
+  easyReturns7Days: { en: "7 Days Policy", fr: "Politique de 7 Jours", rw: "Iminsi 7 y'Igihe" },
+  pleaseSelectPrefix: { en: "Please select", fr: "Veuillez sélectionner", rw: "Hitamo" },
+  addedToCartSuffix: { en: "added to cart!", fr: "ajouté au panier !", rw: "byashyizwe mu ikarita!" },
+  showingProductsPrefix: { en: "Showing", fr: "Affichage de", rw: "Byerekana" },
+  showingProductsSuffix: { en: "products", fr: "produits", rw: "ibicuruzwa" },
+  filtersBtn: { en: "Filters", fr: "Filtres", rw: "Guhitamo" },
+  priceRangeTitle: { en: "Price Range", fr: "Gamme de Prix", rw: "Urwego rw'Igiciro" },
+  sortByTitle: { en: "Sort By", fr: "Trier Par", rw: "Ryungurura Ukurikije" },
+  sortNewest: { en: "Newest First", fr: "Plus Récents", rw: "Ibishya Mbere" },
+  sortPriceLow: { en: "Price: Low to High", fr: "Prix : Croissant", rw: "Igiciro: Gito kuri Kinini" },
+  sortPriceHigh: { en: "Price: High to Low", fr: "Prix : Décroissant", rw: "Igiciro: Kinini kuri Gito" },
+  sortTopRated: { en: "Top Rated", fr: "Mieux Notés", rw: "Byatoranyijwe Neza" },
+  noProductsFoundTitle: { en: "No products found", fr: "Aucun produit trouvé", rw: "Nta gicuruzwa cyabonetse" },
+  noProductsFoundDesc: { en: "Try adjusting your filters or search query", fr: "Essayez d'ajuster vos filtres ou votre recherche", rw: "Gerageza guhindura guhitamo cyangwa ijambo wifashishije" },
+  clearFiltersBtn: { en: "Clear all filters", fr: "Effacer tous les filtres", rw: "Siba guhitamo byose" },
+  newArrivalBadge: { en: "New Arrival", fr: "Nouveauté", rw: "Ibishya Bigeze" },
+  viewProductBtn: { en: "View Product", fr: "Voir le Produit", rw: "Reba Igicuruzwa" },
+  lowStockBadge: { en: "LOW STOCK", fr: "STOCK FAIBLE", rw: "BISIGAYE BIKE" },
+  inStockLabel: { en: "IN STOCK", fr: "EN STOCK", rw: "BIRAHARI" },
+
+  // ── Footer / Navbar ──────────────────────────────────────────────────────
+  footerAbout: { en: "IWACU EU COMPANY ltd, We know the value of your money. Your trusted partner for quality fashion, electronics, and home essentials in Rwanda.", fr: "IWACU EU COMPANY ltd, nous connaissons la valeur de votre argent. Votre partenaire de confiance pour la mode, l'électronique et les articles essentiels de qualité au Rwanda.", rw: "IWACU EU COMPANY ltd, tuzi agaciro k'amafaranga yawe. Umufatanyabikorwa wizewe mu byambaro, ibikoresho bya elegitoroniki, n'ibikenewe mu rugo by'ubwiza mu Rwanda." },
+  informationTitle: { en: "Information", fr: "Informations", rw: "Amakuru" },
+  catFashion: { en: "Fashion", fr: "Mode", rw: "Imyambaro" },
+  catShoes: { en: "Shoes", fr: "Chaussures", rw: "Inkweto" },
+  catElectronics: { en: "Electronics", fr: "Électronique", rw: "Ibikoresho bya Elegitoroniki" },
+  catHomeItems: { en: "Home Items", fr: "Articles Ménagers", rw: "Ibikoresho byo mu Rugo" },
+  shoppingAlt: { en: "Shopping", fr: "Achats", rw: "Kuguraho" },
+  googleMapTitle: { en: "Google Map", fr: "Carte Google", rw: "Ikarita ya Google" },
+  aboutUsAlt: { en: "About Us", fr: "À Propos de Nous", rw: "Turi Bande" },
+  privacyPolicyLink: { en: "Privacy Policy", fr: "Politique de Confidentialité", rw: "Politiki y'Ibanga" },
+  termsLink: { en: "Terms & Conditions", fr: "Conditions Générales", rw: "Amabwiriza n'Amategeko" },
+  loginAsAdmin: { en: "Login as Admin", fr: "Connexion Admin", rw: "Kwinjira nk'Umuyobozi" },
+  allRightsReserved: { en: "All rights reserved.", fr: "Tous droits réservés.", rw: "Uburenganzira bwose burarindwa." },
+  dashboardLabel: { en: "Dashboard", fr: "Tableau de Bord", rw: "Imbonerahamwe" },
+  adminDashboardLabel: { en: "Admin Dashboard", fr: "Tableau de Bord Admin", rw: "Imbonerahamwe y'Umuyobozi" },
+  languageLabel: { en: "Language", fr: "Langue", rw: "Ururimi" },
+  currencyLabel: { en: "Currency", fr: "Devise", rw: "Ifaranga" },
+  viewAllResultsPrefix: { en: "View all results for", fr: "Voir tous les résultats pour", rw: "Reba ibisubizo byose bya" },
+
+  // ── Legal pages ──────────────────────────────────────────────────────────
+  privacyTitle: { en: "Privacy Policy", fr: "Politique de Confidentialité", rw: "Politiki y'Ibanga" },
+  privacyLastUpdated: { en: "Last updated: April 29, 2026", fr: "Dernière mise à jour : 29 avril 2026", rw: "Yavuguruwe bwa nyuma: Mata 29, 2026" },
+  privacyIntro: { en: "we take your privacy seriously. This policy describes how we collect, use, and protect your personal information.", fr: "nous prenons votre confidentialité au sérieux. Cette politique décrit comment nous collectons, utilisons et protégeons vos informations personnelles.", rw: "twita ku ibanga ryawe. Iyi politiki isobanura uko dukusanya, dukoresha, kandi turinda amakuru yawe bwite." },
+  privacyIntroPrefix: { en: "At", fr: "Chez", rw: "Kuri" },
+  privacySection1Title: { en: "1. Information We Collect", fr: "1. Informations que Nous Collectons", rw: "1. Amakuru Dukusanya" },
+  privacySection1Desc: { en: "We collect information you provide directly to us when you place an order, create an account, or contact us. This includes your name, email address, phone number, and delivery address.", fr: "Nous collectons les informations que vous nous fournissez directement lorsque vous passez une commande, créez un compte ou nous contactez. Cela inclut votre nom, adresse e-mail, numéro de téléphone et adresse de livraison.", rw: "Dukusanya amakuru utanga ubwawe igihe utumiza, ukora konti, cyangwa udutumiye ubutumwa. Harimo amazina yawe, aderesi ya imeri, numero ya telefoni, n'aho ubarizwa." },
+  privacySection2Title: { en: "2. How We Use Your Information", fr: "2. Comment Nous Utilisons Vos Informations", rw: "2. Uko Dukoresha Amakuru Yawe" },
+  privacySection2Desc: { en: "We use your information to process orders, communicate with you about your delivery, and provide customer support. We may also send you promotional offers if you subscribe to our newsletter.", fr: "Nous utilisons vos informations pour traiter les commandes, communiquer avec vous sur votre livraison et fournir un support client. Nous pouvons également vous envoyer des offres promotionnelles si vous vous abonnez à notre newsletter.", rw: "Dukoresha amakuru yawe mu gutunganya ibisabwa, kuvugana nawe ku byerekeye itonji ryawe, no gutanga ubufasha ku bakiriya. Dushobora no kukoherereza ibiciro byihariye niba wiyandikishije ku makuru yacu." },
+  privacySection3Title: { en: "3. Data Security", fr: "3. Sécurité des Données", rw: "3. Umutekano w'Amakuru" },
+  privacySection3Desc: { en: "We implement industry-standard security measures to protect your data. Your payment information is processed through secure third-party payment gateways.", fr: "Nous mettons en œuvre des mesures de sécurité conformes aux normes du secteur pour protéger vos données. Vos informations de paiement sont traitées via des passerelles de paiement tierces sécurisées.", rw: "Dukoresha uburyo bw'umutekano bukwiye kugira ngo turinde amakuru yawe. Amakuru y'ukwishyura atunganywa binyuze mu bufatanyacyubahiro bw'ukwishyura bwizewe." },
+  privacySection4Title: { en: "4. Contact Us", fr: "4. Contactez-nous", rw: "4. Twandikire" },
+  privacySection4Desc: { en: "If you have any questions about our privacy policy, please contact us at", fr: "Si vous avez des questions sur notre politique de confidentialité, veuillez nous contacter à", rw: "Niba ufite ikibazo ku byerekeye politiki yacu y'ibanga, twandikire kuri" },
+
+  termsTitle: { en: "Terms & Conditions", fr: "Conditions Générales", rw: "Amabwiriza n'Amategeko" },
+  termsLastUpdated: { en: "Last updated: March 28, 2026", fr: "Dernière mise à jour : 28 mars 2026", rw: "Yavuguruwe bwa nyuma: Werurwe 28, 2026" },
+  termsSection1Title: { en: "1. Acceptance of Terms", fr: "1. Acceptation des Conditions", rw: "1. Kwemera Amabwiriza" },
+  termsSection1Desc: { en: "By using our website, you agree to be bound by these terms and conditions. If you do not agree, please do not use our services.", fr: "En utilisant notre site web, vous acceptez d'être lié par ces conditions générales. Si vous n'êtes pas d'accord, veuillez ne pas utiliser nos services.", rw: "Mu gukoresha urubuga rwacu, wemeye kubahiriza aya mabwiriza n'amategeko. Niba utabyemera, ntukoreshe imirimo yacu." },
+  termsSection2Title: { en: "2. Product Availability", fr: "2. Disponibilité des Produits", rw: "2. Kuboneka kw'Ibicuruzwa" },
+  termsSection2Desc: { en: "All products are subject to availability. We reserve the right to limit the quantity of products we supply or to refuse any order.", fr: "Tous les produits sont soumis à disponibilité. Nous nous réservons le droit de limiter la quantité de produits fournis ou de refuser toute commande.", rw: "Ibicuruzwa byose bitangwa hakurikijwe uko bihari. Dufite uburenganzira bwo kugabanya umubare w'ibicuruzwa dutanga cyangwa kwanga ikintu cyasabwe." },
+  termsSection3Title: { en: "3. Pricing and Payment", fr: "3. Tarification et Paiement", rw: "3. Ibiciro n'Ukwishyura" },
+  termsSection3Desc: { en: "Prices are listed in Rwandan Francs (RWF). We accept Mobile Money, debit/credit cards, and cash on delivery in selected areas.", fr: "Les prix sont indiqués en Francs Rwandais (RWF). Nous acceptons Mobile Money, les cartes de débit/crédit et le paiement à la livraison dans certaines zones.", rw: "Ibiciro byanditse mu mafaranga y'u Rwanda (RWF). Twemera Mobile Money, amakarita y'ukwishyura, n'ukwishyura igihe ikintu kigejejwe ahantu hamwe na hamwe." },
+  termsSection4Title: { en: "4. Delivery", fr: "4. Livraison", rw: "4. Itonji" },
+  termsSection4Desc: { en: "We aim to deliver within the estimated timeframes, but we are not responsible for delays beyond our control.", fr: "Nous visons à livrer dans les délais estimés, mais nous ne sommes pas responsables des retards indépendants de notre volonté.", rw: "Dugerageza kugeza ibintu mu gihe cyagenwe, ariko ntidufite inshingano ku bitinze bidaturutse kuri twe." },
+  termsSection5Title: { en: "5. Returns and Refunds", fr: "5. Retours et Remboursements", rw: "5. Gusubiza n'Kwishyurwa" },
+  termsSection5Desc: { en: "Please refer to our Return Policy for details on how to return items and request refunds.", fr: "Veuillez consulter notre Politique de Retour pour plus de détails sur la façon de retourner des articles et de demander un remboursement.", rw: "Reba Politiki yacu yo Gusubiza kugira ngo umenye uko wasubiza ibintu no gusaba kwishyurwa." },
+
+  // ── Contact page ─────────────────────────────────────────────────────────
+  contactIntro: { en: "Have questions or need assistance? Our team is here to help you. Reach out to us through any of the following channels.", fr: "Vous avez des questions ou besoin d'aide ? Notre équipe est là pour vous aider. Contactez-nous par l'un des moyens suivants.", rw: "Ufite ibibazo cyangwa ukeneye ubufasha? Itsinda ryacu riri hano kugira ngo ribafashe. Twandikire binyuze mu buryo bukurikira." },
+  sendMessageTitle: { en: "Send us a message", fr: "Envoyez-nous un message", rw: "Twoherereze ubutumwa" },
+  nameLabel: { en: "Name", fr: "Nom", rw: "Amazina" },
+  namePlaceholder: { en: "Your name", fr: "Votre nom", rw: "Amazina yawe" },
+  emailLabel: { en: "Email", fr: "E-mail", rw: "Imeri" },
+  emailPlaceholderShort: { en: "Your email", fr: "Votre e-mail", rw: "Imeri yawe" },
+  subjectLabel: { en: "Subject", fr: "Sujet", rw: "Ikivugwaho" },
+  subjectPlaceholder: { en: "How can we help?", fr: "Comment pouvons-nous vous aider ?", rw: "Twakugira iki?" },
+  messageLabel: { en: "Message", fr: "Message", rw: "Ubutumwa" },
+  messagePlaceholder: { en: "Your message...", fr: "Votre message...", rw: "Ubutumwa bwawe..." },
+  sendingBtn: { en: "Sending...", fr: "Envoi en cours...", rw: "Kohereza..." },
+  sendMessageBtn: { en: "Send Message", fr: "Envoyer le Message", rw: "Ohereza Ubutumwa" },
+  contactSendSuccess: { en: "Message sent successfully! We will get back to you soon.", fr: "Message envoyé avec succès ! Nous vous répondrons bientôt.", rw: "Ubutumwa bwoherejwe neza! Tuzabasubiza vuba." },
+  contactSendError: { en: "Failed to send message. Please try again.", fr: "Échec de l'envoi du message. Veuillez réessayer.", rw: "Kohereza ubutumwa byanze. Ongera ugerageze." },
+  phoneWhatsappLabel: { en: "Phone & WhatsApp", fr: "Téléphone et WhatsApp", rw: "Telefoni na WhatsApp" },
+  emailAddressLabel: { en: "Email Address", fr: "Adresse E-mail", rw: "Aderesi ya Imeri" },
+  ourLocationLabel: { en: "Our Location", fr: "Notre Emplacement", rw: "Aho Turi" },
+  workingHoursTitle: { en: "Working Hours", fr: "Heures d'Ouverture", rw: "Amasaha y'Akazi" },
+  monSatHours: { en: "Mon - Sat: 8AM - 8PM", fr: "Lun - Sam : 8h - 20h", rw: "Kuwa Mbere - Gatandatu: 8AM - 8PM" },
+  sunHours: { en: "Sun: 10AM - 4PM", fr: "Dim : 10h - 16h", rw: "Ku Cyumweru: 10AM - 4PM" },
 };

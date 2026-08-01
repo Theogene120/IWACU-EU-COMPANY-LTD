@@ -7,7 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { BUSINESS_PHONE, HERO_SLIDES } from '../constants';
 import { useShop } from '../context/ProductContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { cn } from '../lib/utils';
+import { cn, localize } from '../lib/utils';
 
 const Hero = () => {
   const { siteSettings, products } = useShop();
@@ -50,7 +50,7 @@ const Hero = () => {
 
   const heroProduct = products.find(p => p.id === slides[current]?.productId);
   const whatsappLink = heroProduct
-    ? `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${heroProduct.title} (Price: ${formatPrice(heroProduct.price)})`
+    ? `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to order this product: ${localize(heroProduct.title, language)} (Price: ${formatPrice(heroProduct.price)})`
     : `https://wa.me/${BUSINESS_PHONE.replace('+', '')}?text=Hello, I want to inquire about your products.`;
 
   if (!slides.length || !slides[current]) {
@@ -134,7 +134,7 @@ const Hero = () => {
                 className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider mb-6"
               >
                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span>New Arrival</span>
+                <span>{t('newArrivalBadge')}</span>
               </motion.div>
 
               <h1 className="text-5xl md:text-8xl lg:text-9xl font-bold mb-6 tracking-tighter leading-[0.85] uppercase">
@@ -179,7 +179,7 @@ const Hero = () => {
           className="group absolute top-4 right-4 sm:top-6 sm:right-12 z-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-xl shadow-blue-900/40"
         >
           <Eye className="h-4 w-4" />
-          <span className="uppercase tracking-wide">View Product</span>
+          <span className="uppercase tracking-wide">{t('viewProductBtn')}</span>
         </Link>
       )}
 

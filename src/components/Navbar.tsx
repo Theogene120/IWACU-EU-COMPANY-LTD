@@ -6,7 +6,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useShop } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import { BUSINESS_NAME } from '../constants';
-import { cn } from '../lib/utils';
+import { cn, localize, matchesLocalizedText } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
 const Navbar = () => {
@@ -27,7 +27,7 @@ const Navbar = () => {
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
     return products
-      .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(p => matchesLocalizedText(p.title, searchQuery))
       .slice(0, 5);
   }, [products, searchQuery]);
 
@@ -175,12 +175,12 @@ const Navbar = () => {
                                 >
                                   <img
                                     src={product.images[0]}
-                                    alt={product.title}
+                                    alt={localize(product.title, language)}
                                     className="w-10 h-10 object-cover rounded-lg"
                                     referrerPolicy="no-referrer"
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-gray-900 truncate">{product.title}</p>
+                                    <p className="text-sm font-bold text-gray-900 truncate">{localize(product.title, language)}</p>
                                     <p className="text-xs text-blue-600 font-bold">{product.price.toLocaleString()} RWF</p>
                                   </div>
                                 </button>
@@ -192,7 +192,7 @@ const Navbar = () => {
                                 }}
                                 className="w-full mt-1 p-2 text-center text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
                               >
-                                View all results for "{searchQuery}"
+                                {t('viewAllResultsPrefix')} "{searchQuery}"
                               </button>
                             </motion.div>
                           )}
@@ -338,7 +338,7 @@ const Navbar = () => {
               {isAdmin && (
                 <div className="flex items-center space-x-1">
                   <Link to="/admin" className="text-sm font-medium text-blue-600 hover:underline px-2 py-2">
-                    Dashboard
+                    {t('dashboardLabel')}
                   </Link>
                   <button onClick={logout} className="p-2 text-gray-600 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors">
                     <LogOut className="h-5 w-5" />
@@ -412,7 +412,7 @@ const Navbar = () => {
                 {/* Mobile Language Selector */}
                 <div className="border-t pt-3 mt-2 px-3">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Language
+                    {t('languageLabel')}
                   </p>
                   <div className="space-y-0.5">
                     {languages.map((lang) => (
@@ -439,7 +439,7 @@ const Navbar = () => {
                 {/* Mobile Currency Selector */}
                 <div className="border-t pt-3 mt-2 px-3">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Currency
+                    {t('currencyLabel')}
                   </p>
                   <div className="space-y-0.5">
                     {currencies.map((curr) => (
@@ -470,7 +470,7 @@ const Navbar = () => {
                       onClick={() => setIsOpen(false)}
                       className="block px-3 py-2 text-base font-medium text-blue-600"
                     >
-                      Admin Dashboard
+                      {t('adminDashboardLabel')}
                     </Link>
                   </div>
                 )}

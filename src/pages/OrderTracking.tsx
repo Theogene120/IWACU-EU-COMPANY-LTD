@@ -46,7 +46,7 @@ const OrderTracking = () => {
     <div className="max-w-4xl mx-auto px-4 py-20">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('trackOrder')}</h1>
-        <p className="text-gray-500">Enter your Order ID to see the current status of your delivery.</p>
+        <p className="text-gray-500">{t('trackOrderDesc')}</p>
       </div>
 
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 mb-12">
@@ -58,7 +58,7 @@ const OrderTracking = () => {
               type="text"
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
-              placeholder={`${t('orderId')} (e.g. ORD-XXXXXX)`}
+              placeholder={`${t('orderId')} ${t('orderIdPlaceholderSuffix')}`}
               className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
@@ -108,15 +108,15 @@ const OrderTracking = () => {
             {/* Order Details */}
             <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <h3 className="font-bold text-gray-900 uppercase text-xs tracking-widest">Order Info</h3>
+                <h3 className="font-bold text-gray-900 uppercase text-xs tracking-widest">{t('orderInfoTitle')}</h3>
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Order ID: <span className="font-bold text-gray-900">{foundOrder.id}</span></p>
-                  <p className="text-sm text-gray-600">Date: <span className="font-bold text-gray-900">{new Date(foundOrder.createdAt).toLocaleDateString()}</span></p>
-                  <p className="text-sm text-gray-600">Status: <span className="font-bold text-blue-600 uppercase">{foundOrder.status}</span></p>
+                  <p className="text-sm text-gray-600">{t('orderId')}: <span className="font-bold text-gray-900">{foundOrder.id}</span></p>
+                  <p className="text-sm text-gray-600">{t('dateLabel')} <span className="font-bold text-gray-900">{new Date(foundOrder.createdAt).toLocaleDateString()}</span></p>
+                  <p className="text-sm text-gray-600">{t('status')}: <span className="font-bold text-blue-600 uppercase">{foundOrder.status}</span></p>
                 </div>
               </div>
               <div className="space-y-4">
-                <h3 className="font-bold text-gray-900 uppercase text-xs tracking-widest">Delivery To</h3>
+                <h3 className="font-bold text-gray-900 uppercase text-xs tracking-widest">{t('deliveryToTitle')}</h3>
                 <div className="space-y-2">
                   <p className="text-sm text-gray-900 font-bold">{foundOrder.customerName}</p>
                   <p className="text-sm text-gray-600">{foundOrder.address}</p>
@@ -130,7 +130,7 @@ const OrderTracking = () => {
                 onClick={() => navigate('/')}
                 className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-lg"
               >
-                Back to Home
+                {t('backToHomeBtn')}
               </button>
             </div>
           </motion.div>
@@ -142,8 +142,8 @@ const OrderTracking = () => {
             className="text-center py-12 bg-red-50 rounded-3xl border border-red-100"
           >
             <Package className="h-12 w-12 text-red-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-red-900">Order not found</h3>
-            <p className="text-red-600">Please check your Order ID and try again.</p>
+            <h3 className="text-xl font-bold text-red-900">{t('orderNotFoundTitle')}</h3>
+            <p className="text-red-600">{t('orderNotFoundDesc')}</p>
           </motion.div>
         )}
       </AnimatePresence>
