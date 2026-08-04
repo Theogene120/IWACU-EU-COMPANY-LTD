@@ -5,6 +5,8 @@ import fs from 'fs';
 
 const router = Router();
 
+// Must resolve to the same directory as the UPLOADS_DIR in index.ts (same env var,
+// same fallback). In production UPLOADS_DIR must be set to a writable, persistent path.
 const UPLOADS_DIR = process.env.UPLOADS_DIR
   ? path.resolve(process.env.UPLOADS_DIR)
   : path.join(process.cwd(), '..', 'public', 'uploads');
