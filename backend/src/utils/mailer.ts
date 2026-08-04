@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import dns from 'node:dns';
 
 type TransportOptions = Parameters<typeof nodemailer.createTransport>[0];
 
@@ -6,13 +7,21 @@ type TransportOptions = Parameters<typeof nodemailer.createTransport>[0];
 // 465 (implicit TLS). Render has no outbound IPv6 route, so that connection hangs
 // until ETIMEDOUT/ENETUNREACH. Using STARTTLS on 587 with family:4 forces IPv4 so
 // the connection actually reaches Gmail from Render.
-// `family` is a real Nodemailer/Node socket option but missing from @types/nodemailer,
-// hence the cast.
+// `family` and `lookup` are real Nodemailer/Node socket options but missing from
+// @types/nodemailer, hence the cast.
+//
+// family:4 alone isn't enough — Node's own DNS resolution can still hand back an
+// AAAA (IPv6) record before Nodemailer gets a chance to filter, so we also force
+// IPv4-first resolution process-wide and pin the transport's own lookup to IPv4.
+dns.setDefaultResultOrder('ipv4first');
+
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
   secure: false,
   family: 4,
+  lookup: (hostname: string, options: unknown, callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void) =>
+    dns.lookup(hostname, { family: 4 }, callback),
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
