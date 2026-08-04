@@ -44,10 +44,10 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Uploads — serve from <project_root>/public/uploads by default.
-// In production UPLOADS_DIR must be set to a writable, persistent path (the
-// process.cwd()-relative fallback below is only safe for local dev). On ephemeral
-// hosts these files still won't survive redeploys — that's handled separately.
+// Legacy local uploads — new uploads go to Cloudflare R2 (see routes/upload.ts and
+// utils/r2.ts) and return full R2 public URLs directly, so this static mount is no
+// longer in the write path. Left in place only to keep serving any pre-R2 images
+// still referenced as /uploads/... in the database; safe to remove once none remain.
 const UPLOADS_DIR = process.env.UPLOADS_DIR
   ? path.resolve(process.env.UPLOADS_DIR)
   : path.join(process.cwd(), '..', 'public', 'uploads');
