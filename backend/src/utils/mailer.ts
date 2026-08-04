@@ -1,12 +1,26 @@
 import nodemailer from 'nodemailer';
 
+type TransportOptions = Parameters<typeof nodemailer.createTransport>[0];
+
+// `service: 'gmail'` resolves smtp.gmail.com and can pick an IPv6 address on port
+// 465 (implicit TLS). Render has no outbound IPv6 route, so that connection hangs
+// until ETIMEDOUT/ENETUNREACH. Using STARTTLS on 587 with family:4 forces IPv4 so
+// the connection actually reaches Gmail from Render.
+// `family` is a real Nodemailer/Node socket option but missing from @types/nodemailer,
+// hence the cast.
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  family: 4,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
   },
-});
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
+} as TransportOptions);
 
 export async function sendResetCodeEmail(code: string) {
   const to = process.env.COMPANY_EMAIL;
