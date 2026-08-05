@@ -1009,6 +1009,11 @@ const AdminDashboard = () => {
                         <div className="flex items-center space-x-4">
                           <img src={product.images[0]} alt={localize(product.title, 'en')} className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
                           <span className="font-bold text-gray-900">{localize(product.title, 'en')}</span>
+                          {product.isFeatured && (
+                            <span className="text-[10px] font-bold px-2 py-1 rounded-full uppercase bg-yellow-100 text-yellow-700">
+                              Featured
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-8 py-6 text-sm text-gray-600">{product.category}</td>
@@ -2742,7 +2747,7 @@ const AdminDashboard = () => {
                     if (editingProduct) {
                       updateProduct({ ...editingProduct, ...data });
                     } else {
-                      addProduct({ ...data, id: Math.random().toString(36).substr(2, 9), rating: 5, isFeatured: false });
+                      addProduct({ ...data, id: Math.random().toString(36).substr(2, 9), rating: 5 });
                     }
                     setIsAddingProduct(false);
                     setEditingProduct(null);
@@ -3644,6 +3649,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
     images: initialData?.images || [''],
     variations: initialData?.variations || [] as Variation[],
     cost: initialData?.cost || 0,
+    isFeatured: initialData?.isFeatured ?? false,
     salesType: initialData?.salesType || 'online' as 'online' | 'offline',
     salePrice: initialData?.salePrice || 0,
     saleDate: initialData?.saleDate ? initialData.saleDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
@@ -4129,6 +4135,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
               </div>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, isFeatured: !formData.isFeatured })}
+            className={cn(
+              "w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-left",
+              formData.isFeatured ? "border-yellow-500 bg-yellow-50" : "border-gray-100 hover:border-yellow-200"
+            )}
+          >
+            <div>
+              <p className={cn("font-bold text-sm", formData.isFeatured ? "text-yellow-600" : "text-gray-700")}>Feature on homepage</p>
+              <p className="text-[11px] text-gray-500">Shown in the homepage "Featured" section.</p>
+            </div>
+            <div className={cn(
+              "h-6 w-11 rounded-full transition-colors flex items-center px-1 flex-shrink-0",
+              formData.isFeatured ? "bg-yellow-500 justify-end" : "bg-gray-300 justify-start"
+            )}>
+              <div className="h-4 w-4 rounded-full bg-white shadow" />
+            </div>
+          </button>
 
           <button
             type="submit"

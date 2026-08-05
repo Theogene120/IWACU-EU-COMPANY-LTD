@@ -126,26 +126,29 @@ const Home = () => {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {categories.map((cat, i) => (
-            <Link
-              key={cat}
-              to={`/shop?category=${cat}`}
-              className="group relative h-48 rounded-2xl overflow-hidden bg-gray-100"
-            >
-              <img
-                src={cat === 'Electronics' ? 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=400' 
-                   : cat === 'Fashion' ? 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZmFzaGlvbnxlbnwwfHwwfHx8MA%3D%3D'
-                   : cat === 'Shoes' ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400'
-                   : cat === 'Home Items' ? 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=400'
-                   : 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&q=80&w=400'}
-                alt={getCategoryLabel(cat, language, siteSettings.categoryTranslations)}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-              <span className="absolute bottom-4 left-4 text-white font-bold text-lg">{getCategoryLabel(cat, language, siteSettings.categoryTranslations)}</span>
-            </Link>
-          ))}
+          {categories.map((cat, i) => {
+            const catImage = products.find(p => p.category === cat && p.images?.length)?.images?.[0];
+            return (
+              <Link
+                key={cat}
+                to={`/shop?category=${cat}`}
+                className="group relative h-48 rounded-2xl overflow-hidden bg-gray-100"
+              >
+                {catImage ? (
+                  <img
+                    src={catImage}
+                    alt={getCategoryLabel(cat, language, siteSettings.categoryTranslations)}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 transition-transform duration-500 group-hover:scale-110" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <span className="absolute bottom-4 left-4 text-white font-bold text-lg">{getCategoryLabel(cat, language, siteSettings.categoryTranslations)}</span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
