@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { toast } from 'sonner';
 import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense, LocalizedText } from '../types';
 export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense };
-import { DEMO_PRODUCTS, CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
+import { CATEGORIES, HERO_SLIDES, TEAM_MEMBERS, DEMO_TESTIMONIALS } from '../constants';
 import { useAuth, getAuthHeader } from './AuthContext';
 
 // API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
@@ -109,7 +109,7 @@ export interface Notification {
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAdmin, isSuperAdmin } = useAuth();
-  const [products, setProducts] = useState<Product[]>(DEMO_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(CATEGORIES);
   const [orders, setOrders] = useState<Order[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -166,14 +166,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             : Promise.resolve(null),
         ]);
 
-        if (productsRes.status === 'fulfilled' && productsRes.value) {
+        if (productsRes.status === 'fulfilled' && Array.isArray(productsRes.value)) {
           const data: Product[] = productsRes.value;
-          setProducts(data.length > 0
-            ? data.map(p => ({ ...p, title: toLocalizedField(p.title), description: toLocalizedField(p.description) }))
-            : DEMO_PRODUCTS);
+          setProducts(data.map(p => ({ ...p, title: toLocalizedField(p.title), description: toLocalizedField(p.description) })));
         }
 
-        if (categoriesRes.status === 'fulfilled' && categoriesRes.value?.length) {
+        if (categoriesRes.status === 'fulfilled' && Array.isArray(categoriesRes.value)) {
           setCategories(categoriesRes.value);
         }
 
@@ -207,13 +205,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const ss = siteSettingsRes.value;
           const migratedSettings = {
             ...ss,
-            heroSlides: ((ss.heroSlides && ss.heroSlides.length > 0) ? ss.heroSlides : HERO_SLIDES).map((s: any) => ({
+            heroSlides: (Array.isArray(ss.heroSlides) ? ss.heroSlides : HERO_SLIDES).map((s: any) => ({
               ...s,
               title: typeof s.title === 'string' ? { en: s.title, fr: s.title, rw: s.title } : s.title,
               subtitle: typeof s.subtitle === 'string' ? { en: s.subtitle, fr: s.subtitle, rw: s.subtitle } : s.subtitle,
               cta: typeof s.cta === 'string' ? { en: s.cta, fr: s.cta, rw: s.cta } : s.cta,
             })),
-            teamMembers: ((ss.teamMembers && ss.teamMembers.length > 0) ? ss.teamMembers : TEAM_MEMBERS).map((m: any) => ({
+            teamMembers: (Array.isArray(ss.teamMembers) ? ss.teamMembers : TEAM_MEMBERS).map((m: any) => ({
               ...m,
               role: (m.role && typeof m.role === 'object')
                 ? m.role
@@ -228,7 +226,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
               phone: m.phone ?? '',
               socials: m.socials ?? {},
             })),
-            testimonials: ((ss.testimonials && ss.testimonials.length > 0) ? ss.testimonials : DEMO_TESTIMONIALS).map((tm: any) => ({
+            testimonials: (Array.isArray(ss.testimonials) ? ss.testimonials : DEMO_TESTIMONIALS).map((tm: any) => ({
               ...tm,
               message: toLocalizedField(tm.message),
             })),
