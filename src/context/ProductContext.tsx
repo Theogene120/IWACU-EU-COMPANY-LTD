@@ -390,14 +390,39 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // ── Products ──────────────────────────────────────────────────────────────
+  // Both create and update persist explicitly and immediately (POST / PUT :id) instead of
+  // relying solely on the debounced bulk PUT below. The bulk PUT upserts every product in
+  // local state in one transaction — a bad row anywhere else in that array rolls the whole
+  // batch back, which can silently drop a brand-new product's INSERT. A dedicated request
+  // guarantees this product's own published/salesType are stored right away.
   const addProduct = useCallback((product: Product) => {
     setProducts(prev => [...prev, product]);
     addActivity(`New product added: ${product.title.en}`, 'product');
+    fetch(`${API_BASE}/api/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    })
+      .then(r => { if (!r.ok) throw new Error('Failed to save product'); })
+      .catch(err => {
+        console.error(err);
+        toast.error('Failed to save the new product to the server — please retry.');
+      });
   }, [addActivity]);
 
   const updateProduct = useCallback((product: Product) => {
     setProducts(prev => prev.map(p => p.id === product.id ? product : p));
     addActivity(`Product updated: ${product.title.en}`, 'product');
+    fetch(`${API_BASE}/api/products/${product.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    })
+      .then(r => { if (!r.ok) throw new Error('Failed to update product'); })
+      .catch(err => {
+        console.error(err);
+        toast.error('Failed to save product changes to the server — please retry.');
+      });
   }, [addActivity]);
 
   const deleteProduct = useCallback((id: string) => {
