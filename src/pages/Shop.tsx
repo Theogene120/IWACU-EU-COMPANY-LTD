@@ -34,7 +34,9 @@ const Shop = () => {
     return products
       .filter(p => {
         const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-        const matchesSearch = matchesLocalizedText(p.title, searchQuery) || matchesLocalizedText(p.description, searchQuery);
+        const matchesSearch = !searchQuery.trim()
+          || matchesLocalizedText(p.title, searchQuery)
+          || matchesLocalizedText(p.description, searchQuery);
         const matchesPrice = p.price <= priceRange;
         return matchesCategory && matchesSearch && matchesPrice;
       })
