@@ -80,7 +80,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="relative h-[550px] md:h-[750px] w-full overflow-hidden bg-black">
+    <div className="relative h-[420px] md:h-[560px] w-full overflow-hidden bg-black">
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={current}
@@ -111,7 +111,7 @@ const Hero = () => {
           <motion.div 
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${slides[current].image})` }}
-            initial={{ scale: 1.1 }}
+            initial={{ scale: 1.05 }}
             animate={{ scale: 1 }}
             transition={{ duration: 10, ease: "linear" }}
           >
@@ -131,38 +131,38 @@ const Hero = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider mb-6"
+                className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4"
               >
                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 <span>{t('newArrivalBadge')}</span>
               </motion.div>
 
-              <h1 className="text-5xl md:text-8xl lg:text-9xl font-bold mb-6 tracking-tighter leading-[0.85] uppercase">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight leading-tight uppercase">
                 {slides[current].title[language]}
               </h1>
-              
-              <div className="h-px w-24 bg-blue-500 mb-8" />
 
-              <p className="text-lg md:text-2xl mb-12 text-gray-300 max-w-xl font-medium leading-relaxed">
+              <div className="h-px w-24 bg-blue-500 mb-6" />
+
+              <p className="text-base md:text-lg mb-6 text-gray-300 max-w-xl font-medium leading-relaxed">
                 {slides[current].subtitle[language]}
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-6">
+
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/shop"
-                  className="group relative bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-full font-bold flex items-center justify-center space-x-3 transition-all overflow-hidden shadow-2xl shadow-blue-900/40"
+                  className="group relative bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full font-bold flex items-center justify-center space-x-3 transition-all overflow-hidden shadow-2xl shadow-blue-900/40"
                 >
                   <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                  <ShoppingBag className="h-6 w-6 relative z-10" />
+                  <ShoppingBag className="h-5 w-5 relative z-10" />
                   <span className="relative z-10 uppercase tracking-wide">{slides[current].cta[language]}</span>
                 </Link>
                 <a
                   href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 px-10 py-5 rounded-full font-bold flex items-center justify-center space-x-3 transition-all"
+                  className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 px-7 py-3.5 rounded-full font-bold flex items-center justify-center space-x-3 transition-all"
                 >
-                  <WhatsAppIcon className="h-6 w-6 text-green-400" />
+                  <WhatsAppIcon className="h-5 w-5 text-green-400" />
                   <span className="uppercase tracking-wide">{t('orderWhatsApp')}</span>
                 </a>
               </div>
@@ -184,7 +184,7 @@ const Hero = () => {
       )}
 
       {/* Modern Controls */}
-      <div className="absolute bottom-12 right-4 sm:right-12 flex items-center space-x-4 z-20">
+      <div className="absolute bottom-6 right-4 sm:right-12 flex items-center space-x-4 z-20">
         <button
           onClick={prevSlide}
           className="p-4 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all"
@@ -205,7 +205,7 @@ const Hero = () => {
       </div>
 
       {/* Progress Bars */}
-      <div className="absolute bottom-12 left-4 sm:left-12 flex space-x-3 z-20">
+      <div className="absolute bottom-6 left-4 sm:left-12 flex space-x-3 z-20">
         {slides.map((_, i) => (
           <button
             key={i}

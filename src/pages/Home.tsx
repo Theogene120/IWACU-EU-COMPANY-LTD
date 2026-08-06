@@ -190,7 +190,7 @@ const Home = () => {
           </div>
           <div className="lg:w-1/2 h-80 lg:h-auto">
             <img
-              src="client.png"
+              src="client.jpeg"
               alt={t('shoppingAlt')}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
