@@ -107,11 +107,11 @@ const Hero = () => {
           }}
           className="absolute inset-0 cursor-grab active:cursor-grabbing"
         >
-          {/* Background Image */}
+          {/* Background Image with Ken Burns effect */}
           <motion.div
-            className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+            className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${slides[current].image})` }}
-            initial={{ scale: 1 }}
+            initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ duration: 10, ease: "linear" }}
           >
