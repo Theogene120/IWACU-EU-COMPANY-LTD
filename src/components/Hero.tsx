@@ -12,9 +12,10 @@ import { cn, localize } from '../lib/utils';
 const Hero = () => {
   const { siteSettings, products } = useShop();
   const { formatPrice } = useCurrency();
-  const slides = siteSettings.heroSlides && siteSettings.heroSlides.length > 0
-    ? siteSettings.heroSlides
-    : HERO_SLIDES;
+  // HERO_SLIDES is only a placeholder for "never configured" (heroSlides missing
+  // entirely). An admin-saved empty array means every slide was deliberately
+  // deleted, so it must render nothing rather than resurrect the demo content.
+  const slides = siteSettings.heroSlides ?? HERO_SLIDES;
   const [current, setCurrent] = useState(0);
 
   // Sync current index if slides change (e.g. deleted in admin)

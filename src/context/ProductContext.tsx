@@ -270,18 +270,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (isLoading) return;
     const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/categories`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(categories),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [categories, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
       fetch(`${API_BASE}/api/orders`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -437,15 +425,26 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [addActivity]);
 
   // ── Categories ────────────────────────────────────────────────────────────
+  // Each mutation persists explicitly and immediately (POST/PUT/DELETE) instead of
+  // relying on a debounced bulk sync — the old bulk PUT replaced the whole table
+  // (DELETE all + re-INSERT all) from a snapshot that could go stale between renders,
+  // silently dropping edits on reload. A dedicated request per mutation guarantees
+  // the change is actually in Postgres before we call it done.
   const addCategory = useCallback((category: string) => {
-    setCategories(prev => {
-      if (!prev.includes(category)) {
-        addActivity(`New category added: ${category}`, 'system');
-        return [...prev, category];
-      }
-      return prev;
-    });
-  }, [addActivity]);
+    if (categories.includes(category)) return;
+    setCategories(prev => prev.includes(category) ? prev : [...prev, category]);
+    addActivity(`New category added: ${category}`, 'system');
+    fetch(`${API_BASE}/api/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: category }),
+    })
+      .then(r => { if (!r.ok) throw new Error('Failed to save category'); })
+      .catch(err => {
+        console.error(err);
+        toast.error('Failed to save the new category to the server — please retry.');
+      });
+  }, [categories, addActivity]);
 
   const deleteCategory = useCallback((category: string) => {
     setCategories(prev => {
@@ -454,6 +453,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     setProducts(prev => prev.map(p => p.category === category ? { ...p, category: 'Uncategorized' } : p));
     addActivity(`Category deleted: ${category}`, 'system');
+    fetch(`${API_BASE}/api/categories/${encodeURIComponent(category)}`, { method: 'DELETE' })
+      .then(r => { if (!r.ok) throw new Error('Failed to delete category'); })
+      .catch(err => {
+        console.error(err);
+        toast.error('Failed to delete the category on the server — please retry.');
+      });
+    fetch(`${API_BASE}/api/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Uncategorized' }),
+    }).catch(console.error);
   }, [addActivity]);
 
   const updateCategory = useCallback((oldCategory: string, newCategory: string) => {
@@ -465,6 +475,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     setProducts(prev => prev.map(p => p.category === oldCategory ? { ...p, category: newCategory } : p));
     addActivity(`Category updated: ${oldCategory} to ${newCategory}`, 'system');
+    fetch(`${API_BASE}/api/categories/${encodeURIComponent(oldCategory)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newCategory }),
+    })
+      .then(r => { if (!r.ok) throw new Error('Failed to rename category'); })
+      .catch(err => {
+        console.error(err);
+        toast.error('Failed to save the category rename to the server — please retry.');
+      });
   }, [addActivity]);
 
   // ── Notifications ─────────────────────────────────────────────────────────

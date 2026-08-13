@@ -48,6 +48,27 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT /api/categories/:name — rename one (or merge into an existing category)
+router.put('/:name', async (req, res) => {
+  const oldName = req.params.name;
+  const newName: string = req.body?.name;
+  if (!newName) return res.status(400).json({ error: 'Missing name' });
+  if (oldName === newName) return res.json({ success: true });
+  try {
+    const existing = await pool.query('SELECT 1 FROM categories WHERE name=$1', [newName]);
+    if (existing.rows.length > 0) {
+      // Target name already exists — merge by dropping the old row.
+      await pool.query('DELETE FROM categories WHERE name=$1', [oldName]);
+    } else {
+      await pool.query('UPDATE categories SET name=$1 WHERE name=$2', [newName, oldName]);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // DELETE /api/categories/:name — remove one (products keep their category text)
 router.delete('/:name', async (req, res) => {
   try {
