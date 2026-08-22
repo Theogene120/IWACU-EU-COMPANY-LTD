@@ -24,6 +24,39 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST /api/analytics/track — atomically record one page view. The increment is
+// computed from the CURRENT row in SQL, never from client-sent totals, so a client
+// whose local analytics state never loaded (e.g. the initial GET failed) can never
+// clobber real counts the way the old full-state PUT sync could.
+router.post('/track', async (req, res) => {
+  const path = typeof req.body?.path === 'string' ? req.body.path : '';
+  try {
+    const result = await pool.query(
+      `UPDATE analytics
+       SET total_visitors = total_visitors + 1,
+           page_views = (
+             SELECT CASE
+               WHEN bool_or(e->>'path' = $1) THEN jsonb_agg(
+                 CASE WHEN e->>'path' = $1
+                      THEN jsonb_set(e, '{count}', to_jsonb(COALESCE((e->>'count')::int, 0) + 1))
+                      ELSE e END
+               )
+               ELSE page_views || jsonb_build_array(jsonb_build_object('path', $1::text, 'count', 1))
+             END
+             FROM jsonb_array_elements(page_views) e
+           )
+       WHERE id = 1
+       RETURNING *`,
+      [path]
+    );
+    if (!result.rows[0]) return res.status(404).json({ error: 'Not found' });
+    res.json(rowToAnalytics(result.rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // PUT /api/analytics — upsert
 router.put('/', async (req, res) => {
   const a = req.body;

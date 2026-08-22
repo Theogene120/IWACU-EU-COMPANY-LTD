@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense, LocalizedText } from '../types';
 export type { Product, Order, CartItem, Variation, SiteSettings, HeroSlide, TeamMember, Testimonial, Employee, SalaryPayment, EmployeePaymentRecord, OtherExpense };
@@ -45,7 +45,7 @@ interface ShopContextType {
   markNotificationAsRead: (id: string) => void;
   orders: Order[];
   addOrder: (order: Order) => void;
-  updateOrderStatus: (orderId: string, status: Order['status'], paymentStatus?: Order['paymentStatus']) => void;
+  updateOrderStatus: (order: Order, status: Order['status'], paymentStatus?: Order['paymentStatus']) => void;
   updateOrder: (order: Order) => void;
   deleteOrder: (id: string) => void;
   cart: CartItem[];
@@ -57,13 +57,14 @@ interface ShopContextType {
   cartCount: number;
   messages: Message[];
   addMessage: (message: Omit<Message, 'id' | 'createdAt' | 'read'>) => void;
-  markMessageAsRead: (id: string) => void;
+  markMessageAsRead: (message: Message) => void;
   deleteMessage: (id: string) => void;
   replyToMessage: (id: string, reply: string) => void;
   analytics: Analytics;
   activityLog: ActivityLog[];
   trackPageView: (path: string) => void;
   siteSettings: SiteSettings;
+  siteSettingsLoaded: boolean;
   updateSiteSettings: (settings: SiteSettings) => void;
   employees: Employee[];
   addEmployee: (employee: Employee) => Promise<void>;
@@ -136,6 +137,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [otherExpenses, setOtherExpenses] = useState<OtherExpense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // True only once a real /api/site-settings response has been applied to `siteSettings`.
+  // The admin "Save Changes" button is gated on this — if the initial fetch failed (e.g.
+  // a Render cold start), `siteSettings` is still sitting at its hardcoded HERO_SLIDES/
+  // TEAM_MEMBERS/DEMO_TESTIMONIALS defaults, and saving in that state would overwrite the
+  // real data in the database with those defaults.
+  const [siteSettingsLoaded, setSiteSettingsLoaded] = useState(false);
+
+  // Mirrors of `products`/`cart` for use inside cart callbacks. Cart actions need the
+  // latest committed stock synchronously (to compute + persist the new value) without
+  // going through a setState updater — updater functions run under React StrictMode's
+  // double-invoke check and must stay pure (no fetch calls inside them), and their
+  // execution isn't guaranteed to happen before the next line of code runs anyway.
+  const productsRef = useRef<Product[]>([]);
+  const cartRef = useRef<CartItem[]>([]);
+  useEffect(() => { productsRef.current = products; }, [products]);
+  useEffect(() => { cartRef.current = cart; }, [cart]);
 
   // ── Initial data load (parallel fetches to each endpoint) ───────────────
   // Products endpoint depends on role: admins get the full list (cost, offline sales
@@ -232,6 +249,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             })),
           };
           setSiteSettings(migratedSettings);
+          setSiteSettingsLoaded(true);
         }
 
         if (employeesRes.status === 'fulfilled' && Array.isArray(employeesRes.value)) {
@@ -251,93 +269,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchData();
   }, [isAdmin, isSuperAdmin]);
 
-  // ── Debounced per-entity syncs ───────────────────────────────────────────
-  // Each entity is saved independently so a cart stock change only touches /api/products,
-  // a new order only touches /api/orders, etc.
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/products`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(products),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [products, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/orders`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orders),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [orders, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/messages`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messages),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [messages, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/notifications`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(notifications),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [notifications, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/analytics`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(analytics),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [analytics, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/activity-log`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(activityLog),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [activityLog, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const t = setTimeout(() => {
-      fetch(`${API_BASE}/api/site-settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(siteSettings),
-      }).catch(console.error);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [siteSettings, isLoading]);
+  // ── Persistence ───────────────────────────────────────────────────────────
+  // There is deliberately no "watch local state, debounce, PUT the whole array/object"
+  // effect here anymore. That pattern silently overwrote real DB data whenever local
+  // state happened to still be at its hardcoded fallback — e.g. the initial
+  // /api/site-settings fetch failing during a Render free-tier cold start left
+  // `siteSettings` at the hardcoded HERO_SLIDES/TEAM_MEMBERS/DEMO_TESTIMONIALS defaults,
+  // and the old effect then pushed those defaults back over the admin's saved hero
+  // slides — no admin action required, just a visitor loading the site at a bad moment.
+  // Every mutation below now persists explicitly, at the moment of the real user action,
+  // via a targeted POST/PUT/DELETE — never a full-array overwrite built from state that
+  // might still be a never-loaded default.
 
   // ── Image upload ─────────────────────────────────────────────────────────
   const uploadImage = useCallback(async (file: File): Promise<string> => {
@@ -359,9 +301,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       adminName: adminName || 'System'
     };
     setActivityLog(prev => [newLog, ...prev.slice(0, 49)]);
+    fetch(`${API_BASE}/api/activity-log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newLog),
+    }).catch(console.error);
   }, []);
 
   // ── Analytics ─────────────────────────────────────────────────────────────
+  // Persisted via a dedicated atomic-increment endpoint (not a full-object PUT) — the
+  // server computes the new totals from whatever is already in the DB, so a client whose
+  // local `analytics` state never loaded real data (fetch failed, still at the {0,...}
+  // default) can never stomp the real counts the way overwriting with local state would.
   const trackPageView = useCallback((path: string) => {
     setAnalytics(prev => {
       const pageViews = prev.pageViews || [];
@@ -375,6 +326,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         pageViews: newPageViews
       };
     });
+    fetch(`${API_BASE}/api/analytics/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    }).catch(console.error);
   }, []);
 
   // ── Products ──────────────────────────────────────────────────────────────
@@ -414,13 +370,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [addActivity]);
 
   const deleteProduct = useCallback((id: string) => {
-    setProducts(prev => {
-      const product = prev.find(p => p.id === id);
-      if (product) addActivity(`Product deleted: ${product.title.en}`, 'product');
-      return prev.filter(p => p.id !== id);
-    });
-    // Explicit delete call — the bulk PUT sync below is upsert-only (it never deletes),
-    // so removal must be requested directly.
+    // Looked up via the ref (not inside the setProducts updater) — addActivity now
+    // fires a network request, and updater functions must stay side-effect-free since
+    // React StrictMode double-invokes them in dev to catch exactly this kind of impurity.
+    const product = productsRef.current.find(p => p.id === id);
+    setProducts(prev => prev.filter(p => p.id !== id));
+    if (product) addActivity(`Product deleted: ${product.title.en}`, 'product');
     fetch(`${API_BASE}/api/products/${id}`, { method: 'DELETE' }).catch(console.error);
   }, [addActivity]);
 
@@ -496,10 +451,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       read: false
     };
     setNotifications(prev => [newNotif, ...prev]);
+    fetch(`${API_BASE}/api/notifications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newNotif),
+    }).catch(console.error);
   }, []);
 
   const markNotificationAsRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    // Only flips `read` server-side — safe to send as a partial body (see route).
+    fetch(`${API_BASE}/api/notifications/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ read: true }),
+    }).catch(console.error);
   }, []);
 
   // ── Messages ──────────────────────────────────────────────────────────────
@@ -517,33 +483,57 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       type: 'system'
     });
     addActivity(`New message from ${msg.name}`, 'system');
+    fetch(`${API_BASE}/api/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newMessage),
+    }).catch(console.error);
   }, [addNotification, addActivity]);
 
-  const markMessageAsRead = useCallback((id: string) => {
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, read: true } : m));
+  // Takes the full message (not just an id) — PUT /api/messages/:id sets read/reply/
+  // repliedAt from the body, so sending only {read:true} would null out an existing reply.
+  const markMessageAsRead = useCallback((message: Message) => {
+    setMessages(prev => prev.map(m => m.id === message.id ? { ...m, read: true } : m));
+    fetch(`${API_BASE}/api/messages/${message.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ read: true, reply: message.reply ?? null, repliedAt: message.repliedAt ?? null }),
+    }).catch(console.error);
   }, []);
 
   const deleteMessage = useCallback((id: string) => {
     setMessages(prev => prev.filter(m => m.id !== id));
     addActivity(`Deleted message ${id}`, 'system');
+    fetch(`${API_BASE}/api/messages/${id}`, { method: 'DELETE' }).catch(console.error);
   }, [addActivity]);
 
   const replyToMessage = useCallback((id: string, reply: string) => {
+    const repliedAt = new Date().toISOString();
     setMessages(prev => prev.map(m => m.id === id ? {
       ...m,
       reply,
-      repliedAt: new Date().toISOString(),
+      repliedAt,
       read: true
     } : m));
     addActivity(`Replied to message from ${id}`, 'system');
+    fetch(`${API_BASE}/api/messages/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ read: true, reply, repliedAt }),
+    }).catch(console.error);
   }, [addActivity]);
 
   // ── Cart (stock management — exact same logic as before) ──────────────────
+  // Stock is read from `productsRef`/`cartRef` and the resulting product is persisted
+  // via a plain top-level fetch (not from inside a setState updater — see the
+  // deleteProduct comment above for why: StrictMode double-invokes updater functions,
+  // and firing a network request from one would double-send it in dev).
   const addToCart = useCallback((product: Product, quantity: number = 1, variations?: Variation[]) => {
-    setProducts(prevProducts => {
-      const currentProduct = prevProducts.find(p => p.id === product.id);
-      if (!currentProduct) return prevProducts;
-
+    const currentProduct = productsRef.current.find(p => p.id === product.id);
+    // Matches the pre-existing behavior: an insufficient-stock toast doesn't block the
+    // item from being added to the cart, it only skips the stock decrement/persist.
+    if (currentProduct) {
+      let updatedProduct: Product | null = null;
       if (variations && variations.length > 0) {
         const hasStock = variations.every(v => {
           const currentV = currentProduct.variations?.find(cv => cv.id === v.id);
@@ -551,26 +541,32 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         if (!hasStock) {
           toast.error('Not enough stock available for some selected variations');
-          return prevProducts;
-        }
-        return prevProducts.map(p =>
-          p.id === product.id ? {
-            ...p,
-            variations: p.variations?.map(v =>
+        } else {
+          updatedProduct = {
+            ...currentProduct,
+            variations: currentProduct.variations?.map(v =>
               variations.some(sv => sv.id === v.id) ? { ...v, stock: v.stock - quantity } : v
             )
-          } : p
-        );
+          };
+        }
       } else {
         if (currentProduct.stock < quantity) {
           toast.error('Not enough stock available');
-          return prevProducts;
+        } else {
+          updatedProduct = { ...currentProduct, stock: currentProduct.stock - quantity };
         }
-        return prevProducts.map(p =>
-          p.id === product.id ? { ...p, stock: p.stock - quantity } : p
-        );
       }
-    });
+
+      if (updatedProduct) {
+        const toSave = updatedProduct;
+        setProducts(prev => prev.map(p => p.id === product.id ? toSave : p));
+        fetch(`${API_BASE}/api/products/${toSave.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(toSave),
+        }).catch(console.error);
+      }
+    }
 
     setCart(prev => {
       const variationIds = (variations || []).map(v => v.id).sort().join(',');
@@ -597,84 +593,94 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFromCart = useCallback((productId: string, variationIds?: string[]) => {
     const vIdString = (variationIds || []).sort().join(',');
-    setCart(prevCart => {
-      const cartItem = prevCart.find(item => {
-        const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
-        return item.id === productId && itemVIds === vIdString;
-      });
-      if (cartItem) {
-        setProducts(prevProducts => prevProducts.map(p => {
-          if (p.id !== productId) return p;
-          if (variationIds && variationIds.length > 0) {
-            return {
-              ...p,
-              variations: p.variations?.map(v =>
+    const cartItem = cartRef.current.find(item => {
+      const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
+      return item.id === productId && itemVIds === vIdString;
+    });
+
+    if (cartItem) {
+      const currentProduct = productsRef.current.find(p => p.id === productId);
+      if (currentProduct) {
+        const updatedProduct: Product = (variationIds && variationIds.length > 0)
+          ? {
+              ...currentProduct,
+              variations: currentProduct.variations?.map(v =>
                 variationIds.includes(v.id) ? { ...v, stock: v.stock + cartItem.quantity } : v
               )
-            };
-          }
-          return { ...p, stock: p.stock + cartItem.quantity };
-        }));
+            }
+          : { ...currentProduct, stock: currentProduct.stock + cartItem.quantity };
+        setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
+        fetch(`${API_BASE}/api/products/${updatedProduct.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedProduct),
+        }).catch(console.error);
       }
-      return prevCart.filter(item => {
-        const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
-        return !(item.id === productId && itemVIds === vIdString);
-      });
-    });
+    }
+
+    setCart(prevCart => prevCart.filter(item => {
+      const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
+      return !(item.id === productId && itemVIds === vIdString);
+    }));
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number, variationIds?: string[]) => {
     if (quantity < 1) return;
     const vIdString = (variationIds || []).sort().join(',');
-    setCart(prevCart => {
-      const cartItem = prevCart.find(item => {
-        const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
-        return item.id === productId && itemVIds === vIdString;
-      });
-      if (!cartItem) return prevCart;
-
-      const diff = quantity - cartItem.quantity;
-      if (diff === 0) return prevCart;
-
-      setProducts(prevProducts => {
-        const product = prevProducts.find(p => p.id === productId);
-        if (!product) return prevProducts;
-
-        if (variationIds && variationIds.length > 0) {
-          const hasStock = variationIds.every(id => {
-            const v = product.variations?.find(v => v.id === id);
-            return v && (diff < 0 || v.stock >= diff);
-          });
-          if (!hasStock) {
-            toast.error('Not enough stock available for some selected variations');
-            return prevProducts;
-          }
-          return prevProducts.map(p =>
-            p.id === productId ? {
-              ...p,
-              variations: p.variations?.map(v =>
-                variationIds.includes(v.id) ? { ...v, stock: v.stock - diff } : v
-              )
-            } : p
-          );
-        } else {
-          if (diff > 0 && product.stock < diff) {
-            toast.error('Not enough stock available');
-            return prevProducts;
-          }
-          return prevProducts.map(p =>
-            p.id === productId ? { ...p, stock: p.stock - diff } : p
-          );
-        }
-      });
-
-      return prevCart.map(item => {
-        const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
-        return (item.id === productId && itemVIds === vIdString)
-          ? { ...item, quantity }
-          : item;
-      });
+    const cartItem = cartRef.current.find(item => {
+      const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
+      return item.id === productId && itemVIds === vIdString;
     });
+    if (!cartItem) return;
+
+    const diff = quantity - cartItem.quantity;
+    if (diff === 0) return;
+
+    const product = productsRef.current.find(p => p.id === productId);
+    // Same "toast but don't block" behavior as addToCart — the cart quantity always
+    // updates below; an insufficient-stock warning only skips the stock persist.
+    if (product) {
+      let updatedProduct: Product | null = null;
+      if (variationIds && variationIds.length > 0) {
+        const hasStock = variationIds.every(id => {
+          const v = product.variations?.find(v => v.id === id);
+          return v && (diff < 0 || v.stock >= diff);
+        });
+        if (!hasStock) {
+          toast.error('Not enough stock available for some selected variations');
+        } else {
+          updatedProduct = {
+            ...product,
+            variations: product.variations?.map(v =>
+              variationIds.includes(v.id) ? { ...v, stock: v.stock - diff } : v
+            )
+          };
+        }
+      } else {
+        if (diff > 0 && product.stock < diff) {
+          toast.error('Not enough stock available');
+        } else {
+          updatedProduct = { ...product, stock: product.stock - diff };
+        }
+      }
+
+      if (updatedProduct) {
+        const toSave = updatedProduct;
+        setProducts(prev => prev.map(p => p.id === productId ? toSave : p));
+        fetch(`${API_BASE}/api/products/${toSave.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(toSave),
+        }).catch(console.error);
+      }
+    }
+
+    setCart(prevCart => prevCart.map(item => {
+      const itemVIds = (item.selectedVariations || []).map(v => v.id).sort().join(',');
+      return (item.id === productId && itemVIds === vIdString)
+        ? { ...item, quantity }
+        : item;
+    }));
   }, []);
 
   const clearCart = useCallback(() => setCart([]), []);
@@ -688,28 +694,51 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       type: 'order'
     });
     addActivity(`New order placed: ${order.id}`, 'order');
+    fetch(`${API_BASE}/api/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order),
+    })
+      .then(r => { if (!r.ok) throw new Error('Failed to save order'); })
+      .catch(err => {
+        console.error(err);
+        toast.error('Your order could not be saved to our system — please contact us with your order ID.');
+      });
   }, [addNotification, addActivity]);
 
-  const updateOrderStatus = useCallback((orderId: string, status: Order['status'], paymentStatus?: Order['paymentStatus']) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? {
-      ...o,
-      status,
-      paymentStatus: paymentStatus || o.paymentStatus
-    } : o));
-    addActivity(`Order ${orderId} status updated to ${status}`, 'order');
+  // Takes the full current order (not just an id) — PUT /api/orders/:id replaces every
+  // column, so sending only {status} would null out customerName/items/total/etc.
+  const updateOrderStatus = useCallback((order: Order, status: Order['status'], paymentStatus?: Order['paymentStatus']) => {
+    const updatedOrder: Order = { ...order, status, paymentStatus: paymentStatus || order.paymentStatus };
+    setOrders(prev => prev.map(o => o.id === order.id ? updatedOrder : o));
+    addActivity(`Order ${order.id} status updated to ${status}`, 'order');
+    fetch(`${API_BASE}/api/orders/${order.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedOrder),
+    }).catch(console.error);
   }, [addActivity]);
 
   const updateOrder = useCallback((updatedOrder: Order) => {
     setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
     addActivity(`Order ${updatedOrder.id} updated`, 'order');
+    fetch(`${API_BASE}/api/orders/${updatedOrder.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedOrder),
+    }).catch(console.error);
   }, [addActivity]);
 
   const deleteOrder = useCallback((id: string) => {
     setOrders(prev => prev.filter(o => o.id !== id));
     addActivity(`Order ${id} deleted`, 'order');
+    fetch(`${API_BASE}/api/orders/${id}`, { method: 'DELETE' }).catch(console.error);
   }, [addActivity]);
 
   // ── Site settings ─────────────────────────────────────────────────────────
+  // Persistence itself is handled by SiteContentManager's explicit "Save Changes" PUT
+  // (src/pages/AdminDashboard.tsx) — this just updates local state to match after that
+  // save succeeds, plus the activity log entry. Nothing here writes to the backend.
   const updateSiteSettings = useCallback((settings: SiteSettings) => {
     setSiteSettings(settings);
     addActivity('Site settings updated', 'system');
@@ -858,7 +887,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount,
     messages, addMessage, markMessageAsRead, deleteMessage, replyToMessage,
     analytics, activityLog, trackPageView,
-    siteSettings, updateSiteSettings,
+    siteSettings, siteSettingsLoaded, updateSiteSettings,
     employees, addEmployee, updateEmployee, deleteEmployee,
     fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary, fetchAllEmployeePayments,
     otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense,
@@ -871,7 +900,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount,
     messages, addMessage, markMessageAsRead, deleteMessage, replyToMessage,
     analytics, activityLog, trackPageView,
-    siteSettings, updateSiteSettings,
+    siteSettings, siteSettingsLoaded, updateSiteSettings,
     employees, addEmployee, updateEmployee, deleteEmployee,
     fetchEmployeePayments, addEmployeePayment, updateEmployeePayment, deleteEmployeePayment, fetchPayrollSummary, fetchAllEmployeePayments,
     otherExpenses, addOtherExpense, updateOtherExpense, deleteOtherExpense,

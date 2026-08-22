@@ -25,6 +25,30 @@ import autoTable from 'jspdf-autotable';
 // API base URL — set VITE_API_URL in .env for production; empty string works with the dev proxy.
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
+// Order line items are a snapshot of the product at the moment it was added to cart
+// (see addToCart in ProductContext), so the name shown here always matches what was
+// actually purchased even if the product is later renamed, deleted, or never existed
+// in the current catalog. Older orders may still have `title` as a plain string (saved
+// before multi-language support existed) rather than the {en,fr,rw} shape — handle both.
+function formatOrderItem(item: any, products: Product[]): string {
+  let title: string | undefined;
+  if (item?.title && typeof item.title === 'object') {
+    title = localize(item.title, 'en');
+  } else if (typeof item?.title === 'string' && item.title) {
+    title = item.title;
+  }
+  if (!title) {
+    const match = products.find(p => p.id === item?.id);
+    title = match ? localize(match.title, 'en') : (item?.id || 'Unknown item');
+  }
+  return `${title} x${item?.quantity ?? 1}`;
+}
+
+function formatOrderItems(items: any, products: Product[]): string {
+  if (!Array.isArray(items) || items.length === 0) return 'No items recorded';
+  return items.map(item => formatOrderItem(item, products)).join(', ');
+}
+
 // PDF Export Helpers — module-level so every admin tab (reports, expenses, ...) can
 // stamp the same company letterhead on its printable documents.
 type ReportLogo = { dataUrl: string; width: number; height: number };
@@ -1249,6 +1273,7 @@ const AdminDashboard = () => {
                   <tr>
                     <th className="px-8 py-6">Order ID</th>
                     <th className="px-8 py-6">Customer</th>
+                    <th className="px-8 py-6">Product</th>
                     <th className="px-8 py-6">Total</th>
                     <th className="px-8 py-6">Status</th>
                     <th className="px-8 py-6 text-right">Update Status</th>
@@ -1269,6 +1294,9 @@ const AdminDashboard = () => {
                           <span className="text-xs text-gray-500">{order.phone}</span>
                           <span className="text-[10px] text-gray-400 line-clamp-1">{order.address}</span>
                         </div>
+                      </td>
+                      <td className="px-8 py-6 text-sm text-gray-700 max-w-[240px]">
+                        {formatOrderItems(order.items, products)}
                       </td>
                       <td className="px-8 py-6 font-bold text-blue-900">{formatPrice(order.total)}</td>
                       <td className="px-8 py-6">
@@ -1291,7 +1319,7 @@ const AdminDashboard = () => {
                           <div className="flex items-center space-x-2">
                             <select
                               value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any, order.paymentStatus)}
+                              onChange={(e) => updateOrderStatus(order, e.target.value as any, order.paymentStatus)}
                               className="text-xs font-bold p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                             >
                               <option value="pending">Pending</option>
@@ -1321,7 +1349,7 @@ const AdminDashboard = () => {
                   ))}
                   {filteredOrders.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-8 py-20 text-center text-gray-400">
+                      <td colSpan={6} className="px-8 py-20 text-center text-gray-400">
                         No orders found
                       </td>
                     </tr>
@@ -1354,7 +1382,7 @@ const AdminDashboard = () => {
                           "p-8 hover:bg-gray-50 transition-colors cursor-pointer",
                           !msg.read ? "bg-blue-50/30" : ""
                         )}
-                        onClick={() => markMessageAsRead(msg.id)}
+                        onClick={() => markMessageAsRead(msg)}
                       >
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center space-x-4">
@@ -1372,7 +1400,7 @@ const AdminDashboard = () => {
                               {!msg.read && (
                                 <button 
                                   onClick={() => {
-                                    markMessageAsRead(msg.id);
+                                    markMessageAsRead(msg);
                                     toast.success('Message marked as read');
                                   }}
                                   className="p-2 text-gray-400 hover:text-blue-600 transition-colors bg-gray-50 rounded-lg"
@@ -2809,7 +2837,7 @@ const AdminDashboard = () => {
 const API_BASE_SC = import.meta.env.VITE_API_URL ?? '';
 
 const SiteContentManager = () => {
-  const { siteSettings, updateSiteSettings, uploadImage, products, categories } = useShop();
+  const { siteSettings, siteSettingsLoaded, updateSiteSettings, uploadImage, products, categories } = useShop();
   const [localSettings, setLocalSettings] = useState(siteSettings);
   const [isSaving, setIsSaving] = useState(false);
   const heroFileRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -2825,6 +2853,13 @@ const SiteContentManager = () => {
   const team = localSettings.teamMembers || [];
 
   const handleSave = async () => {
+    // Refuse to save until the real settings have actually loaded from the server —
+    // saving before then would PUT the hardcoded fallback content (HERO_SLIDES etc.)
+    // and overwrite whatever the site currently has live.
+    if (!siteSettingsLoaded) {
+      toast.error('Site content failed to load — reload the page before saving, or you risk overwriting live content.');
+      return;
+    }
     setIsSaving(true);
     try {
       const res = await fetch(`${API_BASE_SC}/api/site-settings`, {
