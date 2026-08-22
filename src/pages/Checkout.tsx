@@ -269,7 +269,7 @@ const Checkout: React.FC = () => {
                       <ul className="text-sm space-y-3 text-gray-700 mb-6">
                         <li className="flex gap-2">
                           <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
-                          <span>{t('dialLabel')} <strong>*182#</strong> {t('dialThenChooseAirtel')}</span>
+                          <span>{t('dialLabel')} <strong>*182*1*2#</strong> {t('dialThenChooseAirtel')}</span>
                         </li>
                         <li className="flex gap-2">
                           <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>

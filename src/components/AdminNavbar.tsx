@@ -30,6 +30,8 @@ const adminTabs: { id: AdminTab; label: string }[] = [
   { id: 'products',     label: 'Products'     },
   { id: 'orders',       label: 'Orders'       },
   { id: 'profit',       label: 'Profit'       },
+  { id: 'employees',    label: 'Employees'    },
+  { id: 'expenses',     label: 'Other Expenses' },
   { id: 'analytics',    label: 'Analytics'    },
   { id: 'site-content', label: 'Site Content' },
   { id: 'messages',     label: 'Messages'     },
@@ -48,10 +50,10 @@ const AdminNavbar = ({ activeTab, setActiveTab }: AdminNavbarProps) => {
   const { logout, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
-  // Overview/Profit surface company money data — hidden from regular admins.
+  // Overview/Profit/Employees/Other Expenses surface company money data — hidden from regular admins.
   const visibleTabs = isSuperAdmin
     ? adminTabs
-    : adminTabs.filter(tab => tab.id !== 'overview' && tab.id !== 'profit');
+    : adminTabs.filter(tab => !['overview', 'profit', 'employees', 'expenses'].includes(tab.id));
 
   const openSearch = () => {
     setSearchOpen(true);
