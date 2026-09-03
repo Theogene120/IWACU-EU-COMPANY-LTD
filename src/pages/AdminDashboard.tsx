@@ -3666,6 +3666,18 @@ const SiteContentManager = () => {
   );
 };
 
+const DESCRIPTION_MAX_LENGTH = 127;
+
+const DescriptionCounter: React.FC<{ length: number }> = ({ length }) => {
+  const remaining = DESCRIPTION_MAX_LENGTH - length;
+  const isNearLimit = remaining <= 15;
+  return (
+    <p className={`text-xs text-right ${isNearLimit ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+      {length}/{DESCRIPTION_MAX_LENGTH}
+    </p>
+  );
+};
+
 interface ProductFormProps {
   initialData?: Partial<Product>;
   onSave: (data: any) => void;
@@ -3753,6 +3765,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
       oldPrice: formData.oldPrice || 0,
       cost: formData.cost || 0,
       stock: formData.stock || 0,
+      description: {
+        en: formData.description.en.slice(0, DESCRIPTION_MAX_LENGTH),
+        fr: formData.description.fr.slice(0, DESCRIPTION_MAX_LENGTH),
+        rw: formData.description.rw.slice(0, DESCRIPTION_MAX_LENGTH),
+      },
       variations: formData.variations.map(v => ({
         ...v,
         stock: v.stock || 0,
@@ -3864,29 +3881,35 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSave }) => {
           <textarea
             required
             rows={4}
+            maxLength={DESCRIPTION_MAX_LENGTH}
             value={formData.description.en}
-            onChange={e => setFormData({ ...formData, description: { ...formData.description, en: e.target.value } })}
+            onChange={e => setFormData({ ...formData, description: { ...formData.description, en: e.target.value.slice(0, DESCRIPTION_MAX_LENGTH) } })}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
             placeholder="Detailed product description..."
           />
+          <DescriptionCounter length={formData.description.en.length} />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-bold text-gray-700">Description (FR)</label>
           <textarea
             rows={4}
+            maxLength={DESCRIPTION_MAX_LENGTH}
             value={formData.description.fr}
-            onChange={e => setFormData({ ...formData, description: { ...formData.description, fr: e.target.value } })}
+            onChange={e => setFormData({ ...formData, description: { ...formData.description, fr: e.target.value.slice(0, DESCRIPTION_MAX_LENGTH) } })}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
+          <DescriptionCounter length={formData.description.fr.length} />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-bold text-gray-700">Description (RW)</label>
           <textarea
             rows={4}
+            maxLength={DESCRIPTION_MAX_LENGTH}
             value={formData.description.rw}
-            onChange={e => setFormData({ ...formData, description: { ...formData.description, rw: e.target.value } })}
+            onChange={e => setFormData({ ...formData, description: { ...formData.description, rw: e.target.value.slice(0, DESCRIPTION_MAX_LENGTH) } })}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
+          <DescriptionCounter length={formData.description.rw.length} />
         </div>
 
         <div className="space-y-4 pt-4 border-t">

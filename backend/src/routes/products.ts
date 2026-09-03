@@ -8,6 +8,20 @@ function toIso(v: any): string | undefined {
   return v instanceof Date ? v.toISOString() : String(v);
 }
 
+const DESCRIPTION_MAX_LENGTH = 127;
+
+// Caps each language's description to DESCRIPTION_MAX_LENGTH as a backstop against
+// payloads bypassing the frontend limit. Existing longer descriptions already in the
+// database are untouched unless the product is saved again.
+function capDescription(description: any): any {
+  if (!description || typeof description !== 'object') return description;
+  const capped: any = {};
+  for (const [lang, text] of Object.entries(description)) {
+    capped[lang] = typeof text === 'string' ? text.slice(0, DESCRIPTION_MAX_LENGTH) : text;
+  }
+  return capped;
+}
+
 // `admin` controls whether admin-only fields (cost, salesType, published, offline sale
 // details) are included. Public/storefront responses MUST NEVER include these.
 function rowToProduct(row: any, admin: boolean) {
@@ -45,7 +59,7 @@ function rowToProduct(row: any, admin: boolean) {
 // blindly overwritten with a default just because a caller didn't send them.
 function productParams(p: any) {
   return [
-    p.id, JSON.stringify(p.title), JSON.stringify(p.description ?? null), p.price,
+    p.id, JSON.stringify(p.title), JSON.stringify(capDescription(p.description) ?? null), p.price,
     p.oldPrice ?? null, p.category,
     JSON.stringify(p.images ?? []),
     p.stock, p.rating, p.isFeatured ?? false,
